@@ -73,7 +73,7 @@ const ScholarLogin: React.FC = () => {
       toast.success("Logged in success");
 
       dispatch(Login(response));
-      if (response.avatar == null) {
+      if (response.firstName === null) {
         navigate("/scholar/account-setup");
       } else {
         navigate("/scholar/dashboard");
