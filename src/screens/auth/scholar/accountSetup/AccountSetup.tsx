@@ -12,10 +12,11 @@ import {
   Pencil,
 } from "lucide-react";
 import { useAccountSetupMutation } from "../../../../redux/services/scholar/api";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import type { RootState } from "../../../../redux/services/scholar/store";
 import { toast } from "sonner";
 import { useNavigate } from "react-router";
+import { Profile } from "../../../../redux/slices/scholar/authSlice";
 
 // ---- helpers/data (trim/extend as you like) ----
 const EMPLOYMENT = ["Unemployed", "Part-time", "Full-time", "Others"] as const;
@@ -214,7 +215,10 @@ const schema = z.object({
   // personal profile
   //avatar: z.any().optional(), // we’ll keep file optional
   avatar: z
-    .custom<File>((v) => v instanceof File && v.size > 0, "Avatar is required")
+    .custom<File>(
+      (v) => v instanceof File && v.size > 0,
+      "Profile picture is required"
+    )
     .refine(
       (f) => ["image/jpeg", "image/png", "image/webp"].includes(f.type),
       "Only JPG, PNG or WEBP"
@@ -259,6 +263,7 @@ const SectionTitle: React.FC<{ title: string; subtitle?: string }> = ({
 const AccountSetupWizardRHF: React.FC<{
   onSubmitAll?: (values: FormValues) => Promise<void> | void;
 }> = () => {
+  const dispatch = useDispatch();
   const email = useSelector((state: RootState) => state.auth.email);
   const navigate = useNavigate();
   const {
@@ -368,6 +373,12 @@ const AccountSetupWizardRHF: React.FC<{
     try {
       const response = await setup(form).unwrap();
       console.log(response);
+      const payload = {
+        firstName: response?.firstName,
+        lastName: response?.lastName,
+        avatar: response?.avatar,
+      };
+      dispatch(Profile(payload));
       navigate("/scholar/dashboard");
       // demo
     } catch (error: any) {

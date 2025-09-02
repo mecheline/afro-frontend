@@ -70,16 +70,17 @@ const ScholarLogin: React.FC = () => {
     try {
       const response = await login(values).unwrap();
       console.log(response);
-      toast.success("Logged in success")
+      toast.success("Logged in success");
 
       dispatch(Login(response));
       if (response.avatar == null) {
         navigate("/scholar/account-setup");
+      } else {
+        navigate("/scholar/dashboard");
       }
-      navigate("/scholar/dashboard");
-    } catch (error:any) {
+    } catch (error: any) {
       console.log(error);
-      toast.error(error?.data?.msg)
+      toast.error(error?.data?.msg);
     }
   };
 
@@ -90,7 +91,7 @@ const ScholarLogin: React.FC = () => {
     try {
       const response = await forgotPassword(values).unwrap();
       console.log(response);
-      toast.success(response?.msg)
+      toast.success(response?.msg);
     } catch (error) {
       console.log(error);
     }

@@ -9,8 +9,13 @@ export interface AuthState {
   lastName: string | null;
   avatar: string | null;
 }
+export interface ProfileState {
+  firstName: string | null;
+  lastName: string | null;
+  avatar: string | null;
+}
 
-const initialState: AuthState = {
+const initialState: AuthState | ProfileState = {
   token: null,
   role: null,
   email: null,
@@ -31,11 +36,17 @@ export const authSlice = createSlice({
       state.lastName = action.payload.lastName;
       state.avatar = action.payload.avatar;
     },
+    Profile(state, action: PayloadAction<ProfileState>) {
+      state.firstName = action.payload.firstName;
+      state.lastName = action.payload.lastName;
+      state.avatar = action.payload.avatar;
+    },
+    
     Logout(state) {
       state.token = null;
     },
   },
 });
 
-export const { Login, Logout } = authSlice.actions;
+export const { Login, Logout, Profile } = authSlice.actions;
 export default authSlice.reducer;
