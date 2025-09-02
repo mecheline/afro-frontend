@@ -1,18 +1,13 @@
 import React, { useState } from "react";
 import {
   Download,
-  GraduationCap,
-  BookOpen,
-  Play,
   ArrowRight,
   LogIn,
-  User,
   Users,
   CloudDownload,
   ThumbsUp,
   Star,
   UploadCloud,
-  FolderClosed,
   X,
   GraduationCapIcon,
 } from "lucide-react";

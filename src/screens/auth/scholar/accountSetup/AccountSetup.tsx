@@ -5,7 +5,6 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
   ArrowLeft,
-  Calendar,
   Mail,
   Phone,
   ChevronDown,
@@ -207,14 +206,6 @@ const COUNTRIES = [
   "Zimbabwe",
 ];
 
-const PHONE_CODES = [
-  { cc: "+234", label: "🇳🇬 Nigeria" },
-  { cc: "+233", label: "🇬🇭 Ghana" },
-  { cc: "+254", label: "🇰🇪 Kenya" },
-  { cc: "+27", label: "🇿🇦 South Africa" },
-  { cc: "+1", label: "🇺🇸 USA" },
-];
-
 // ---- schema ----
 const schema = z.object({
   employmentStatus: z.enum(EMPLOYMENT, { message: "Choose one option" }),
@@ -267,7 +258,7 @@ const SectionTitle: React.FC<{ title: string; subtitle?: string }> = ({
 // ---- main component ----
 const AccountSetupWizardRHF: React.FC<{
   onSubmitAll?: (values: FormValues) => Promise<void> | void;
-}> = ({ onSubmitAll }) => {
+}> = () => {
   const email = useSelector((state: RootState) => state.auth.email);
   const navigate = useNavigate();
   const {

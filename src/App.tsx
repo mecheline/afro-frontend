@@ -5,7 +5,6 @@ import ScholarLogin from "./screens/auth/scholar/Login";
 import { Toaster } from "sonner";
 import ScholarDashboard from "./screens/auth/scholar/Dashboard";
 import ResetPassword from "./screens/auth/scholar/ResetPassword";
-import AccountSetup from "./screens/auth/scholar/accountSetup/AccountSetup";
 import AccountSetupWizardRHF from "./screens/auth/scholar/accountSetup/AccountSetup";
 
 function App() {

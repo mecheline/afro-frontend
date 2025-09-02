@@ -4,12 +4,11 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ArrowLeft, Mail, Lock, Eye, EyeOff } from "lucide-react";
-import { Link, useSearchParams, useNavigate } from "react-router";
+import { Link, useNavigate } from "react-router";
 import logo from "../../../assets/logo.png";
 import {
   useForgotPasswordMutation,
   useLoginMutation,
-  useResetPasswordMutation,
 } from "../../../redux/services/scholar/api";
 import { useDispatch } from "react-redux";
 import { Login } from "../../../redux/slices/scholar/authSlice";
