@@ -11,7 +11,7 @@ import {
   X,
   GraduationCapIcon,
 } from "lucide-react";
-import { useNavigate } from "react-router";
+import { Link, useNavigate } from "react-router";
 import logo from "../../assets/logo.png";
 import hero1 from "../../assets/hero1.png";
 import hero2 from "../../assets/hero2.png";
@@ -180,9 +180,6 @@ export default function AfroScholarsLanding() {
             >
               <LogIn className="mr-1.5 h-4 w-4" /> Login
             </GhostButton>
-            <PrimaryButton className="px-3 py-1.5">
-              Register / Login
-            </PrimaryButton>
           </div>
 
           {/* mobile */}
@@ -214,8 +211,9 @@ export default function AfroScholarsLanding() {
                   </a>
                 ))}
                 <div className="mt-2 grid grid-cols-2 gap-2">
-                  <GhostButton>Login</GhostButton>
-                  <PrimaryButton>Register</PrimaryButton>
+                  <GhostButton onClick={() => setShowOption(true)}>
+                    Login
+                  </GhostButton>
                 </div>
               </nav>
             </div>
@@ -240,7 +238,9 @@ export default function AfroScholarsLanding() {
               <PrimaryButton>
                 Fund a Scholarship <ArrowRight className="ml-2 h-4 w-4" />
               </PrimaryButton>
-              <GhostButton>Get a Scholarship</GhostButton>
+              <GhostButton>
+                <Link to="/auth/scholar/login">Get a Scholarship</Link>
+              </GhostButton>
             </div>
           </div>
 
@@ -420,7 +420,7 @@ export default function AfroScholarsLanding() {
         <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4">
           <div className="w-full max-w-2xl rounded-xl bg-white shadow-lg">
             {/* Header */}
-            <div className="flex items-center justify-between px-6 py-4 border-b">
+            <div className="flex items-center justify-between px-6 py-4">
               <h3 className="text-lg font-semibold">Select a portal</h3>
               <button
                 onClick={() => setShowOption(false)}
@@ -433,7 +433,7 @@ export default function AfroScholarsLanding() {
 
             {/* Body */}
             <div className="px-6 py-6">
-              <p className="text-sm text-muted-foreground mb-6 text-center">
+              <p className="font-medium text-[20px] text-[#212121] mb-6 text-center">
                 We are the best African scholarship portal
               </p>
 
@@ -443,14 +443,14 @@ export default function AfroScholarsLanding() {
                   type="button"
                   onClick={() => setSelectedType("scholar")}
                   className={
-                    "w-full border rounded-xl p-6 hover:bg-muted transition flex flex-col items-center justify-center" +
-                    (selectedType === "scholar" ? " ring-2 ring-black" : "")
+                    "w-full border border-[#e3e4e6] rounded-xl p-6 hover:bg-muted transition flex flex-col items-center justify-center" +
+                    (selectedType === "scholar" ? " ring-2 ring-[#3062C8]" : "")
                   }
                 >
                   <div className="w-12 h-12 rounded-full bg-[#F3F4F6] flex items-center justify-center mb-3">
-                    <GraduationCapIcon className="w-6 h-6" />
+                    <GraduationCapIcon className="w-6 h-6 text-[#EBC31E]" />
                   </div>
-                  <div className="font-semibold">Scholar portal</div>
+                  <div className="font-semibold">Get a Scholarship</div>
                   <div className="text-sm text-muted-foreground">
                     Register to receive support and funding for your educational
                     aspirations
@@ -462,24 +462,24 @@ export default function AfroScholarsLanding() {
                   type="button"
                   onClick={() => setSelectedType("sponsor")}
                   className={
-                    "w-full border rounded-xl p-6 hover:bg-muted transition flex flex-col items-center justify-center" +
-                    (selectedType === "sponsor" ? " ring-2 ring-black" : "")
+                    "w-full border border-[#e3e4e6] rounded-xl p-6 hover:bg-muted transition flex flex-col items-center justify-center" +
+                    (selectedType === "sponsor" ? " ring-2 ring-[#3062C8]" : "")
                   }
                 >
                   <div className="w-12 h-12 rounded-full bg-[#F3F4F6] flex items-center justify-center mb-3">
-                    <UploadCloud className="w-6 h-6" />
+                    <UploadCloud className="w-6 h-6 text-[#EBC31E]" />
                   </div>
-                  <div className="font-semibold">Sponsor portal</div>
+                  <div className="font-semibold">Fund a Scholarship</div>
                   <div className="text-sm text-muted-foreground">
-                    Upload a CSV/XLSX file to initiate multiple applications at
-                    once.
+                    Create, fund and manage scholarships that can be easily
+                    accessed by profiled Africans
                   </div>
                 </button>
               </div>
             </div>
 
             {/* Footer */}
-            <div className="px-6 py-4 border-t flex justify-end gap-3">
+            <div className="px-6 py-4 flex justify-end gap-3">
               <button
                 className="bg-gray-500 text-white py-2 px-4 rounded-lg shadow"
                 onClick={() => setShowOption(false)}

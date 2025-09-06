@@ -6,6 +6,8 @@ import { Toaster } from "sonner";
 import ScholarDashboard from "./screens/auth/scholar/Dashboard";
 import ResetPassword from "./screens/auth/scholar/ResetPassword";
 import AccountSetupWizardRHF from "./screens/auth/scholar/accountSetup/AccountSetup";
+import ProfileLayout from "./screens/auth/scholar/profile/Layout";
+import DashboardLayout from "./screens/auth/scholar/DashboardLayout";
 
 function App() {
   return (
@@ -16,11 +18,15 @@ function App() {
         <Route path="/auth/scholar/login" element={<ScholarLogin />} />
 
         <Route path="/reset-password" element={<ResetPassword />} />
-        <Route path="/scholar/dashboard" element={<ScholarDashboard />} />
+
         <Route
           path="/scholar/account-setup"
           element={<AccountSetupWizardRHF />}
         />
+        <Route path="/scholar" element={<DashboardLayout />}>
+          <Route path="dashboard" index element={<ScholarDashboard />} />
+          <Route path="profile" element={<ProfileLayout />} />
+        </Route>
       </Routes>
       <Toaster position="top-center" richColors />
     </BrowserRouter>

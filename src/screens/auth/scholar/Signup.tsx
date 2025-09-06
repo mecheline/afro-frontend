@@ -229,6 +229,7 @@ const ScholarSignup: React.FC = () => {
     try {
       const response = await signup(values).unwrap();
       console.log(response);
+
       setPhase("verify");
     } catch (error) {
       console.log(error);
