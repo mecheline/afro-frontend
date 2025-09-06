@@ -1,6 +1,5 @@
 import React, { useMemo, useState } from "react";
 import {
-  Bell,
   Bookmark,
   BookmarkCheck,
   ChevronRight,
@@ -244,7 +243,6 @@ const LearnBanner: React.FC = () => (
 // Dashboard
 // ------------------------------------------------------------------
 const ScholarDashboard: React.FC = () => {
-  const user = useSelector((state: RootState) => state.auth);
   const [activeCategory, setActiveCategory] =
     useState<Scholarship["category"]>("All");
   const [bookmarks, setBookmarks] = useState<Record<string, boolean>>({});
