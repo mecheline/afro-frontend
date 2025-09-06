@@ -1,13 +1,6 @@
 import React, { useMemo, useState } from "react";
-import {
-  Bookmark,
-  BookmarkCheck,
-  ChevronRight,
-  Search,
-} from "lucide-react";
+import { Bookmark, BookmarkCheck, ChevronRight, Search } from "lucide-react";
 import { Link } from "react-router";
-import { useSelector } from "react-redux";
-import type { RootState } from "../../../redux/services/scholar/store";
 
 // ------------------------------------------------------------------
 // Types & Mock Data (replace with your API results)
