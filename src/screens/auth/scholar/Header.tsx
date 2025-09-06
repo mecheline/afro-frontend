@@ -1,6 +1,6 @@
 import { useSelector } from "react-redux";
 import type { RootState } from "../../../redux/services/scholar/store";
-import { Link } from "react-router";
+// import { Link } from "react-router";
 import { Bell } from "lucide-react";
 
 const Header = () => {
