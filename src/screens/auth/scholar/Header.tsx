@@ -22,7 +22,7 @@ const Header = () => {
               </p>
             </div>
           </div>
-          <Link to={"/scholar/profile"}>Profile</Link>
+          {/* <Link to={"/scholar/profile"}>Profile</Link> */}
           <button className="relative rounded-xl p-2 text-slate-600 hover:bg-slate-100">
             <Bell className="h-5 w-5" />
             <span className="absolute -right-0.5 -top-0.5 block h-2.5 w-2.5 rounded-full bg-red-500" />
