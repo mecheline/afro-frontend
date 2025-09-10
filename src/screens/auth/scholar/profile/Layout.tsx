@@ -14,15 +14,11 @@ import {
   Building,
   Cog,
   BookMarked,
-  School,
   Activity,
   Info,
   ScrollText,
   ShieldCheck,
-  ArrowLeft,
-  MapPin,
 } from "lucide-react";
-import { useForm } from "react-hook-form";
 import { useDispatch, useSelector } from "react-redux";
 import StepRenderer from "./StepRenderer";
 import { Profile } from "../../../../redux/slices/scholar/authSlice";
@@ -156,7 +152,6 @@ const ProfileWizard: React.FC = () => {
       setCache((c) => ({ ...c, [active]: data }));
       // you can toast success here
       toast.success(res?.msg || "Saved");
-      console.log(res);
       if (res?.step === "personal") {
         const payload = {
           firstName: res?.data?.firstName,

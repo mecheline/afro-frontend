@@ -6,7 +6,6 @@ import { Toaster } from "sonner";
 import ScholarDashboard from "./screens/auth/scholar/Dashboard";
 import ResetPassword from "./screens/auth/scholar/ResetPassword";
 import AccountSetupWizardRHF from "./screens/auth/scholar/accountSetup/AccountSetup";
-import ProfileLayout from "./screens/auth/scholar/profile/Layout";
 import DashboardLayout from "./screens/auth/scholar/DashboardLayout";
 import ProfileWizard from "./screens/auth/scholar/profile/Layout";
 
