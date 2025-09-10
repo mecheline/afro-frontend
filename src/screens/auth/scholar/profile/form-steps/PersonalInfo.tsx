@@ -11,6 +11,7 @@ import {
 import { useGetAccountQuery } from "../../../../../redux/services/scholar/api";
 import moment from "moment";
 
+
 type SuffixValue = "" | "Miss" | "Ms" | "Mrs" | "Mr" | "Dr" | "Prof";
 
 type PersonalForm = {
@@ -42,13 +43,14 @@ const PersonalStepForm: React.FC<{
   onSave: (values: PersonalForm) => Promise<void>;
   isSaving: boolean;
 }> = ({ initialData, onNext, onSave, isSaving }) => {
-  const { data: accountInfo, isSuccess } = useGetAccountQuery({});
+  const { data: accountInfo, isSuccess, refetch } = useGetAccountQuery({});
   console.log(accountInfo);
+
 
   const mapAccountToPersonalInfo = (account: any) => ({
     firstName: account?.profile?.firstName,
-    lastName: account?.profile?.lastName ,
-    dateOfBirth:moment(account?.profile?.dateOfBirth).format("YYYY-MM-DD"),
+    lastName: account?.profile?.lastName,
+    dateOfBirth: moment(account?.profile?.dateOfBirth).format("YYYY-MM-DD"),
     avatarUrl: account?.profile?.avatar?.url,
   });
   console.log(mapAccountToPersonalInfo(accountInfo));
@@ -81,11 +83,25 @@ const PersonalStepForm: React.FC<{
     if (initialData) reset({ ...initialData });
   }, [initialData, reset]);
 
-  console.log(initialData)
+  console.log(initialData);
 
- 
+  /*  const submitSave = handleSubmit((values) => {
+    onSave(values);
+  }); */
 
-  const submitSave = handleSubmit((values) => onSave(values));
+  const submitSave = handleSubmit(async (values) => {
+    try {
+      await onSave(values);
+      await refetch();
+
+      // if avatarUrl is set (from upload step), update preview immediately
+      if (values.avatarUrl) {
+        setPreview(values.avatarUrl); // switch from blob to CDN url
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  });
 
   const suffix = watch("suffix");
   const isPlaceholder = !suffix;
@@ -96,12 +112,23 @@ const PersonalStepForm: React.FC<{
   const [preview, setPreview] = useState<string | null>(null); // blob URL or uploaded CDN URL
   const [uploading, setUploading] = useState(false);
 
-   useEffect(() => {
-     if (accountInfo && !formState.isDirty)  {
-       reset(mapAccountToPersonalInfo(accountInfo));
-       setPreview(accountInfo?.profile?.avatar?.url);
-     }
-   }, [isSuccess, formState.isDirty, reset]);
+  /* useEffect(() => {
+    if (accountInfo && !formState.isDirty) {
+      reset(mapAccountToPersonalInfo(accountInfo));
+      setPreview(accountInfo?.profile?.avatar?.url);
+    }
+  }, [isSuccess, formState.isDirty, reset]); */
+
+  useEffect(() => {
+    if (accountInfo && !formState.isDirty) {
+      const mapped = mapAccountToPersonalInfo(accountInfo);
+      reset(mapped);
+
+      if (mapped.avatarUrl) {
+        setPreview(mapped.avatarUrl); // show CDN URL immediately
+      }
+    }
+  }, [isSuccess, formState.isDirty, reset, accountInfo]);
 
   // Clean up blob URLs
   useEffect(() => {
@@ -263,7 +290,11 @@ const PersonalStepForm: React.FC<{
         </p>
 
         {/* Form */}
-        <form id="personalInfoForm" onSubmit={submitSave} className="space-y-5 px-4 md:px-0">
+        <form
+          id="personalInfoForm"
+          onSubmit={submitSave}
+          className="space-y-5 px-4 md:px-0"
+        >
           {/* Row 1 */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5 items-start">
             {/* First Name */}
