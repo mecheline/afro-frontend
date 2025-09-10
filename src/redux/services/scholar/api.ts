@@ -84,6 +84,9 @@ export const scholarApi = createApi({
         body: body,
       }),
     }),
+    getAccount: builder.query({
+      query: () => "/scholars/api/account",
+    }),
   }),
 });
 
@@ -97,4 +100,5 @@ export const {
   useForgotPasswordMutation,
   useResetPasswordMutation,
   useAccountSetupMutation,
+  useGetAccountQuery,
 } = scholarApi;

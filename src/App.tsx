@@ -8,6 +8,7 @@ import ResetPassword from "./screens/auth/scholar/ResetPassword";
 import AccountSetupWizardRHF from "./screens/auth/scholar/accountSetup/AccountSetup";
 import ProfileLayout from "./screens/auth/scholar/profile/Layout";
 import DashboardLayout from "./screens/auth/scholar/DashboardLayout";
+import ProfileWizard from "./screens/auth/scholar/profile/Layout";
 
 function App() {
   return (
@@ -25,7 +26,7 @@ function App() {
         />
         <Route path="/scholar" element={<DashboardLayout />}>
           <Route path="dashboard" index element={<ScholarDashboard />} />
-          <Route path="profile" element={<ProfileLayout />} />
+          <Route path="profile" element={<ProfileWizard />} />
         </Route>
       </Routes>
       <Toaster position="top-center" richColors />

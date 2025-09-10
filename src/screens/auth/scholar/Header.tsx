@@ -1,6 +1,6 @@
 import { useSelector } from "react-redux";
 import type { RootState } from "../../../redux/services/scholar/store";
-// import { Link } from "react-router";
+import { Link } from "react-router";
 import { Bell } from "lucide-react";
 
 const Header = () => {
@@ -9,7 +9,7 @@ const Header = () => {
     <header className="fixed inset-x-0 top-0 z-50 border-b border-slate-200 bg-white/80 backdrop-blur">
       <div className="mx-auto w-full px-4 py-4">
         <div className="flex items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
+          <Link to={"/scholar/dashboard"} className="flex items-center gap-3">
             <img
               src={user?.avatar ?? undefined}
               className="h-9 w-9 rounded-full object-cover"
@@ -21,8 +21,8 @@ const Header = () => {
                 {user?.lastName} {user?.firstName}
               </p>
             </div>
-          </div>
-          {/* <Link to={"/scholar/profile"}>Profile</Link> */}
+          </Link>
+           <Link to={"/scholar/profile"}>Profile</Link> 
           <button className="relative rounded-xl p-2 text-slate-600 hover:bg-slate-100">
             <Bell className="h-5 w-5" />
             <span className="absolute -right-0.5 -top-0.5 block h-2.5 w-2.5 rounded-full bg-red-500" />
