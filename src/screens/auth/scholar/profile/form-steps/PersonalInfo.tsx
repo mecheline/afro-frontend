@@ -34,7 +34,7 @@ const SUFFIXES: Exclude<SuffixValue, "">[] = [
 ];
 
 // TODO: change to your real upload endpoint
-const UPLOAD_ENDPOINT = "http://localhost:5000/utilities/api/upload";
+const UPLOAD_ENDPOINT = import.meta.env.VITE_API_BASE_URL;
 
 const PersonalStepForm: React.FC<{
   initialData?: Partial<PersonalForm>;
@@ -135,7 +135,7 @@ const PersonalStepForm: React.FC<{
       const form = new FormData();
       form.append("file", selectedFile); // <-- field name must match your backend
 
-      const res = await fetch(UPLOAD_ENDPOINT, {
+      const res = await fetch(`${UPLOAD_ENDPOINT}/utilities/api/upload`, {
         method: "POST",
         body: form,
         // headers: { Authorization: `Bearer ${token}` }, // if protected

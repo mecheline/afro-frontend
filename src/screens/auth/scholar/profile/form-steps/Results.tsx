@@ -10,6 +10,8 @@ import {
   Plus,
 } from "lucide-react";
 
+const UPLOAD_ENDPOINT = import.meta.env.VITE_API_BASE_URL;
+
 type NamedUpload = { label: string; file: File | null; url?: string };
 
 type FormValues = {
@@ -58,7 +60,7 @@ const ResultsCertificationsRHF: React.FC<{
   onPrev,
   onSave,
   isSaving,
-  uploadUrl = "http://localhost:5000/utilities/api/upload",
+  uploadUrl = `${UPLOAD_ENDPOINT}/utilities/api/upload`,
 }) => {
   const { register, handleSubmit, watch, setValue, control, getValues } =
     useForm<FormValues>({
