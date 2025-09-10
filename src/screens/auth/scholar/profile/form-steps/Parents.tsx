@@ -39,6 +39,7 @@ type ParentBlock = {
     | "Postgraduate";
   institutionsCount?: string;
   degreeReceived?: string; // free text or list
+  monthsReceived?: string; // free text or list
   yearReceived?: string; // month year
 };
 
@@ -485,7 +486,7 @@ function ParentSection({
               <div className="relative grid grid-cols-2 gap-2">
                 <div className="relative">
                   <select
-                    {...register(`${path}.yearReceived` as const)}
+                    {...register(`${path}.monthsReceived` as const)}
                     className="h-12 w-full appearance-none rounded-xl border border-slate-200 bg-slate-50 px-4 pr-8 text-sm font-semibold shadow-sm focus:bg-white focus:border-indigo-500 focus:outline-none focus:ring-4 focus:ring-indigo-100"
                   >
                     <option value="">—</option>
@@ -554,6 +555,7 @@ const ParentRHF: React.FC<{
         highestQualification: "" as any,
         institutionsCount: "",
         degreeReceived: "",
+        monthsReceived: "",
         yearReceived: "",
       },
       parent2: {
@@ -574,6 +576,7 @@ const ParentRHF: React.FC<{
         highestQualification: "" as any,
         institutionsCount: "",
         degreeReceived: "",
+        monthsReceived: "",
         yearReceived: "",
       },
       ...initialData,
