@@ -16,19 +16,23 @@ const FundingCallback: React.FC = () => {
       if (reference) {
         try {
           const r = await triggerVerify({ reference }).unwrap();
-          console.log(r)
+          console.log(r);
           // carry status to edit screen for UX (optional)
-         /*  navigate(`/sponsor/scholarships/${id}/edit?status=${r.status}`, {
-            replace: true,
-          }); */
+          navigate(
+            `/sponsor/scholarships/${r?.scholarship?._id}/edit?status=${r.status}`,
+            {
+              replace: true,
+            }
+          );
           return;
         } catch {
           // fallback if verify fails (network)
         }
       }
       // no reference? just go to edit and let Step 2 "Continue" refetch
-      
+
       //navigate(`/sponsor/scholarships/${id}/edit`, { replace: true });
+      navigate(`/sponsor/dashboard`, { replace: true });
     })();
   }, [sp, triggerVerify, navigate]);
 
