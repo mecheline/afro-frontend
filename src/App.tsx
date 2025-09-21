@@ -25,7 +25,8 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<AfroScholarsLanding />} />
+        <Route path="/" element={<FundingCallback />} />
+        <Route path="/landing" element={<AfroScholarsLanding />} />
         <Route path="/auth/scholar/signup" element={<ScholarSignup />} />
         <Route path="/auth/scholar/login" element={<ScholarLogin />} />
 
@@ -57,6 +58,7 @@ function App() {
           path="/sponsor/scholarships/:id/funding/callback"
           element={<FundingCallback />}
         />
+
         <Route
           path="/sponsors/api/payment/wallet/callback"
           element={<PaymentReturn />}
