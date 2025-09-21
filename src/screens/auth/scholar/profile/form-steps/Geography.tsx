@@ -2,10 +2,13 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { ArrowLeft, ChevronDown, Loader2, Search } from "lucide-react";
+import { Req } from "../../../../../constants/Required";
 
 /** ---------------- Types ---------------- */
 type FormValues = {
   birthCountry: string;
+  birthState: string; // NEW
+  birthLGA: string; // NEW (LGA / District / City fallback)
   birthCity: string;
   yearsInCurrentCity: string;
   nationality: string;
@@ -13,10 +16,7 @@ type FormValues = {
 
 const YEARS = Array.from({ length: 61 }, (_, i) => String(i)); // 0..60
 
-/** ---------------- Small searchable select ----------------
- * Keyboard support kept simple; click-to-select is primary.
- * Integrates with RHF by writing chosen value via onChange.
- */
+/** ---------------- Small searchable select ---------------- */
 function useClickOutside(cb: () => void) {
   const ref = useRef<HTMLDivElement | null>(null);
   useEffect(() => {
@@ -56,7 +56,6 @@ const SearchSelect: React.FC<SearchSelectProps> = ({
   const wrapRef = useClickOutside(() => setOpen(false));
 
   useEffect(() => {
-    // Close list when disabled
     if (disabled) setOpen(false);
   }, [disabled]);
 
@@ -71,11 +70,10 @@ const SearchSelect: React.FC<SearchSelectProps> = ({
   return (
     <section className="mt-4">
       <label className="mb-3 block text-xl font-semibold text-slate-700">
-        {label}
+        {label} <Req />
       </label>
 
       <div ref={wrapRef} className="relative">
-        {/* "Input" that shows selected value and toggles list */}
         <button
           type="button"
           disabled={disabled}
@@ -91,14 +89,12 @@ const SearchSelect: React.FC<SearchSelectProps> = ({
           {value || `Choose ${label.toLowerCase()}`}
         </button>
 
-        {/* Right adornment */}
         {loading ? (
           <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 animate-spin text-slate-400" />
         ) : (
           <ChevronDown className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
         )}
 
-        {/* Dropdown */}
         {open && !disabled && (
           <div className="absolute z-50 mt-2 w-full rounded-xl border border-slate-200 bg-white shadow-lg">
             <div className="flex items-center gap-2 border-b border-slate-200 px-3 py-2">
@@ -161,6 +157,8 @@ const GeographyNationalityRHF: React.FC<{
   } = useForm<FormValues>({
     defaultValues: {
       birthCountry: "",
+      birthState: "", // NEW
+      birthLGA: "", // NEW
       birthCity: "",
       yearsInCurrentCity: "",
       nationality: "",
@@ -171,6 +169,7 @@ const GeographyNationalityRHF: React.FC<{
 
   // watch values
   const birthCountry = watch("birthCountry");
+  const birthState = watch("birthState"); // NEW
 
   // ------- Fetch countries + nationalities -------
   const [countries, setCountries] = useState<string[]>([]);
@@ -223,7 +222,132 @@ const GeographyNationalityRHF: React.FC<{
     };
   }, []);
 
-  // ------- Fetch cities for selected country -------
+  // ------- Fetch states for selected country (NEW) -------
+  const [states, setStates] = useState<string[]>([]);
+  const [loadingStates, setLoadingStates] = useState(false);
+  const [stateErr, setStateErr] = useState("");
+
+  useEffect(() => {
+    // reset dependent fields when country changes
+    setValue("birthState", "", { shouldValidate: true });
+    setValue("birthLGA", "", { shouldValidate: true });
+
+    if (!birthCountry) {
+      setStates([]);
+      return;
+    }
+
+    let ignore = false;
+    const ctrl = new AbortController();
+
+    async function loadStates() {
+      try {
+        setLoadingStates(true);
+        setStateErr("");
+        const res = await fetch(
+          "https://countriesnow.space/api/v0.1/countries/states",
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ country: birthCountry }),
+            signal: ctrl.signal,
+          }
+        );
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const json: {
+          error: boolean;
+          msg?: string;
+          data?: { name: string; states?: Array<{ name: string }> };
+        } = await res.json();
+        if (ignore) return;
+
+        if (json.error) throw new Error(json.msg || "Failed to load states");
+
+        const names =
+          json?.data?.states?.map((s) => s.name).filter(Boolean) ?? [];
+        setStates(
+          names.length ? names.sort((a, b) => a.localeCompare(b)) : ["Other"]
+        );
+      } catch (e: any) {
+        if (!ignore) {
+          setStateErr(e?.message || "Failed to load states");
+          setStates(["Other"]);
+        }
+      } finally {
+        if (!ignore) setLoadingStates(false);
+      }
+    }
+    loadStates();
+
+    return () => {
+      ignore = true;
+      ctrl.abort();
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [birthCountry]);
+
+  // ------- Fetch LGAs for selected state (NEW) -------
+  const [lgas, setLgas] = useState<string[]>([]);
+  const [loadingLgas, setLoadingLgas] = useState(false);
+  const [lgaErr, setLgaErr] = useState("");
+
+  useEffect(() => {
+    // reset when state changes
+    setValue("birthLGA", "", { shouldValidate: true });
+
+    if (!birthCountry || !birthState) {
+      setLgas([]);
+      return;
+    }
+
+    let ignore = false;
+    const ctrl = new AbortController();
+
+    async function loadLGAs() {
+      try {
+        setLoadingLgas(true);
+        setLgaErr("");
+
+        // Generic fallback (cities by state). Replace with a Nigeria LGA API/dataset if needed.
+        const res = await fetch(
+          "https://countriesnow.space/api/v0.1/countries/state/cities",
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ country: birthCountry, state: birthState }),
+            signal: ctrl.signal,
+          }
+        );
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const json: { error: boolean; data?: string[]; msg?: string } =
+          await res.json();
+        if (ignore) return;
+
+        if (json.error) throw new Error(json.msg || "Failed to load LGAs");
+
+        const names = (json.data || []).filter(Boolean);
+        setLgas(
+          names.length ? names.sort((a, b) => a.localeCompare(b)) : ["Other"]
+        );
+      } catch (e: any) {
+        if (!ignore) {
+          setLgaErr(e?.message || "Failed to load LGAs");
+          setLgas(["Other"]);
+        }
+      } finally {
+        if (!ignore) setLoadingLgas(false);
+      }
+    }
+    loadLGAs();
+
+    return () => {
+      ignore = true;
+      ctrl.abort();
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [birthCountry, birthState]);
+
+  // ------- Fetch cities for selected country (existing) -------
   const [cities, setCities] = useState<string[]>([]);
   const [loadingCities, setLoadingCities] = useState(false);
   const [cityErr, setCityErr] = useState("");
@@ -258,7 +382,6 @@ const GeographyNationalityRHF: React.FC<{
         setCities(
           (json.data || []).length ? (json.data as string[]) : ["Other"]
         );
-        // clear city if not in list
         const cur = getValues("birthCity");
         if (cur && !(json.data || []).includes(cur)) setValue("birthCity", "");
       } catch (e: any) {
@@ -288,12 +411,14 @@ const GeographyNationalityRHF: React.FC<{
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [birthCountry, nationalities]);
 
-  // Register hidden fields for validations (SearchSelect writes values via setValue)
+  // Register hidden fields for validations
   useEffect(() => {
     register("birthCountry", { required: "Select your birth country" });
+    register("birthState", { required: "Select your state/province" }); // NEW
+    register("birthLGA", { required: "Select your LGA / district" }); // NEW
     register("birthCity", { required: "Select your birth city" });
-    register("nationality", { required: "Select your nationality" });
     register("yearsInCurrentCity", { required: "Select years lived" });
+    register("nationality", { required: "Select your nationality" });
   }, [register]);
 
   // ----- Actions -----
@@ -330,6 +455,28 @@ const GeographyNationalityRHF: React.FC<{
           error={errors.birthCountry?.message || countryErr}
         />
 
+        {/* NEW: State/Province */}
+        <SearchSelect
+          label="State / Province"
+          options={states}
+          value={watch("birthState")}
+          onChange={(v) => setValue("birthState", v, { shouldValidate: true })}
+          disabled={!watch("birthCountry") || loadingStates}
+          loading={loadingStates}
+          error={errors.birthState?.message || stateErr}
+        />
+
+        {/* NEW: LGA (or District/City fallback) */}
+        <SearchSelect
+          label="LGA / District"
+          options={lgas}
+          value={watch("birthLGA")}
+          onChange={(v) => setValue("birthLGA", v, { shouldValidate: true })}
+          disabled={!watch("birthState") || loadingLgas}
+          loading={loadingLgas}
+          error={errors.birthLGA?.message || lgaErr}
+        />
+
         <SearchSelect
           label="City of birth"
           options={cities}
@@ -343,7 +490,7 @@ const GeographyNationalityRHF: React.FC<{
         {/* Years lived (simple non-search select) */}
         <section className="mt-4">
           <label className="mb-3 block text-xl font-semibold text-slate-700">
-            No of years you have lived in current city
+            No of years you have lived in current city <Req />
           </label>
           <div className="relative">
             <select
@@ -388,6 +535,7 @@ const GeographyNationalityRHF: React.FC<{
           loading={false}
           error={errors.nationality?.message}
         />
+
         <div className="mx-auto w-full max-w-xl">
           <div className="grid grid-cols-2 gap-4">
             <button
@@ -408,8 +556,6 @@ const GeographyNationalityRHF: React.FC<{
           </div>
         </div>
       </main>
-
-      {/* Bottom bar */}
     </div>
   );
 };

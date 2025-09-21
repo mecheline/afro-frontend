@@ -2,6 +2,7 @@
 import React, { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { ArrowLeft, MapPin } from "lucide-react";
+import  { Req } from "../../../../../constants/Required";
 
 type AddressForm = { homeAddress: string; altAddress?: string };
 
@@ -50,7 +51,7 @@ const AddressStepForm: React.FC<{
         {/* Permanent Home Address */}
         <section className="mt-4">
           <h3 className="text-lg font-semibold text-slate-700">
-            Permanent Home Address
+            Permanent Home Address <Req />
           </h3>
 
           <div className="mt-2">

@@ -2,6 +2,8 @@
 import React, { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { ArrowLeft, Phone } from "lucide-react";
+import { Req } from "../../../../../constants/Required";
+import { useGetAccountQuery } from "../../../../../redux/services/scholar/api";
 
 type FormValues = {
   preferredPhone: string;
@@ -15,24 +17,35 @@ const ContactDetailsRHF: React.FC<{
   onSave?: (values: FormValues) => Promise<void> | void; // persist
   isSaving?: boolean;
 }> = ({ initialData, onPrev, onNext, onSave, isSaving }) => {
-  const {
-    register,
-    handleSubmit,
-    getValues,
-    reset,
-    formState: { errors },
-  } = useForm<FormValues>({
-    defaultValues: {
-      preferredPhone: "",
-      alternatePhone: "",
-      ...initialData,
-    },
-    mode: "onTouched",
+  const { data: accountInfo, isSuccess, refetch } = useGetAccountQuery({});
+  console.log(accountInfo);
+
+  const mapAccountToPersonalInfo = (account: any) => ({
+    preferredPhone: account?.profile?.phone,
   });
+
+  const { register, handleSubmit, getValues, reset, formState } =
+    useForm<FormValues>({
+      defaultValues: {
+        preferredPhone: "",
+        alternatePhone: "",
+        ...initialData,
+      },
+      mode: "onTouched",
+    });
+
+  const { errors } = formState;
 
   useEffect(() => {
     if (initialData) reset({ ...initialData });
   }, [initialData, reset]);
+
+  useEffect(() => {
+    if (accountInfo && !formState.isDirty) {
+      const mapped = mapAccountToPersonalInfo(accountInfo);
+      reset(mapped);
+    }
+  }, [isSuccess, formState.isDirty, reset, accountInfo]);
 
   const handleSave = handleSubmit(async (values) => {
     await onSave?.(values);
@@ -60,7 +73,7 @@ const ContactDetailsRHF: React.FC<{
         {/* Preferred phone */}
         <section className="mt-8">
           <h3 className="text-xl font-semibold text-slate-700">
-            Preferred phone
+            Preferred phone <Req />
           </h3>
 
           <div className="mt-3 rounded-2xl bg-slate-50/70 p-3">

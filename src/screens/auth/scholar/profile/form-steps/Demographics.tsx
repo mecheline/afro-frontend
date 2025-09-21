@@ -2,6 +2,8 @@
 import React, { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { ArrowLeft, ChevronDown } from "lucide-react";
+import { Req } from "../../../../../constants/Required";
+import { useGetAccountQuery } from "../../../../../redux/services/scholar/api";
 
 type FormValues = {
   gender: "" | "Male" | "Female" | "Other";
@@ -14,17 +16,21 @@ const DemographicsRHF: React.FC<{
   onSave?: (values: FormValues) => Promise<void> | void; // persist
   isSaving?: boolean;
 }> = ({ initialData, onPrev, onNext, onSave, isSaving }) => {
-  const {
-    register,
-    handleSubmit,
-    getValues,
-    reset,
-    formState: { errors },
-    watch,
-  } = useForm<FormValues>({
-    defaultValues: { gender: "", ...initialData },
-    mode: "onTouched",
+  const { data: accountInfo, isSuccess, refetch } = useGetAccountQuery({});
+  console.log(accountInfo);
+
+  const mapAccountToPersonalInfo = (account: any) => ({
+    gender: account?.profile?.gender,
   });
+ 
+
+  const { register, handleSubmit, getValues, reset, formState, watch } =
+    useForm<FormValues>({
+      defaultValues: { gender: "", ...initialData },
+      mode: "onTouched",
+    });
+
+  const { errors } = formState;
 
   useEffect(() => {
     if (initialData) reset({ ...initialData });
@@ -32,6 +38,13 @@ const DemographicsRHF: React.FC<{
 
   const gender = watch("gender");
   const isPlaceholder = !gender;
+
+  useEffect(() => {
+    if (accountInfo && !formState.isDirty) {
+      const mapped = mapAccountToPersonalInfo(accountInfo);
+      reset(mapped);
+    }
+  }, [isSuccess, formState.isDirty, reset, accountInfo]);
 
   const handleSave = handleSubmit(async (values) => {
     await onSave?.(values);
@@ -58,7 +71,7 @@ const DemographicsRHF: React.FC<{
       <main className="mx-auto w-full max-w-xl px-5 sm:px-6 pb-40">
         <section className="mt-8">
           <label className="mb-3 block text-xl font-semibold text-slate-700">
-            Gender
+            Gender <Req />
           </label>
 
           <div className="rounded-2xl bg-slate-50/70 p-3">

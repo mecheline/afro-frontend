@@ -1,7 +1,7 @@
 import { Outlet } from "react-router";
 import Header from "./Header";
 
-const DashboardLayout = () => {
+const ScholarDashboardLayout = () => {
   return (
     <div className="max-w-screen-2xl mx-auto">
       <Header />
@@ -13,4 +13,4 @@ const DashboardLayout = () => {
   );
 };
 
-export default DashboardLayout;
+export default ScholarDashboardLayout;

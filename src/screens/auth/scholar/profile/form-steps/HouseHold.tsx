@@ -2,6 +2,7 @@
 import React from "react";
 import { useForm } from "react-hook-form";
 import { ArrowLeft, ChevronDown } from "lucide-react";
+import { Req } from "../../../../../constants/Required";
 
 type FormValues = {
   parentMaritalStatus:
@@ -92,7 +93,7 @@ const HouseholdRHF: React.FC<{
         {/* Parent marital status */}
         <section className="mt-6">
           <label className="mb-3 block text-xl font-semibold text-slate-700">
-            Parent marital status
+            Parent marital status <Req />
           </label>
           <div className="relative">
             <select
@@ -128,7 +129,7 @@ const HouseholdRHF: React.FC<{
         {/* Permanent home with */}
         <section className="mt-4">
           <label className="mb-3 block text-xl font-semibold text-slate-700">
-            With whom do you make your permanent home
+            With whom do you make your permanent home <Req />
           </label>
           <div className="relative">
             <select
@@ -156,7 +157,7 @@ const HouseholdRHF: React.FC<{
         {/* Children */}
         <section className="mt-4">
           <label className="mb-3 block text-xl font-semibold text-slate-700">
-            Do you have any children
+            Do you have any children <Req />
           </label>
           <div className="relative">
             <select
@@ -181,7 +182,7 @@ const HouseholdRHF: React.FC<{
         {hasChildren === "Yes" && (
           <section className="mt-2">
             <label className="mb-3 block text-base font-semibold text-slate-700">
-              How many children?
+              How many children? <Req />
             </label>
             <input
               type="number"

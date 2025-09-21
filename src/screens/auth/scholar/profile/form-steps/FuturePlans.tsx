@@ -2,6 +2,7 @@
 import React from "react";
 import { useForm } from "react-hook-form";
 import { ArrowLeft, ChevronDown } from "lucide-react";
+import { Req } from "../../../../../constants/Required";
 
 type FormValues = {
   describeYou:
@@ -21,17 +22,291 @@ type FormValues = {
     | "Master’s"
     | "Doctoral"
     | "Professional";
-  careerInterest:
-    | ""
-    | "Chartered Accountant"
-    | "Software Engineer"
-    | "Doctor"
-    | "Lawyer"
-    | "Teacher"
-    | "Data Analyst"
-    | "Entrepreneur"
-    | "Civil Engineer"
-    | "Nurse";
+  careerInterest: string; // ← widened so any career label is allowed
+};
+
+// ── Categorized career options (expand/shrink as you like) ──
+const CAREER_CATEGORIES: Record<string, string[]> = {
+  "Accounting & Finance": [
+    "Chartered Accountant",
+    "Accountant",
+    "Auditor",
+    "Tax Consultant",
+    "Finance Analyst",
+    "Investment Analyst",
+    "Portfolio Manager",
+    "Risk Analyst",
+    "Financial Advisor",
+    "Actuary",
+    "Treasury Analyst",
+    "Credit Analyst",
+    "Loan Officer",
+    "Internal Auditor",
+    "Compliance Officer",
+  ],
+  "Software & IT": [
+    "Software Engineer",
+    "Frontend Developer",
+    "Backend Developer",
+    "Full-Stack Developer",
+    "Mobile App Developer",
+    "DevOps Engineer",
+    "Cloud Engineer",
+    "Site Reliability Engineer",
+    "QA Engineer / SDET",
+    "Data Analyst",
+    "Data Scientist",
+    "Machine Learning Engineer",
+    "AI Researcher",
+    "Cybersecurity Analyst",
+    "Network Engineer",
+    "IT Support Specialist",
+    "Database Administrator",
+    "Product Manager (Tech)",
+    "UI/UX Designer",
+    "Game Developer",
+    "Blockchain Developer",
+  ],
+  Healthcare: [
+    "Doctor",
+    "Nurse",
+    "Pharmacist",
+    "Dentist",
+    "Medical Laboratory Scientist",
+    "Physiotherapist",
+    "Radiographer",
+    "Optometrist",
+    "Public Health Officer",
+    "Health Information Manager",
+    "Nutritionist / Dietitian",
+    "Occupational Therapist",
+    "Psychologist",
+    "Psychiatrist",
+    "Midwife",
+    "Veterinary Doctor",
+  ],
+  "Law & Public Policy": [
+    "Lawyer",
+    "Solicitor",
+    "Paralegal",
+    "Legal Clerk",
+    "Legal Consultant",
+    "Mediator",
+    "Policy Analyst",
+    "Compliance & Regulatory Specialist",
+    "Immigration Officer",
+    "Customs Officer",
+  ],
+  Engineering: [
+    "Civil Engineer",
+    "Mechanical Engineer",
+    "Electrical Engineer",
+    "Electronics Engineer",
+    "Mechatronics Engineer",
+    "Chemical Engineer",
+    "Petroleum Engineer",
+    "Industrial Engineer",
+    "Structural Engineer",
+    "Biomedical Engineer",
+    "Environmental Engineer",
+    "Materials Engineer",
+    "Automotive Engineer",
+    "Aerospace Engineer",
+    "Water Resources Engineer",
+    "Marine / Naval Architect",
+    "Mining Engineer",
+    "Metallurgical Engineer",
+  ],
+  "Business & Management": [
+    "Entrepreneur",
+    "Business Analyst",
+    "Operations Manager",
+    "Project Manager",
+    "Scrum Master",
+    "Product Manager",
+    "Management Consultant",
+    "Business Development Manager",
+    "Customer Success Manager",
+    "Human Resources Manager",
+    "Recruiter / Talent Acquisition",
+    "Marketing Manager",
+    "Brand Manager",
+    "Sales Manager",
+    "Procurement Specialist",
+    "Supply Chain Analyst",
+    "Logistics Manager",
+  ],
+  "Creative, Media & Communications": [
+    "Journalist",
+    "Reporter",
+    "Editor",
+    "Copywriter",
+    "Content Strategist",
+    "Social Media Manager",
+    "Public Relations Officer",
+    "Photographer",
+    "Videographer",
+    "Film Director",
+    "Producer",
+    "Graphic Designer",
+    "Animator / Motion Designer",
+    "Sound Engineer",
+    "Music Producer",
+    "Fashion Designer",
+    "Interior Designer",
+    "Event Planner",
+  ],
+  Education: [
+    "Teacher (Primary)",
+    "Teacher (Secondary)",
+    "Lecturer",
+    "Researcher",
+    "Instructional Designer",
+    "School Counselor",
+    "Education Administrator",
+  ],
+  "Agriculture & Environment": [
+    "Farmer",
+    "Agronomist",
+    "Animal Scientist",
+    "Fisheries Officer",
+    "Forestry Officer",
+    "Environmental Scientist",
+    "Conservation Officer",
+    "GIS Analyst",
+    "Hydrologist",
+    "Meteorologist",
+    "Soil Scientist",
+  ],
+  "Trades & Technical": [
+    "Electrician",
+    "Plumber",
+    "Carpenter",
+    "Mason",
+    "Welder",
+    "Auto Mechanic",
+    "Auto Electrician",
+    "HVAC Technician",
+    "Solar PV Installer",
+    "CNC Machinist",
+    "Drone Pilot",
+  ],
+  "Logistics, Transport & Aviation": [
+    "Professional Driver",
+    "Fleet Manager",
+    "Logistics Coordinator",
+    "Supply Chain Planner",
+    "Warehouse Manager",
+    "Freight Forwarder",
+    "Pilot",
+    "Flight Attendant",
+    "Air Traffic Controller",
+    "Aviation Safety Officer",
+  ],
+  "Hospitality & Tourism": [
+    "Chef",
+    "Baker",
+    "Hotel Manager",
+    "Housekeeping Supervisor",
+    "Tour Guide",
+    "Travel Agent",
+    "Concierge",
+    "Bartender",
+    "Barista",
+    "Event Coordinator",
+  ],
+  "Banking & Insurance": [
+    "Banker",
+    "Teller",
+    "Relationship Manager",
+    "Underwriter",
+    "Claims Adjuster",
+    "Insurance Broker",
+    "Risk Manager",
+    "Compliance Analyst",
+  ],
+  "Real Estate & Construction": [
+    "Real Estate Agent",
+    "Property Manager",
+    "Quantity Surveyor",
+    "Building Surveyor",
+    "Estate Valuer",
+    "Land Surveyor",
+    "Urban Planner",
+    "Construction Manager",
+    "Site Engineer",
+    "HSE Officer",
+  ],
+  "Energy & Utilities": [
+    "Power Systems Engineer",
+    "Renewable Energy Engineer",
+    "Oil & Gas Engineer",
+    "Drilling Engineer",
+    "Reservoir Engineer",
+    "Energy Analyst",
+    "HSE Specialist",
+  ],
+  "Public Service & Security": [
+    "Police Officer",
+    "Military Officer",
+    "Firefighter",
+    "Intelligence Analyst",
+    "Security Analyst",
+    "FRSC Officer",
+    "Immigration Officer",
+    "Customs Officer",
+  ],
+  "Social Services & NGO": [
+    "Social Worker",
+    "NGO Program Officer",
+    "Community Development Officer",
+    "Grant Writer / Fundraiser",
+    "Counselor",
+  ],
+  "Retail & E-commerce": [
+    "Retail Manager",
+    "Store Manager",
+    "Visual Merchandiser",
+    "E-commerce Manager",
+    "Marketplace Specialist",
+  ],
+  "Sports & Fitness": [
+    "Professional Athlete",
+    "Coach",
+    "Fitness Trainer",
+    "Sports Therapist",
+    "Sports Analyst",
+  ],
+  "Beauty & Wellness": [
+    "Hair Stylist",
+    "Barber",
+    "Makeup Artist",
+    "Esthetician",
+    "Spa Therapist",
+  ],
+  "Science & Research": [
+    "Biochemist",
+    "Microbiologist",
+    "Chemist",
+    "Physicist",
+    "Pharmacologist",
+    "Research Scientist",
+    "Laboratory Technician",
+  ],
+  Telecommunications: [
+    "Telecom Engineer",
+    "RF Engineer",
+    "Field Engineer (Telecom)",
+    "NOC Engineer",
+  ],
+  Maritime: [
+    "Marine Engineer",
+    "Ship Captain",
+    "Deck Officer",
+    "Port/Harbor Operations Officer",
+    "Marine Surveyor",
+  ],
+  Other: ["Other"],
 };
 
 const DESCRIBE_OPTIONS: Exclude<FormValues["describeYou"], "">[] = [
@@ -51,18 +326,6 @@ const DEGREE_INTENT: Exclude<FormValues["highestDegree"], "">[] = [
   "Master’s",
   "Doctoral",
   "Professional",
-];
-
-const CAREERS: Exclude<FormValues["careerInterest"], "">[] = [
-  "Chartered Accountant",
-  "Software Engineer",
-  "Doctor",
-  "Lawyer",
-  "Teacher",
-  "Data Analyst",
-  "Entrepreneur",
-  "Civil Engineer",
-  "Nurse",
 ];
 
 const FuturePlansRHF: React.FC<{
@@ -115,7 +378,7 @@ const FuturePlansRHF: React.FC<{
         {/* Which best describes you */}
         <div className="mt-6">
           <label className="mb-2 block text-base text-slate-700">
-            Which best describes you
+            Which best describes you <Req />
           </label>
           <div className="relative">
             <select
@@ -149,7 +412,7 @@ const FuturePlansRHF: React.FC<{
         {/* Highest degree you intend to earn */}
         <div className="mt-4">
           <label className="mb-2 block text-base text-slate-700">
-            Highest degree you intend to earn
+            Highest degree you intend to earn <Req />
           </label>
           <div className="relative">
             <select
@@ -180,10 +443,10 @@ const FuturePlansRHF: React.FC<{
           </div>
         </div>
 
-        {/* Career interest */}
+        {/* Career interest (categorized dropdown) */}
         <div className="mt-4">
           <label className="mb-2 block text-base text-slate-700">
-            Career interest
+            Career interest <Req />
           </label>
           <div className="relative">
             <select
@@ -201,10 +464,14 @@ const FuturePlansRHF: React.FC<{
               <option value="" disabled hidden>
                 Select career
               </option>
-              {CAREERS.map((c) => (
-                <option key={c} value={c}>
-                  {c}
-                </option>
+              {Object.entries(CAREER_CATEGORIES).map(([group, careers]) => (
+                <optgroup key={group} label={group}>
+                  {careers.map((c) => (
+                    <option key={c} value={c}>
+                      {c}
+                    </option>
+                  ))}
+                </optgroup>
               ))}
             </select>
             <ChevronDown className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
@@ -213,6 +480,7 @@ const FuturePlansRHF: React.FC<{
             {errors.careerInterest?.message}
           </div>
         </div>
+
         <div className="mx-auto grid w-full max-w-xl grid-cols-2 gap-4">
           <button
             type="button"

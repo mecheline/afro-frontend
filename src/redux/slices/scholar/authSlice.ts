@@ -7,12 +7,12 @@ export interface AuthState {
   email: string | null;
   firstName: string | null;
   lastName: string | null;
-  avatar: string | null;
+  avatar?: string | null;
 }
 export interface ProfileState {
   firstName: string | null;
   lastName: string | null;
-  avatar: string | null;
+  avatar?: string | null;
 }
 
 const initialState: AuthState | ProfileState = {

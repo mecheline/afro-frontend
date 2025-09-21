@@ -1,7 +1,8 @@
 // ParentRHF.tsx
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { ArrowLeft, ChevronDown, ChevronUp, AlertCircle } from "lucide-react";
+import moment from "moment";
 
 /** ---------- Types ---------- */
 type YesNo = "Yes" | "No";
@@ -15,15 +16,15 @@ type ParentBlock = {
   middleName?: string;
   lastName: string;
   formerLastName?: string;
-  suffix: "-" | "Jr." | "Sr." | "I" | "II" | "III" | "IV" | "V";
+  suffix?: "-" | "Jr." | "Sr." | "I" | "II" | "III" | "IV" | "V";
 
   // contacts / work
   email?: string;
   phone?: string;
   occupation?: string;
-  employmentStatus: "Employed" | "Unemployed" | "Self-employed" | "Retired";
-  currentlyEmployed: YesNo;
-  income:
+  employmentStatus?: "Employed" | "Unemployed" | "Self-employed" | "Retired";
+  currentlyEmployed?: YesNo;
+  income?:
     | "Below ₦100k"
     | "₦100k-₦200k"
     | "₦200k-₦500k"
@@ -31,7 +32,7 @@ type ParentBlock = {
     | "Above ₦1m";
 
   // education
-  highestQualification:
+  highestQualification?:
     | "Primary"
     | "Secondary"
     | "Diploma"
@@ -39,12 +40,11 @@ type ParentBlock = {
     | "Postgraduate";
   institutionsCount?: string;
   degreeReceived?: string; // free text or list
-  monthsReceived?: string; // free text or list
-  yearReceived?: string; // month year
+  dateOfBirth?: string;
 };
 
 type FormValues = {
-  parent1: ParentBlock;
+  parent1: ParentBlock;                                                                                                                                                                                                          
   parent2: ParentBlock;
 };
 
@@ -362,12 +362,8 @@ function ParentSection({
               <Label>Employment status</Label>
               <div className="relative">
                 <select
-                  {...register(`${path}.employmentStatus` as const, {
-                    required: "Select employment status",
-                  })}
-                  className={`h-12 w-full appearance-none rounded-xl border bg-slate-50 px-4 pr-8 text-sm font-semibold shadow-sm focus:bg-white focus:border-indigo-500 focus:outline-none focus:ring-4 focus:ring-indigo-100 ${
-                    e?.employmentStatus ? "border-red-400" : "border-slate-200"
-                  }`}
+                  {...register(`${path}.employmentStatus` as const)}
+                  className={`h-12 w-full appearance-none rounded-xl border bg-slate-50 px-4 pr-8 text-sm font-semibold shadow-sm focus:bg-white focus:border-indigo-500 focus:outline-none focus:ring-4 focus:ring-indigo-100 border-slate-200`}
                 >
                   <option value="" disabled>
                     Choose…
@@ -378,7 +374,7 @@ function ParentSection({
                 </select>
                 <SelectCaret />
               </div>
-              <FieldError message={e?.employmentStatus?.message as string} />
+              {/* <FieldError message={e?.employmentStatus?.message as string} /> */}
             </div>
 
             {/* Currently employed */}
@@ -386,12 +382,8 @@ function ParentSection({
               <Label>Is parent currently employed</Label>
               <div className="relative">
                 <select
-                  {...register(`${path}.currentlyEmployed` as const, {
-                    required: "Choose Yes or No",
-                  })}
-                  className={`h-12 w-full appearance-none rounded-xl border bg-slate-50 px-4 pr-8 text-sm font-semibold shadow-sm focus:bg-white focus:border-indigo-500 focus:outline-none focus:ring-4 focus:ring-indigo-100 ${
-                    e?.currentlyEmployed ? "border-red-400" : "border-slate-200"
-                  }`}
+                  {...register(`${path}.currentlyEmployed` as const)}
+                  className={`h-12 w-full appearance-none rounded-xl border bg-slate-50 px-4 pr-8 text-sm font-semibold shadow-sm focus:bg-white focus:border-indigo-500 focus:outline-none focus:ring-4 focus:ring-indigo-100 border-slate-200`}
                 >
                   <option value="" disabled>
                     Choose…
@@ -401,7 +393,7 @@ function ParentSection({
                 </select>
                 <SelectCaret />
               </div>
-              <FieldError message={e?.currentlyEmployed?.message as string} />
+              {/* <FieldError message={e?.currentlyEmployed?.message as string} /> */}
             </div>
 
             {/* Income */}
@@ -409,12 +401,8 @@ function ParentSection({
               <Label>Income per annum</Label>
               <div className="relative">
                 <select
-                  {...register(`${path}.income` as const, {
-                    required: "Select income range",
-                  })}
-                  className={`h-12 w-full appearance-none rounded-xl border bg-slate-50 px-4 pr-8 text-sm font-semibold shadow-sm focus:bg-white focus:border-indigo-500 focus:outline-none focus:ring-4 focus:ring-indigo-100 ${
-                    e?.income ? "border-red-400" : "border-slate-200"
-                  }`}
+                  {...register(`${path}.income` as const)}
+                  className={`h-12 w-full appearance-none rounded-xl border bg-slate-50 px-4 pr-8 text-sm font-semibold shadow-sm focus:bg-white focus:border-indigo-500 focus:outline-none focus:ring-4 focus:ring-indigo-100 border-slate-200`}
                 >
                   <option value="" disabled>
                     Choose…
@@ -425,7 +413,7 @@ function ParentSection({
                 </select>
                 <SelectCaret />
               </div>
-              <FieldError message={e?.income?.message as string} />
+             {/*  <FieldError message={e?.income?.message as string} /> */}
             </div>
 
             {/* Highest qualification */}
@@ -433,14 +421,8 @@ function ParentSection({
               <Label>Parent’s highest educational qualification</Label>
               <div className="relative">
                 <select
-                  {...register(`${path}.highestQualification` as const, {
-                    required: "Select highest qualification",
-                  })}
-                  className={`h-12 w-full appearance-none rounded-xl border bg-slate-50 px-4 pr-8 text-sm font-semibold shadow-sm focus:bg-white focus:border-indigo-500 focus:outline-none focus:ring-4 focus:ring-indigo-100 ${
-                    e?.highestQualification
-                      ? "border-red-400"
-                      : "border-slate-200"
-                  }`}
+                  {...register(`${path}.highestQualification` as const)}
+                  className={`h-12 w-full appearance-none rounded-xl border bg-slate-50 px-4 pr-8 text-sm font-semibold shadow-sm focus:bg-white focus:border-indigo-500 focus:outline-none focus:ring-4 focus:ring-indigo-100 border-slate-200`}
                 >
                   <option value="" disabled>
                     Choose…
@@ -451,9 +433,9 @@ function ParentSection({
                 </select>
                 <SelectCaret />
               </div>
-              <FieldError
+              {/*  <FieldError
                 message={e?.highestQualification?.message as string}
-              />
+              /> */}
             </div>
 
             {/* Institutions count */}
@@ -466,7 +448,7 @@ function ParentSection({
                 className="h-12 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 text-sm font-semibold shadow-sm focus:bg-white focus:border-indigo-500 focus:outline-none focus:ring-4 focus:ring-indigo-100"
                 placeholder="e.g. 2"
               />
-              <FieldError />
+              {/* <FieldError /> */}
             </div>
 
             {/* Degree received */}
@@ -477,43 +459,26 @@ function ParentSection({
                 className="h-12 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 text-sm font-semibold shadow-sm focus:bg-white focus:border-indigo-500 focus:outline-none focus:ring-4 focus:ring-indigo-100"
                 placeholder="-"
               />
-              <FieldError />
+              {/*  <FieldError /> */}
             </div>
 
             {/* Year received */}
             <div>
               <Label>Year received</Label>
-              <div className="relative grid grid-cols-2 gap-2">
-                <div className="relative">
-                  <select
-                    {...register(`${path}.monthsReceived` as const)}
-                    className="h-12 w-full appearance-none rounded-xl border border-slate-200 bg-slate-50 px-4 pr-8 text-sm font-semibold shadow-sm focus:bg-white focus:border-indigo-500 focus:outline-none focus:ring-4 focus:ring-indigo-100"
-                  >
-                    <option value="">—</option>
-                    {MONTHS.map((m) => (
-                      <option key={m} value={m}>
-                        {m}
-                      </option>
-                    ))}
-                  </select>
-                  <SelectCaret />
-                </div>
-                <div className="relative">
-                  <select
-                    {...register(`${path}.yearReceived` as const)}
-                    className="h-12 w-full appearance-none rounded-xl border border-slate-200 bg-slate-50 px-4 pr-8 text-sm font-semibold shadow-sm focus:bg-white focus:border-indigo-500 focus:outline-none focus:ring-4 focus:ring-indigo-100"
-                  >
-                    <option value="">—</option>
-                    {YEARS.map((y) => (
-                      <option key={y} value={`${y}`}>
-                        {y}
-                      </option>
-                    ))}
-                  </select>
-                  <SelectCaret />
-                </div>
+
+              <div className="relative">
+                <input
+                  type="date"
+                  placeholder="Date of Birth"
+                  {...register(`${path}.dateOfBirth` as const)}
+                  className={`h-14 w-full rounded-2xl border bg-slate-50/60 px-4 pr-10 text-base shadow-sm focus:bg-white focus:outline-none focus:ring-4 border-slate-200 focus:border-indigo-500 focus:ring-indigo-100`}
+                />
+                {/* {errors.dateOfBirth && (
+                  <p className="mt-1 text-sm text-red-600">
+                    {errors.dateOfBirth.message}
+                  </p>
+                )} */}
               </div>
-              <FieldError />
             </div>
           </div>
         </div>
@@ -530,10 +495,24 @@ const ParentRHF: React.FC<{
   onSave?: (values: FormValues) => Promise<void> | void;
   isSaving?: boolean;
 }> = ({ initialData, onPrev, onNext, onSave, isSaving }) => {
+
+
+  // helper: normalize unknown date formats to YYYY-MM-DD for <input type="date">
+function toInputDate(s?: string) {
+  if (!s) return "";
+  const m = moment(s); // parses ISO and many common formats
+  return m.isValid() ? m.format("YYYY-MM-DD") : "";
+}
+
+
+
+
+
   const {
     register,
     handleSubmit,
     getValues,
+    reset,
     formState: { errors },
   } = useForm<FormValues>({
     defaultValues: {
@@ -555,8 +534,7 @@ const ParentRHF: React.FC<{
         highestQualification: "" as any,
         institutionsCount: "",
         degreeReceived: "",
-        monthsReceived: "",
-        yearReceived: "",
+        dateOfBirth:""
       },
       parent2: {
         parentType: "" as any,
@@ -576,13 +554,36 @@ const ParentRHF: React.FC<{
         highestQualification: "" as any,
         institutionsCount: "",
         degreeReceived: "",
-        monthsReceived: "",
-        yearReceived: "",
+        dateOfBirth:""
       },
       ...initialData,
     },
     mode: "onTouched",
   });
+
+  +// When initialData arrives (e.g., after fetch), prefill with moment-formatted dates
+useEffect(() => {
+  if (!initialData) return;
+  const current = getValues();
+  reset(
+    {
+      ...current,
+      ...initialData,
+      parent1: {
+        ...current.parent1,
+        ...initialData.parent1,
+        dateOfBirth: toInputDate(initialData.parent1?.dateOfBirth),
+      },
+      parent2: {
+        ...current.parent2,
+        ...initialData.parent2,
+        dateOfBirth: toInputDate(initialData.parent2?.dateOfBirth),
+      },
+    },
+    { keepDirty: false, keepTouched: true }
+  );
+}, [initialData, reset, getValues]);
+
 
   const [open1, setOpen1] = useState(true);
   const [open2, setOpen2] = useState(false);

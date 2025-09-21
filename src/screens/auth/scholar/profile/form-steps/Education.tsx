@@ -1,5 +1,5 @@
 // EducationRHF.tsx
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { ArrowLeft, ChevronDown } from "lucide-react";
 
@@ -22,13 +22,59 @@ type Level = {
   graduateMonth?: string; // YYYY-MM
   // tertiary-only
   fieldOfStudy?: string;
+  fieldOfStudyOther?: string; // NEW
   minQualification?: Qualification;
+  gradeClassification?: string; // NEW
+  gradeOther?: string; // NEW
+  cgpa?: string; // NEW (text to allow 4.00 / 5.0 etc.)
 };
 
 type FormValues = {
   primary: Level;
   secondary: Level;
   tertiary: Level;
+};
+
+// Curated common fields; add/remove as you like.
+// "Other" triggers a free-text box.
+const FIELDS_OF_STUDY = [
+  "Accounting",
+  "Agricultural Science",
+  "Business Administration",
+  "Biology",
+  "Chemistry",
+  "Civil Engineering",
+  "Computer Science",
+  "Economics",
+  "Electrical/Electronic Engineering",
+  "Law",
+  "Mass Communication",
+  "Mechanical Engineering",
+  "Medicine & Surgery",
+  "Microbiology",
+  "Nursing",
+  "Physics",
+  "Political Science",
+  "Public Administration",
+  "Sociology",
+  "Statistics",
+  "Other",
+] as const;
+
+// Grade / class options switch automatically by qualification
+const GRADE_BY_QUAL: Record<Qualification, string[]> = {
+  "Bachelor's": [
+    "First Class",
+    "Second Class Upper (2:1)",
+    "Second Class Lower (2:2)",
+    "Third Class",
+    "Pass",
+    "Other",
+  ],
+  Diploma: ["Distinction", "Upper Credit", "Lower Credit", "Pass", "Other"],
+  Certificate: ["Distinction", "Merit", "Pass", "Other"],
+  "Master's": ["Distinction", "Merit", "Pass", "Other"],
+  Doctoral: ["Pass", "Other"], // Often unclassified; adjust as needed
 };
 
 const EducationRHF: React.FC<{
@@ -43,7 +89,8 @@ const EducationRHF: React.FC<{
     handleSubmit,
     getValues,
     watch,
-    //formState: { errors },
+    setValue,
+    // formState: { errors },
   } = useForm<FormValues>({
     defaultValues: {
       primary: {
@@ -73,7 +120,11 @@ const EducationRHF: React.FC<{
         willGraduate: "No",
         graduateMonth: "",
         fieldOfStudy: "",
+        fieldOfStudyOther: "",
         minQualification: undefined as any,
+        gradeClassification: "",
+        gradeOther: "",
+        cgpa: "",
       },
       ...initialData,
     },
@@ -119,6 +170,30 @@ const EducationRHF: React.FC<{
   const pWillGrad = watch("primary.willGraduate");
   const sWillGrad = watch("secondary.willGraduate");
   const tWillGrad = watch("tertiary.willGraduate");
+
+  const minQual = watch("tertiary.minQualification");
+  const gradeSelected = watch("tertiary.gradeClassification");
+  const fieldSelected = watch("tertiary.fieldOfStudy");
+
+  // compute grade options based on selected qualification
+  const gradeOptions = useMemo<string[]>(() => {
+    if (!minQual) return [];
+    return GRADE_BY_QUAL[minQual] ?? [];
+  }, [minQual]);
+
+  // reset grade if it no longer exists in current options
+  React.useEffect(() => {
+    if (!gradeOptions.length) {
+      setValue("tertiary.gradeClassification", "");
+      setValue("tertiary.gradeOther", "");
+      return;
+    }
+    if (gradeSelected && !gradeOptions.includes(gradeSelected)) {
+      setValue("tertiary.gradeClassification", "");
+      setValue("tertiary.gradeOther", "");
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [gradeOptions]);
 
   return (
     <div className="min-h-screen bg-white">
@@ -393,6 +468,7 @@ const EducationRHF: React.FC<{
               </div>
 
               <div className="grid gap-4 sm:grid-cols-2">
+                {/* School type */}
                 <div>
                   <label className="mb-2 block text-base text-slate-700">
                     School type
@@ -411,48 +487,37 @@ const EducationRHF: React.FC<{
                   </div>
                 </div>
 
+                {/* Field of study (Dropdown + Other) */}
                 <div>
                   <label className="mb-2 block text-base text-slate-700">
-                    Did or will you graduate from this school
+                    Field of study
                   </label>
                   <div className="relative">
                     <select
-                      {...register("tertiary.willGraduate")}
+                      {...register("tertiary.fieldOfStudy")}
                       className="h-14 w-full appearance-none rounded-2xl border border-slate-200 bg-slate-50 px-4 pr-10 text-base shadow-sm focus:bg-white focus:border-indigo-500 focus:outline-none focus:ring-4 focus:ring-indigo-100"
                     >
-                      <option>Yes</option>
-                      <option>No</option>
+                      <option value="">Select</option>
+                      {FIELDS_OF_STUDY.map((f) => (
+                        <option key={f} value={f}>
+                          {f}
+                        </option>
+                      ))}
                     </select>
                     <Caret />
                   </div>
+                  {fieldSelected === "Other" && (
+                    <input
+                      type="text"
+                      placeholder="Enter field of study"
+                      {...register("tertiary.fieldOfStudyOther")}
+                      className="mt-2 h-14 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 text-base shadow-sm focus:bg-white focus:border-indigo-500 focus:outline-none focus:ring-4 focus:ring-indigo-100"
+                    />
+                  )}
                 </div>
               </div>
 
-              <div>
-                <label className="mb-2 block text-base text-slate-700">
-                  Graduate date
-                </label>
-                <input
-                  type="month"
-                  {...register("tertiary.graduateMonth")}
-                  disabled={tWillGrad === "No"}
-                  className="h-14 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 text-base shadow-sm focus:bg-white focus:border-indigo-500 focus:outline-none focus:ring-4 focus:ring-indigo-100 disabled:opacity-60"
-                />
-              </div>
-
-              {/* Extra tertiary fields */}
-              <div>
-                <label className="mb-2 block text-base text-slate-700">
-                  Field of study
-                </label>
-                <input
-                  type="text"
-                  placeholder="e.g., Computer Science"
-                  {...register("tertiary.fieldOfStudy")}
-                  className="h-14 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 text-base shadow-sm focus:bg-white focus:border-indigo-500 focus:outline-none focus:ring-4 focus:ring-indigo-100"
-                />
-              </div>
-
+              {/* Minimum qualification */}
               <div>
                 <label className="mb-2 block text-base text-slate-700">
                   Minimum qualification
@@ -472,9 +537,84 @@ const EducationRHF: React.FC<{
                   <Caret />
                 </div>
               </div>
+
+              {/* Grade / Classification (auto options) + Other */}
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div>
+                  <label className="mb-2 block text-base text-slate-700">
+                    Grade / Classification
+                  </label>
+                  <div className="relative">
+                    <select
+                      {...register("tertiary.gradeClassification")}
+                      disabled={!minQual}
+                      className="h-14 w-full appearance-none rounded-2xl border border-slate-200 bg-slate-50 px-4 pr-10 text-base shadow-sm focus:bg-white focus:border-indigo-500 focus:outline-none focus:ring-4 focus:ring-indigo-100 disabled:opacity-60"
+                    >
+                      <option value="">Select</option>
+                      {gradeOptions.map((g) => (
+                        <option key={g} value={g}>
+                          {g}
+                        </option>
+                      ))}
+                    </select>
+                    <Caret />
+                  </div>
+                  {gradeSelected === "Other" && (
+                    <input
+                      type="text"
+                      placeholder="Enter grade/classification"
+                      {...register("tertiary.gradeOther")}
+                      className="mt-2 h-14 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 text-base shadow-sm focus:bg-white focus:border-indigo-500 focus:outline-none focus:ring-4 focus:ring-indigo-100"
+                    />
+                  )}
+                </div>
+
+                {/* CGPA */}
+                <div>
+                  <label className="mb-2 block text-base text-slate-700">
+                    CGPA (e.g., 3.45/5.0 or 4.10/4.0)
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="e.g., 4.21 / 5.0"
+                    {...register("tertiary.cgpa")}
+                    className="h-14 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 text-base shadow-sm focus:bg-white focus:border-indigo-500 focus:outline-none focus:ring-4 focus:ring-indigo-100"
+                  />
+                </div>
+              </div>
+
+              {/* Did/will graduate */}
+              <div>
+                <label className="mb-2 block text-base text-slate-700">
+                  Did or will you graduate from this school
+                </label>
+                <div className="relative">
+                  <select
+                    {...register("tertiary.willGraduate")}
+                    className="h-14 w-full appearance-none rounded-2xl border border-slate-200 bg-slate-50 px-4 pr-10 text-base shadow-sm focus:bg-white focus:border-indigo-500 focus:outline-none focus:ring-4 focus:ring-indigo-100"
+                  >
+                    <option>Yes</option>
+                    <option>No</option>
+                  </select>
+                  <Caret />
+                </div>
+              </div>
+
+              <div>
+                <label className="mb-2 block text-base text-slate-700">
+                  Graduate date
+                </label>
+                <input
+                  type="month"
+                  {...register("tertiary.graduateMonth")}
+                  disabled={tWillGrad === "No"}
+                  className="h-14 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 text-base shadow-sm focus:bg-white focus:border-indigo-500 focus:outline-none focus:ring-4 focus:ring-indigo-100 disabled:opacity-60"
+                />
+              </div>
             </div>
           )}
         </div>
+
         <div className="mx-auto w-full max-w-xl mt-8">
           <div className="grid grid-cols-2 gap-4">
             <button

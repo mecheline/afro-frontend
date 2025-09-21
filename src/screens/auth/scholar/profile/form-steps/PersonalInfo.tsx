@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import { useGetAccountQuery } from "../../../../../redux/services/scholar/api";
 import moment from "moment";
+import { Req } from "../../../../../constants/Required";
 
 
 type SuffixValue = "" | "Miss" | "Ms" | "Mrs" | "Mr" | "Dr" | "Prof";
@@ -36,6 +37,8 @@ const SUFFIXES: Exclude<SuffixValue, "">[] = [
 
 // TODO: change to your real upload endpoint
 const UPLOAD_ENDPOINT = import.meta.env.VITE_API_BASE_URL;
+
+
 
 const PersonalStepForm: React.FC<{
   initialData?: Partial<PersonalForm>;
@@ -300,7 +303,7 @@ const PersonalStepForm: React.FC<{
             {/* First Name */}
             <div className="flex-1">
               <label className="mb-2 block text-base text-slate-700">
-                Legal First Name
+                Legal First Name <Req />
               </label>
               <input
                 {...register("firstName", {
@@ -360,7 +363,7 @@ const PersonalStepForm: React.FC<{
             {/* Family Surname */}
             <div className="flex-1">
               <label className="mb-2 block text-base text-slate-700">
-                Family Surname
+                Family Surname <Req />
               </label>
               <input
                 {...register("lastName", {
@@ -392,7 +395,7 @@ const PersonalStepForm: React.FC<{
                 htmlFor="suffix"
                 className="mb-2 block text-base text-slate-700"
               >
-                Suffix
+                Suffix <Req />
               </label>
               <div className="relative">
                 <select
@@ -449,7 +452,7 @@ const PersonalStepForm: React.FC<{
             {/* DOB */}
             <div className="w-full flex-1">
               <label className="mb-2 block text-base text-slate-700">
-                Date of Birth
+                Date of Birth <Req />
               </label>
               <div className="relative">
                 <Calendar className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />

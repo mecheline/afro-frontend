@@ -121,6 +121,7 @@ const team = [
 
 export default function AfroScholarsLanding() {
   const navigate = useNavigate();
+
   const [showOption, setShowOption] = useState(false);
   const [selectedType, setSelectedType] = useState<"scholar" | "sponsor">(
     "scholar"
@@ -132,7 +133,7 @@ export default function AfroScholarsLanding() {
       navigate("/auth/scholar/Login");
     } else {
       setShowOption(false);
-      navigate("/auth/sponsor");
+      navigate("/auth/sponsor/login");
     }
   };
 

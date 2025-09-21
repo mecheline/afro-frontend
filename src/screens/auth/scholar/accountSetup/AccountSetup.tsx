@@ -379,7 +379,7 @@ const AccountSetupWizardRHF: React.FC<{
         avatar: response?.avatar,
       };
       dispatch(Profile(payload));
-      navigate("/scholar/dashboard");
+      navigate("/scholar/dashboard", { replace: true });
       // demo
     } catch (error: any) {
       console.log(error);

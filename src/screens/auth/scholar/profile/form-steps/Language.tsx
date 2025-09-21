@@ -2,6 +2,7 @@
 import React, { useEffect } from "react";
 import { useForm, useFieldArray } from "react-hook-form";
 import { ArrowLeft, ChevronDown } from "lucide-react";
+import { Req } from "../../../../../constants/Required";
 
 type Proficiency =
   | "Elementary Proficiency"
@@ -107,7 +108,7 @@ const LanguageRHF: React.FC<{
         >
           <ArrowLeft className="h-6 w-6 text-slate-800" />
           <span className="text-3xl font-extrabold text-slate-900">
-            Language
+            Language <Req />
           </span>
         </button>
       </header>
