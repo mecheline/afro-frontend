@@ -2,7 +2,7 @@ import { useForm } from "react-hook-form";
 import { useSearchParams, useNavigate, Link } from "react-router";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useResetPasswordMutation, useResetSposorPasswordMutation } from "../../../redux/services/scholar/api";
+import { useResetSposorPasswordMutation } from "../../../redux/services/scholar/api";
 import { Eye, EyeOff, Lock } from "lucide-react";
 import { useState } from "react";
 import logo from "../../../assets/logo.png";

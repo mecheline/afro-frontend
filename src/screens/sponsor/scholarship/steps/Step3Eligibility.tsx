@@ -93,7 +93,7 @@ const Step3Eligibility: React.FC<{
   onBack: () => void;
   onSubmit: (v: FormVals) => Promise<void> | void;
 }> = ({formId, hideButtons, initial, isSubmitted, onBack, onSubmit }) => {
-  const { register, control, handleSubmit, reset, setValue, watch } =
+  const { register, control, handleSubmit, reset } =
     useForm<FormVals>({
       defaultValues: {
         description: "",

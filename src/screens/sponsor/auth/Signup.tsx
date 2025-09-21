@@ -4,10 +4,8 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Mail, Lock, Eye, EyeOff, ChevronLeft } from "lucide-react";
 import {
-  useResendCodeMutation,
   useResendSponsorCodeMutation,
   useSponsorSignupMutation,
-  useVerifyEmailMutation,
   useVerifySponsorEmailMutation,
 } from "../../../redux/services/scholar/api";
 import { useLocation, useNavigate } from "react-router";

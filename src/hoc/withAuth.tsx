@@ -8,7 +8,7 @@ const withAuth = (WrappedComponent: React.ComponentType<any>) => {
     const navigate = useNavigate();
     const user = useSelector((state: RootState) => state.auth);
     const token = user.token;
-    const role = user.role;
+    //const role = user.role;
     useEffect(() => {
       if (!token) {
         navigate("/");

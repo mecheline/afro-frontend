@@ -200,10 +200,10 @@ const CreateScholarshipWizard: React.FC = () => {
   const hideInternalButtons = isEditMode ? !isFundingStep : false;
 
   // Funding “Continue” (no API on Next; Continue uses refetch)
-  const handleFundingContinue = async () => {
+ /*  const handleFundingContinue = async () => {
     const refreshed = await refetch().unwrap();
     if (refreshed?.funding?.isPaid) goNext();
-  };
+  }; */
 
   // UPDATE action = submit current form (no advance)
   const submitCurrentForm = () => {

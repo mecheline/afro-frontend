@@ -17,7 +17,7 @@ const ContactDetailsRHF: React.FC<{
   onSave?: (values: FormValues) => Promise<void> | void; // persist
   isSaving?: boolean;
 }> = ({ initialData, onPrev, onNext, onSave, isSaving }) => {
-  const { data: accountInfo, isSuccess, refetch } = useGetAccountQuery({});
+  const { data: accountInfo, isSuccess } = useGetAccountQuery({});
   console.log(accountInfo);
 
   const mapAccountToPersonalInfo = (account: any) => ({

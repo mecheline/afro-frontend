@@ -37,7 +37,7 @@ const typeLabel = (t: TxType) =>
   t === "funding" ? "Wallet Funding" : t === "refund" ? "Refund" : "Adjustment";
 
 const STATUSES: TxStatus[] = ["success", "failed", "abandoned", "pending"];
-const TYPES: TxType[] = ["funding", "refund", "adjustment"];
+//const TYPES: TxType[] = ["funding", "refund", "adjustment"];
 
 export const TransactionsTab: React.FC = () => {
   const [sp, setSp] = useSearchParams();

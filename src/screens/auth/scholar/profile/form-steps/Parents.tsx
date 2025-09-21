@@ -93,23 +93,7 @@ const QUALS: ParentBlock["highestQualification"][] = [
   "Postgraduate",
 ];
 
-const YEARS = Array.from({ length: 34 }).map(
-  (_, i) => `${new Date().getFullYear() - i}`
-);
-const MONTHS = [
-  "January",
-  "February",
-  "March",
-  "April",
-  "May",
-  "June",
-  "July",
-  "August",
-  "September",
-  "October",
-  "November",
-  "December",
-];
+
 
 /** ---------- Small helpers ---------- */
 const Label: React.FC<React.PropsWithChildren<{ className?: string }>> = ({

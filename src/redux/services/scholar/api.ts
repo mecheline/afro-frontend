@@ -362,7 +362,7 @@ export const scholarApi = createApi({
 
     getScholarship: builder.query<Scholarship, string>({
       query: (id) => `/sponsors/api/scholarship/${id}`,
-      providesTags: (r, _e, id) => [{ type: "Scholarships", id }],
+      providesTags: (_r, _e, id) => [{ type: "Scholarships", id }],
     }),
 
     updateScholarship: builder.mutation<

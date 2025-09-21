@@ -16,7 +16,6 @@ import CreateScholarshipWizard from "./screens/sponsor/scholarship/CreateScholar
 import PaymentReturn from "./screens/payment/PaymentReturn";
 import ResetsPassword from "./screens/sponsor/auth/ResetsPassword";
 import FundingCallback from "./screens/sponsor/scholarship/FundingCallback";
-import SponsorDashboard from "./screens/sponsor/SponsorDashboard";
 import SponsorDashboardLayout from "./screens/sponsor/SponsorDashboardLayout";
 import { ScholarshipsTab } from "./screens/sponsor/ScholarshipsTab";
 import { TransactionsTab } from "./screens/sponsor/TransactionsTab";

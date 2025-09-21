@@ -7,10 +7,8 @@ import { ArrowLeft, Mail, Lock, Eye, EyeOff, X, User } from "lucide-react";
 import { Link, useNavigate } from "react-router";
 import logo from "../../../assets/logo.png";
 import {
-  useForgotPasswordMutation,
   useForgotSponsorPasswordMutation,
   useLazyGetScholarshipStatsQuery,
-  useLoginMutation,
   useSponsorsLoginMutation,
 } from "../../../redux/services/scholar/api";
 import { useDispatch } from "react-redux";
