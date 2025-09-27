@@ -13,13 +13,12 @@ type FormVals = {
 const QUALIFICATIONS = [
   "Certificate",
   "Diploma",
-  "OND",
-  "HND",
+
   "Bachelors",
-  "Postgraduate Diploma",
+
   "Masters",
-  "MPhil",
-  "Doctorate / PhD",
+
+  "Doctorate",
 ].map((q) => ({ value: q, label: q }));
 
 // A compact but broad set. Add/remove to taste.
@@ -92,16 +91,15 @@ const Step3Eligibility: React.FC<{
   isSubmitted?: boolean; // to toggle Proceed/Update label
   onBack: () => void;
   onSubmit: (v: FormVals) => Promise<void> | void;
-}> = ({formId, hideButtons, initial, isSubmitted, onBack, onSubmit }) => {
-  const { register, control, handleSubmit, reset } =
-    useForm<FormVals>({
-      defaultValues: {
-        description: "",
-        minimumQualifications: "",
-        fieldOfStudy: "",
-        recipients: 1,
-      },
-    });
+}> = ({ formId, hideButtons, initial, isSubmitted, onBack, onSubmit }) => {
+  const { register, control, handleSubmit, reset } = useForm<FormVals>({
+    defaultValues: {
+      description: "",
+      minimumQualifications: "",
+      fieldOfStudy: "",
+      recipients: 1,
+    },
+  });
 
   // Prefill on edit
   useEffect(() => {

@@ -1,14 +1,15 @@
 // GeographyNationalityRHF.tsx
-import React, { useEffect, useMemo, useRef, useState } from "react";
-import { useForm } from "react-hook-form";
-import { ArrowLeft, ChevronDown, Loader2, Search } from "lucide-react";
+import React, { useEffect, useMemo, useState } from "react";
+import { useForm, Controller } from "react-hook-form";
+import Select from "react-select";
+import { ArrowLeft } from "lucide-react";
 import { Req } from "../../../../../constants/Required";
 
 /** ---------------- Types ---------------- */
 type FormValues = {
   birthCountry: string;
-  birthState: string; // NEW
-  birthLGA: string; // NEW (LGA / District / City fallback)
+  birthState: string;
+  birthLGA: string;
   birthCity: string;
   yearsInCurrentCity: string;
   nationality: string;
@@ -16,127 +17,41 @@ type FormValues = {
 
 const YEARS = Array.from({ length: 61 }, (_, i) => String(i)); // 0..60
 
-/** ---------------- Small searchable select ---------------- */
-function useClickOutside(cb: () => void) {
-  const ref = useRef<HTMLDivElement | null>(null);
-  useEffect(() => {
-    function handler(e: MouseEvent) {
-      if (!ref.current) return;
-      if (e.target instanceof Node && !ref.current.contains(e.target)) cb();
-    }
-    document.addEventListener("mousedown", handler);
-    return () => document.removeEventListener("mousedown", handler);
-  }, [cb]);
-  return ref;
-}
+/** ---------------- react-select utils ---------------- */
+type Opt = { value: string; label: string };
+const toOpts = (arr: string[]): Opt[] =>
+  arr.map((v) => ({ value: v, label: v }));
+const findOpt = (opts: Opt[], v?: string) =>
+  opts.find((o) => o.value === (v ?? "")) ?? null;
+const ensureHasValue = (opts: Opt[], v?: string) =>
+  v && !opts.some((o) => o.value === v)
+    ? [...opts, { value: v, label: v }]
+    : opts;
 
-type SearchSelectProps = {
-  label: string;
-  placeholder?: string;
-  options: string[];
-  value: string;
-  onChange: (v: string) => void;
-  disabled?: boolean;
-  loading?: boolean;
-  error?: string;
-};
-
-const SearchSelect: React.FC<SearchSelectProps> = ({
-  label,
-  placeholder = "Search…",
-  options,
-  value,
-  onChange,
-  disabled,
-  loading,
-  error,
-}) => {
-  const [open, setOpen] = useState(false);
-  const [q, setQ] = useState("");
-  const wrapRef = useClickOutside(() => setOpen(false));
-
-  useEffect(() => {
-    if (disabled) setOpen(false);
-  }, [disabled]);
-
-  const filtered = useMemo(() => {
-    const s = q.trim().toLowerCase();
-    if (!s) return options;
-    return options.filter((o) => o.toLowerCase().includes(s));
-  }, [q, options]);
-
-  const placeholderMode = !value;
-
-  return (
-    <section className="mt-4">
-      <label className="mb-3 block text-xl font-semibold text-slate-700">
-        {label} <Req />
-      </label>
-
-      <div ref={wrapRef} className="relative">
-        <button
-          type="button"
-          disabled={disabled}
-          onClick={() => setOpen((s) => !s)}
-          className={`
-            h-12 w-full rounded-xl border bg-white px-4 pr-10 text-left text-base font-semibold shadow-sm
-            focus:outline-none focus:ring-4 focus:ring-indigo-100
-            ${disabled ? "opacity-60 cursor-not-allowed" : "hover:bg-slate-50"}
-            ${error ? "border-red-400" : "border-slate-200"}
-            ${placeholderMode ? "text-slate-400" : "text-slate-900"}
-          `}
-        >
-          {value || `Choose ${label.toLowerCase()}`}
-        </button>
-
-        {loading ? (
-          <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 animate-spin text-slate-400" />
-        ) : (
-          <ChevronDown className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
-        )}
-
-        {open && !disabled && (
-          <div className="absolute z-50 mt-2 w-full rounded-xl border border-slate-200 bg-white shadow-lg">
-            <div className="flex items-center gap-2 border-b border-slate-200 px-3 py-2">
-              <Search className="h-4 w-4 text-slate-400" />
-              <input
-                autoFocus
-                value={q}
-                onChange={(e) => setQ(e.target.value)}
-                placeholder={placeholder}
-                className="w-full bg-transparent py-1 text-sm outline-none placeholder:text-slate-400"
-              />
-            </div>
-
-            <ul className="max-h-64 overflow-auto py-1">
-              {filtered.length === 0 && (
-                <li className="px-3 py-2 text-sm text-slate-400">No results</li>
-              )}
-              {filtered.map((opt) => (
-                <li key={opt}>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      onChange(opt);
-                      setOpen(false);
-                    }}
-                    className={`
-                      block w-full px-4 py-2 text-left text-sm
-                      hover:bg-indigo-50 ${opt === value ? "bg-indigo-50" : ""}
-                    `}
-                  >
-                    {opt}
-                  </button>
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
-      </div>
-
-      <div className="min-h-5 mt-1 text-sm text-red-600">{error}</div>
-    </section>
-  );
+const selectStyles = {
+  control: (base: any, state: any) => ({
+    ...base,
+    minHeight: 56,
+    borderRadius: 16,
+    borderColor: state.isFocused ? "#6366f1" : "#e2e8f0",
+    boxShadow: state.isFocused ? "0 0 0 4px rgba(99,102,241,0.15)" : "none",
+    backgroundColor: "#fff",
+    ":hover": { borderColor: state.isFocused ? "#6366f1" : "#e2e8f0" },
+  }),
+  option: (base: any, state: any) => ({
+    ...base,
+    color: state.isDisabled ? "#9CA3AF" : "#111827",
+    backgroundColor: state.isSelected
+      ? "#E0E7FF"
+      : state.isFocused
+      ? "#EEF2FF"
+      : "white",
+  }),
+  singleValue: (base: any) => ({ ...base, color: "#111827" }),
+  input: (base: any) => ({ ...base, color: "#111827" }),
+  placeholder: (base: any) => ({ ...base, color: "#6B7280" }),
+  menu: (base: any) => ({ ...base, zIndex: 30 }),
+  valueContainer: (base: any) => ({ ...base, padding: "0 12px" }),
 };
 
 /** ---------------- Main component ---------------- */
@@ -148,6 +63,7 @@ const GeographyNationalityRHF: React.FC<{
   isSaving?: boolean;
 }> = ({ initialData, onPrev, onNext, onSave, isSaving }) => {
   const {
+    control,
     register,
     handleSubmit,
     setValue,
@@ -157,8 +73,8 @@ const GeographyNationalityRHF: React.FC<{
   } = useForm<FormValues>({
     defaultValues: {
       birthCountry: "",
-      birthState: "", // NEW
-      birthLGA: "", // NEW
+      birthState: "",
+      birthLGA: "",
       birthCity: "",
       yearsInCurrentCity: "",
       nationality: "",
@@ -169,7 +85,7 @@ const GeographyNationalityRHF: React.FC<{
 
   // watch values
   const birthCountry = watch("birthCountry");
-  const birthState = watch("birthState"); // NEW
+  const birthState = watch("birthState");
 
   // ------- Fetch countries + nationalities -------
   const [countries, setCountries] = useState<string[]>([]);
@@ -222,7 +138,7 @@ const GeographyNationalityRHF: React.FC<{
     };
   }, []);
 
-  // ------- Fetch states for selected country (NEW) -------
+  // ------- Fetch states for selected country -------
   const [states, setStates] = useState<string[]>([]);
   const [loadingStates, setLoadingStates] = useState(false);
   const [stateErr, setStateErr] = useState("");
@@ -286,7 +202,7 @@ const GeographyNationalityRHF: React.FC<{
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [birthCountry]);
 
-  // ------- Fetch LGAs for selected state (NEW) -------
+  // ------- Fetch LGAs for selected state -------
   const [lgas, setLgas] = useState<string[]>([]);
   const [loadingLgas, setLoadingLgas] = useState(false);
   const [lgaErr, setLgaErr] = useState("");
@@ -308,7 +224,6 @@ const GeographyNationalityRHF: React.FC<{
         setLoadingLgas(true);
         setLgaErr("");
 
-        // Generic fallback (cities by state). Replace with a Nigeria LGA API/dataset if needed.
         const res = await fetch(
           "https://countriesnow.space/api/v0.1/countries/state/cities",
           {
@@ -347,7 +262,7 @@ const GeographyNationalityRHF: React.FC<{
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [birthCountry, birthState]);
 
-  // ------- Fetch cities for selected country (existing) -------
+  // ------- Fetch cities for selected country -------
   const [cities, setCities] = useState<string[]>([]);
   const [loadingCities, setLoadingCities] = useState(false);
   const [cityErr, setCityErr] = useState("");
@@ -411,21 +326,42 @@ const GeographyNationalityRHF: React.FC<{
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [birthCountry, nationalities]);
 
-  // Register hidden fields for validations
+  // Register hidden fields for validations (for the month input below)
   useEffect(() => {
-    register("birthCountry", { required: "Select your birth country" });
-    register("birthState", { required: "Select your state/province" }); // NEW
-    register("birthLGA", { required: "Select your LGA / district" }); // NEW
-    register("birthCity", { required: "Select your birth city" });
     register("yearsInCurrentCity", { required: "Select years lived" });
-    register("nationality", { required: "Select your nationality" });
   }, [register]);
 
   // ----- Actions -----
   const save = handleSubmit(async (v) => onSave?.(v));
 
+  // ----- Build options (and seed current values so react-select can show them) -----
+  const countryOpts = useMemo(
+    () => ensureHasValue(toOpts(countries), watch("birthCountry")),
+    [countries, watch("birthCountry")]
+  );
+  const stateOpts = useMemo(
+    () => ensureHasValue(toOpts(states), watch("birthState")),
+    [states, watch("birthState")]
+  );
+  const lgaOpts = useMemo(
+    () => ensureHasValue(toOpts(lgas), watch("birthLGA")),
+    [lgas, watch("birthLGA")]
+  );
+  const cityOpts = useMemo(
+    () => ensureHasValue(toOpts(cities), watch("birthCity")),
+    [cities, watch("birthCity")]
+  );
+  const nationalityOpts = useMemo(
+    () => ensureHasValue(toOpts(nationalities), watch("nationality")),
+    [nationalities, watch("nationality")]
+  );
+  const yearOpts = useMemo(
+    () => ensureHasValue(toOpts(YEARS), watch("yearsInCurrentCity")),
+    [watch("yearsInCurrentCity")]
+  );
+
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen">
       {/* Header */}
       <header className="px-5 pt-5 sm:px-6">
         <button
@@ -442,101 +378,186 @@ const GeographyNationalityRHF: React.FC<{
       </header>
 
       {/* Content */}
-      <main className="mx-auto w-full max-w-xl px-5 sm:px-6 pb-40">
-        <SearchSelect
-          label="Birth country"
-          options={countries}
-          value={watch("birthCountry")}
-          onChange={(v) =>
-            setValue("birthCountry", v, { shouldValidate: true })
-          }
-          disabled={loadingCountries}
-          loading={loadingCountries}
-          error={errors.birthCountry?.message || countryErr}
-        />
+      <main className="mx-auto w-full max-w-2xl px-5 sm:px-6 pb-40">
+        {/* Birth country */}
+        <section className="mt-4">
+          <label className="mb-3 block text-xl font-semibold text-slate-700">
+            Birth country <Req />
+          </label>
+          <Controller
+            control={control}
+            name="birthCountry"
+            rules={{ required: "Select your birth country" }}
+            render={({ field }) => (
+              <Select
+                instanceId="birthCountry"
+                styles={selectStyles}
+                isSearchable
+                isClearable
+                isLoading={loadingCountries}
+                options={countryOpts}
+                value={findOpt(countryOpts, field.value)}
+                onChange={(opt) => field.onChange((opt?.value as string) ?? "")}
+                placeholder="Choose birth country"
+              />
+            )}
+          />
+          <div className="min-h-5 mt-1 text-sm text-red-600">
+            {errors.birthCountry?.message || countryErr}
+          </div>
+        </section>
 
-        {/* NEW: State/Province */}
-        <SearchSelect
-          label="State / Province"
-          options={states}
-          value={watch("birthState")}
-          onChange={(v) => setValue("birthState", v, { shouldValidate: true })}
-          disabled={!watch("birthCountry") || loadingStates}
-          loading={loadingStates}
-          error={errors.birthState?.message || stateErr}
-        />
+        {/* State / Province */}
+        <section className="mt-4">
+          <label className="mb-3 block text-xl font-semibold text-slate-700">
+            State / Province <Req />
+          </label>
+          <Controller
+            control={control}
+            name="birthState"
+            rules={{ required: "Select your state/province" }}
+            render={({ field }) => (
+              <Select
+                instanceId="birthState"
+                styles={selectStyles}
+                isSearchable
+                isClearable
+                isDisabled={!birthCountry}
+                isLoading={loadingStates}
+                options={stateOpts}
+                value={findOpt(stateOpts, field.value)}
+                onChange={(opt) => field.onChange((opt?.value as string) ?? "")}
+                placeholder={
+                  birthCountry
+                    ? "Choose state/province"
+                    : "Select country first"
+                }
+              />
+            )}
+          />
+          <div className="min-h-5 mt-1 text-sm text-red-600">
+            {errors.birthState?.message || stateErr}
+          </div>
+        </section>
 
-        {/* NEW: LGA (or District/City fallback) */}
-        <SearchSelect
-          label="LGA / District"
-          options={lgas}
-          value={watch("birthLGA")}
-          onChange={(v) => setValue("birthLGA", v, { shouldValidate: true })}
-          disabled={!watch("birthState") || loadingLgas}
-          loading={loadingLgas}
-          error={errors.birthLGA?.message || lgaErr}
-        />
+        {/* LGA / District */}
+        <section className="mt-4">
+          <label className="mb-3 block text-xl font-semibold text-slate-700">
+            LGA / District <Req />
+          </label>
+          <Controller
+            control={control}
+            name="birthLGA"
+            rules={{ required: "Select your LGA / district" }}
+            render={({ field }) => (
+              <Select
+                instanceId="birthLGA"
+                styles={selectStyles}
+                isSearchable
+                isClearable
+                isDisabled={!birthState}
+                isLoading={loadingLgas}
+                options={lgaOpts}
+                value={findOpt(lgaOpts, field.value)}
+                onChange={(opt) => field.onChange((opt?.value as string) ?? "")}
+                placeholder={
+                  birthState ? "Choose LGA / district" : "Select state first"
+                }
+              />
+            )}
+          />
+          <div className="min-h-5 mt-1 text-sm text-red-600">
+            {errors.birthLGA?.message || lgaErr}
+          </div>
+        </section>
 
-        <SearchSelect
-          label="City of birth"
-          options={cities}
-          value={watch("birthCity")}
-          onChange={(v) => setValue("birthCity", v, { shouldValidate: true })}
-          disabled={!watch("birthCountry") || loadingCities}
-          loading={loadingCities}
-          error={errors.birthCity?.message || cityErr}
-        />
+        {/* City of birth */}
+        <section className="mt-4">
+          <label className="mb-3 block text-xl font-semibold text-slate-700">
+            City of birth <Req />
+          </label>
+          <Controller
+            control={control}
+            name="birthCity"
+            rules={{ required: "Select your birth city" }}
+            render={({ field }) => (
+              <Select
+                instanceId="birthCity"
+                styles={selectStyles}
+                isSearchable
+                isClearable
+                isDisabled={!birthCountry}
+                isLoading={loadingCities}
+                options={cityOpts}
+                value={findOpt(cityOpts, field.value)}
+                onChange={(opt) => field.onChange((opt?.value as string) ?? "")}
+                placeholder={
+                  birthCountry ? "Choose city" : "Select country first"
+                }
+              />
+            )}
+          />
+          <div className="min-h-5 mt-1 text-sm text-red-600">
+            {errors.birthCity?.message || cityErr}
+          </div>
+        </section>
 
-        {/* Years lived (simple non-search select) */}
+        {/* Years lived in current city */}
         <section className="mt-4">
           <label className="mb-3 block text-xl font-semibold text-slate-700">
             No of years you have lived in current city <Req />
           </label>
-          <div className="relative">
-            <select
-              {...register("yearsInCurrentCity", {
-                required: "Select years lived",
-              })}
-              className={`h-12 w-full appearance-none rounded-xl border bg-white px-4 pr-10 text-base font-semibold shadow-sm
-                focus:border-indigo-500 focus:outline-none focus:ring-4 focus:ring-indigo-100
-                ${
-                  errors.yearsInCurrentCity
-                    ? "border-red-400"
-                    : "border-slate-200"
-                }
-                ${
-                  !watch("yearsInCurrentCity")
-                    ? "text-slate-400"
-                    : "text-slate-900"
-                }`}
-            >
-              <option value="" disabled hidden>
-                Select years
-              </option>
-              {YEARS.map((y) => (
-                <option key={y} value={y}>
-                  {y}
-                </option>
-              ))}
-            </select>
-            <ChevronDown className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
-          </div>
+          <Controller
+            control={control}
+            name="yearsInCurrentCity"
+            rules={{ required: "Select years lived" }}
+            render={({ field }) => (
+              <Select
+                instanceId="yearsInCurrentCity"
+                styles={selectStyles}
+                isSearchable
+                isClearable
+                options={yearOpts}
+                value={findOpt(yearOpts, field.value)}
+                onChange={(opt) => field.onChange((opt?.value as string) ?? "")}
+                placeholder="Select years"
+              />
+            )}
+          />
           <div className="min-h-5 mt-1 text-sm text-red-600">
             {errors.yearsInCurrentCity?.message}
           </div>
         </section>
 
-        <SearchSelect
-          label="Nationality"
-          options={nationalities}
-          value={watch("nationality")}
-          onChange={(v) => setValue("nationality", v, { shouldValidate: true })}
-          disabled={loadingCountries}
-          loading={false}
-          error={errors.nationality?.message}
-        />
+        {/* Nationality */}
+        <section className="mt-4">
+          <label className="mb-3 block text-xl font-semibold text-slate-700">
+            Nationality <Req />
+          </label>
+          <Controller
+            control={control}
+            name="nationality"
+            rules={{ required: "Select your nationality" }}
+            render={({ field }) => (
+              <Select
+                instanceId="nationality"
+                styles={selectStyles}
+                isSearchable
+                isClearable
+                isLoading={loadingCountries}
+                options={nationalityOpts}
+                value={findOpt(nationalityOpts, field.value)}
+                onChange={(opt) => field.onChange((opt?.value as string) ?? "")}
+                placeholder="Choose nationality"
+              />
+            )}
+          />
+          <div className="min-h-5 mt-1 text-sm text-red-600">
+            {errors.nationality?.message}
+          </div>
+        </section>
 
-        <div className="mx-auto w-full max-w-xl">
+        <div className="mx-auto w-full max-w-xl mt-6">
           <div className="grid grid-cols-2 gap-4">
             <button
               type="button"

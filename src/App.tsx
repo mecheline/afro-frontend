@@ -1,4 +1,4 @@
-import { BrowserRouter, Route, Routes } from "react-router";
+import { BrowserRouter, Navigate, Route, Routes } from "react-router"; // <-- dom
 import AfroScholarsLanding from "./screens/landing-page/AfroScholarLanding";
 import ScholarSignup from "./screens/auth/scholar/Signup";
 import ScholarLogin from "./screens/auth/scholar/Login";
@@ -19,13 +19,15 @@ import FundingCallback from "./screens/sponsor/scholarship/FundingCallback";
 import SponsorDashboardLayout from "./screens/sponsor/SponsorDashboardLayout";
 import { ScholarshipsTab } from "./screens/sponsor/ScholarshipsTab";
 import { TransactionsTab } from "./screens/sponsor/TransactionsTab";
+import Scholarship from "./screens/auth/scholar/scholarships/Scholarship";
+import ScholarshipDetail from "./screens/auth/scholar/scholarships/ScholarshipDetails";
 
 function App() {
   const ProtectedScholarDashboardLayout = withAuth(ScholarDashboardLayout);
+
   return (
     <BrowserRouter>
       <Routes>
-        
         <Route path="/" element={<AfroScholarsLanding />} />
         <Route path="/auth/scholar/signup" element={<ScholarSignup />} />
         <Route path="/auth/scholar/login" element={<ScholarLogin />} />
@@ -36,16 +38,29 @@ function App() {
         <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="/resets-password" element={<ResetsPassword />} />
 
-        {/* <Route
-          path="/scholar/account-setup"
-          element={<AccountSetupWizardRHF />}
-        /> */}
+        {/* SCHOLAR DASHBOARD SHELL (Header + Sidebar) */}
         <Route path="/scholar" element={<ProtectedScholarDashboardLayout />}>
-          <Route path="dashboard" index element={<ScholarDashboard />} />
-          <Route path="profile" element={<ProfileWizard />} />
+          {/* dashboard home */}
+          <Route path="dashboard" element={<ScholarDashboard />} />
+
+          {/* profile steps INSIDE the layout so Header/Sidebar show */}
+          <Route path="dashboard/profile">
+            <Route
+              index
+              element={
+                <Navigate to="/scholar/dashboard/profile/personal" replace />
+              }
+            />
+            <Route path=":step" element={<ProfileWizard />} />
+          </Route>
+          <Route path="dashboard/scholarships" element={<Scholarship />} />
+          <Route path="dashboard/scholarships/:id" element={<ScholarshipDetail />} />
+
+          {/* other pages in the same shell */}
           <Route path="account-setup" element={<AccountSetupWizardRHF />} />
         </Route>
 
+        {/* SPONSOR SIDE */}
         <Route
           path="/sponsor/scholarships/create"
           element={<CreateScholarshipWizard />}
@@ -58,11 +73,7 @@ function App() {
           path="/sponsor/scholarships/:id/funding/callback"
           element={<FundingCallback />}
         />
-        <Route
-          path="/redirect"
-          element={<FundingCallback />}
-        />
-
+        <Route path="/redirect" element={<FundingCallback />} />
         <Route
           path="/sponsors/api/payment/wallet/callback"
           element={<PaymentReturn />}
@@ -73,6 +84,7 @@ function App() {
           <Route path="transactions" element={<TransactionsTab />} />
         </Route>
       </Routes>
+
       <Toaster position="top-center" richColors />
     </BrowserRouter>
   );

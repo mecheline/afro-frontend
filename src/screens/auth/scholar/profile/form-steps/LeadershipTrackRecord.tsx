@@ -50,7 +50,7 @@ const LeadershipTrackRecordRHF: React.FC<{
   const save = handleSubmit(async (v) => onSave?.(v));
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen">
       {/* Header */}
       <div className="px-4 pt-4 sm:px-6">
         <button
@@ -65,7 +65,7 @@ const LeadershipTrackRecordRHF: React.FC<{
         </button>
       </div>
 
-      <main className="mx-auto w-full max-w-xl px-4 pb-40 sm:px-6">
+      <main className="mx-auto w-full max-w-2xl px-4 pb-40 sm:px-6">
         {/* Contribution textarea */}
         <div className="mt-6">
           <p className="mb-2 text-slate-600">

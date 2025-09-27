@@ -34,7 +34,7 @@ const AdditionalInfoRHF: React.FC<{
   const submit = handleSubmit(async (v) => onSave?.(v));
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen">
       {/* Header */}
       <div className="px-4 pt-4 sm:px-6">
         <button
@@ -50,7 +50,7 @@ const AdditionalInfoRHF: React.FC<{
       </div>
 
       {/* Content */}
-      <main className="mx-auto w-full max-w-xl px-4 pb-40 sm:px-6">
+      <main className="mx-auto w-full max-w-2xl px-4 pb-40 sm:px-6">
         {/* Personal statement */}
         <div className="mb-6">
           <label className="mb-2 block text-lg text-slate-700">

@@ -12,7 +12,6 @@ import { useGetAccountQuery } from "../../../../../redux/services/scholar/api";
 import moment from "moment";
 import { Req } from "../../../../../constants/Required";
 
-
 type SuffixValue = "" | "Miss" | "Ms" | "Mrs" | "Mr" | "Dr" | "Prof";
 
 type PersonalForm = {
@@ -38,8 +37,6 @@ const SUFFIXES: Exclude<SuffixValue, "">[] = [
 // TODO: change to your real upload endpoint
 const UPLOAD_ENDPOINT = import.meta.env.VITE_API_BASE_URL;
 
-
-
 const PersonalStepForm: React.FC<{
   initialData?: Partial<PersonalForm>;
   onNext: (values?: PersonalForm) => void; // navigate only
@@ -48,7 +45,6 @@ const PersonalStepForm: React.FC<{
 }> = ({ initialData, onNext, onSave, isSaving }) => {
   const { data: accountInfo, isSuccess, refetch } = useGetAccountQuery({});
   console.log(accountInfo);
-
 
   const mapAccountToPersonalInfo = (account: any) => ({
     firstName: account?.profile?.firstName,
@@ -194,15 +190,13 @@ const PersonalStepForm: React.FC<{
   };
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen">
       {/* Top bar */}
       <div className="mx-auto w-full pt-4 sm:pt-6">
         <button
-          onClick={() => window.history.back()}
           className="inline-flex items-center gap-3 rounded-full p-2 hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
           aria-label="Go back"
         >
-          <ArrowLeft className="h-6 w-6 text-slate-800" />
           <span className="text-2xl font-extrabold text-slate-900">
             Personal Info
           </span>

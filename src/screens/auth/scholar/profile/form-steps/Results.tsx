@@ -15,9 +15,6 @@ const UPLOAD_ENDPOINT = import.meta.env.VITE_API_BASE_URL;
 type NamedUpload = { label: string; file: File | null; url?: string };
 
 type FormValues = {
-  wasce: File | null;
-  wasceUrl?: string;
-
   ssce: File | null;
   ssceUrl?: string;
 
@@ -28,7 +25,6 @@ type FormValues = {
 };
 
 type SavePayload = {
-  wasce: string; // URL or ""
   ssce: string; // URL or ""
   primary: string; // URL or ""
   others: { label: string; url: string }[]; // label + URL only
@@ -65,7 +61,6 @@ const ResultsCertificationsRHF: React.FC<{
   const { register, handleSubmit, watch, setValue, control, getValues } =
     useForm<FormValues>({
       defaultValues: {
-        wasce: null,
         ssce: null,
         primary: null,
         others: [{ label: "", file: null, url: "" }],
@@ -77,14 +72,11 @@ const ResultsCertificationsRHF: React.FC<{
   const { fields, append, remove } = useFieldArray({ control, name: "others" });
 
   // hidden pickers
-  const wasceRef = useRef<HTMLInputElement | null>(null);
   const ssceRef = useRef<HTMLInputElement | null>(null);
   const primaryRef = useRef<HTMLInputElement | null>(null);
   const otherRefs = useRef<Record<number, HTMLInputElement | null>>({});
 
   // watch files + urls
-  const wasce = watch("wasce");
-  const wasceUrl = watch("wasceUrl");
   const ssce = watch("ssce");
   const ssceUrl = watch("ssceUrl");
   const primary = watch("primary");
@@ -93,7 +85,6 @@ const ResultsCertificationsRHF: React.FC<{
 
   // per-item uploading flags
   const [uploading, setUploading] = useState<{
-    wasce?: boolean;
     ssce?: boolean;
     primary?: boolean;
     others?: Record<number, boolean>;
@@ -119,18 +110,13 @@ const ResultsCertificationsRHF: React.FC<{
     return json.url as string;
   }
 
-  async function handleUpload(kind: "wasce" | "ssce" | "primary") {
-    const file = { wasce, ssce, primary }[kind] as File | null;
+  async function handleUpload(kind: "ssce" | "primary") {
+    const file = { ssce, primary }[kind] as File | null;
     if (!file) return;
     try {
       setUploading((u) => ({ ...u, [kind]: true }));
       const url = await uploadFileToServer(file);
-      const urlKey =
-        kind === "wasce"
-          ? "wasceUrl"
-          : kind === "ssce"
-          ? "ssceUrl"
-          : "primaryUrl";
+      const urlKey = kind === "ssce" ? "ssceUrl" : "primaryUrl";
       setValue(urlKey as keyof FormValues, url, { shouldDirty: true });
     } catch (e: any) {
       alert(e?.message || "Upload failed");
@@ -162,7 +148,6 @@ const ResultsCertificationsRHF: React.FC<{
   const submit = handleSubmit(async (v) => {
     // build URL-only payload
     const payload: SavePayload = {
-      wasce: v.wasceUrl || "",
       ssce: v.ssceUrl || "",
       primary: v.primaryUrl || "",
       others: (v.others || []).map((o) => ({
@@ -175,7 +160,7 @@ const ResultsCertificationsRHF: React.FC<{
   });
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen">
       {/* Header */}
       <div className="px-4 pt-4 sm:px-6">
         <button
@@ -192,96 +177,8 @@ const ResultsCertificationsRHF: React.FC<{
 
       {/* Body */}
       <main className="mx-auto w-full max-w-xl px-4 pb-40 sm:px-6">
-        {/* WASCE */}
-        <section className="mt-6 space-y-3">
-          <div className="text-lg font-semibold text-slate-700">WASCE</div>
-
-          {wasce ? (
-            <RowCard className="border-red-200 bg-red-50">
-              <div className="flex items-center gap-3">
-                <div className="grid h-10 w-10 place-items-center rounded-xl bg-white shadow-sm">
-                  <FileText className="h-6 w-6 text-red-500" />
-                </div>
-                <div>
-                  <div className="break-all text-base font-semibold text-slate-900">
-                    {wasce.name}
-                  </div>
-                  <div className="text-sm text-slate-500">
-                    {formatSize(wasce)}
-                  </div>
-                  {wasceUrl && (
-                    <a
-                      href={wasceUrl}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="mt-0.5 block text-sm text-green-700 underline"
-                    >
-                      Uploaded URL
-                    </a>
-                  )}
-                </div>
-              </div>
-
-              <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  onClick={() => setValue("wasce", null, { shouldDirty: true })}
-                  className="rounded-full p-1.5 text-red-500 hover:bg-red-100"
-                  aria-label="Remove file"
-                >
-                  <X className="h-5 w-5" />
-                </button>
-
-                <button
-                  type="button"
-                  disabled={uploading.wasce}
-                  onClick={() => handleUpload("wasce")}
-                  className={`inline-flex items-center gap-2 rounded-xl px-3 py-1.5 text-sm font-semibold ${
-                    wasceUrl
-                      ? "bg-green-50 text-green-700"
-                      : "bg-indigo-600 text-white hover:bg-indigo-500"
-                  } disabled:opacity-70`}
-                  title={wasceUrl ? "Re-upload" : "Upload"}
-                >
-                  {wasceUrl ? (
-                    <>
-                      <CheckCircle2 className="h-4 w-4" />
-                      Uploaded
-                    </>
-                  ) : uploading.wasce ? (
-                    <>Uploading…</>
-                  ) : (
-                    <>
-                      <UploadCloud className="h-4 w-4" />
-                      Upload
-                    </>
-                  )}
-                </button>
-              </div>
-            </RowCard>
-          ) : (
-            <>
-              <button
-                type="button"
-                onClick={() => wasceRef.current?.click()}
-                className="flex w-full items-center justify-center gap-2 rounded-2xl border-2 border-indigo-200 bg-indigo-50 px-4 py-3 text-indigo-700 hover:bg-indigo-100"
-              >
-                <UploadCloud className="h-5 w-5" />
-                Select File
-              </button>
-              <input
-                type="file"
-                ref={wasceRef}
-                accept="application/pdf,image/*"
-                className="hidden"
-                onChange={onPick("wasce")}
-              />
-            </>
-          )}
-        </section>
-
         {/* SSCE */}
-        <section className="mt-8 space-y-3">
+        <section className="mt-6 space-y-3">
           <div className="text-lg font-semibold text-slate-700">SSCE</div>
 
           {ssce ? (
@@ -583,6 +480,8 @@ const ResultsCertificationsRHF: React.FC<{
             Add another result
           </button>
         </section>
+
+        {/* Footer */}
         <div className="mx-auto grid w-full max-w-xl grid-cols-2 gap-3 mt-8">
           <button
             type="button"

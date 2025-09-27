@@ -31,7 +31,7 @@ const AddressStepForm: React.FC<{
   const submitSave = handleSubmit((values) => onSave(values));
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen">
       {/* Top bar */}
       <header className="mx-auto w-full px-4 pt-4 sm:px-6 sm:pt-4">
         <button
@@ -47,7 +47,7 @@ const AddressStepForm: React.FC<{
       </header>
 
       {/* Content */}
-      <main className="mx-auto w-full max-w-xl px-4 sm:px-6">
+      <main className="mx-auto w-full max-w-2xl px-4 sm:px-6">
         {/* Permanent Home Address */}
         <section className="mt-4">
           <h3 className="text-lg font-semibold text-slate-700">

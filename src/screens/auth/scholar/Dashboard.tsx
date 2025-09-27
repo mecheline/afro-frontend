@@ -278,7 +278,10 @@ const ScholarDashboard: React.FC = () => {
       {/* Recommended */}
       {recommended.length > 0 && (
         <Container className="mt-6">
-          <SectionHeader title="Recommended scholarships" />
+          <SectionHeader
+            title="Scholarships"
+            href="/scholar/dashboard/scholarships"
+          />
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             {recommended.map((item) => (
               <ScholarshipCard
@@ -292,8 +295,7 @@ const ScholarDashboard: React.FC = () => {
         </Container>
       )}
 
-      {/* Matched */}
-      {matched.length > 0 && (
+      {/*   {matched.length > 0 && (
         <Container className="mt-6">
           <SectionHeader title="Matched Scholarships" />
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
@@ -307,10 +309,10 @@ const ScholarDashboard: React.FC = () => {
             ))}
           </div>
         </Container>
-      )}
+      )}  */}
 
       {/* External */}
-      <Container className="mt-6">
+      {/* <Container className="mt-6">
         <SectionHeader title="External Scholarships" />
         <div className="no-scrollbar -mx-2 mb-4 flex gap-2 overflow-x-auto px-2 pb-1">
           {CATEGORIES.map((c) => (
@@ -333,10 +335,10 @@ const ScholarDashboard: React.FC = () => {
             />
           ))}
         </div>
-      </Container>
+      </Container> */}
 
       {/* Mobile Tabbar */}
-      <nav className="sticky bottom-0 z-20 mt-8 block border-t border-slate-200 bg-white/95 backdrop-blur md:hidden">
+      {/*   <nav className="sticky bottom-0 z-20 mt-8 block border-t border-slate-200 bg-white/95 backdrop-blur md:hidden">
         <Container className="px-2">
           <ul className="grid grid-cols-5 py-2 text-xs text-slate-500">
             <li className="text-center">
@@ -374,7 +376,7 @@ const ScholarDashboard: React.FC = () => {
             </li>
           </ul>
         </Container>
-      </nav>
+      </nav> */}
     </div>
   );
 };

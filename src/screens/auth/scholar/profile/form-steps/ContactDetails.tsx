@@ -52,7 +52,7 @@ const ContactDetailsRHF: React.FC<{
   });
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen">
       {/* Header */}
       <header className="px-5 pt-5 sm:px-6">
         <button
@@ -69,7 +69,7 @@ const ContactDetailsRHF: React.FC<{
       </header>
 
       {/* Content */}
-      <main className="mx-auto w-full max-w-xl px-5 sm:px-6 pb-40">
+      <main className="mx-auto w-full max-w-2xl px-5 sm:px-6 pb-40">
         {/* Preferred phone */}
         <section className="mt-8">
           <h3 className="text-xl font-semibold text-slate-700">

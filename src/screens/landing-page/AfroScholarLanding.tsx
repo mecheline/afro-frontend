@@ -237,7 +237,9 @@ export default function AfroScholarsLanding() {
             </p>
             <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
               <PrimaryButton>
-                Fund a Scholarship <ArrowRight className="ml-2 h-4 w-4" />
+                <Link to={"/auth/sponsor/login"} className="flex items-center">
+                  Fund a Scholarship <ArrowRight className="ml-2 h-4 w-4" />
+                </Link>
               </PrimaryButton>
               <GhostButton>
                 <Link to="/auth/scholar/login">Get a Scholarship</Link>

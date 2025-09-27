@@ -72,7 +72,7 @@ const HouseholdRHF: React.FC<{
   const save = handleSubmit(async (v) => onSave?.(v));
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen">
       {/* Header */}
       <header className="px-5 pt-5 sm:px-6">
         <button
@@ -89,7 +89,7 @@ const HouseholdRHF: React.FC<{
       </header>
 
       {/* Content */}
-      <main className="mx-auto w-full max-w-xl px-5 sm:px-6 pb-40">
+      <main className="mx-auto w-full max-w-2xl px-5 sm:px-6 pb-40">
         {/* Parent marital status */}
         <section className="mt-6">
           <label className="mb-3 block text-xl font-semibold text-slate-700">
@@ -191,7 +191,7 @@ const HouseholdRHF: React.FC<{
                 required: "Enter number of children",
                 min: { value: 1, message: "Must be at least 1" },
               })}
-              className={`h-12 w-full rounded-xl border bg-white px-4 text-base font-semibold shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-4 focus:ring-indigo-100 ${
+              className={`h-12 w-full rounded-xl border bg-white px-4 text-base text-black font-semibold shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-4 focus:ring-indigo-100 ${
                 errors.childrenCount ? "border-red-400" : "border-slate-200"
               }`}
               placeholder="e.g. 1"

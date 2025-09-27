@@ -55,7 +55,7 @@ const FinancialAnalysisRHF: React.FC<{
     });
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen">
       {/* Header */}
       <div className="px-4 pt-4 sm:px-6">
         <button
@@ -71,7 +71,7 @@ const FinancialAnalysisRHF: React.FC<{
       </div>
 
       {/* Content */}
-      <main className="mx-auto w-full max-w-xl px-4 pb-40 sm:px-6">
+      <main className="mx-auto w-full max-w-2xl px-4 pb-40 sm:px-6">
         {/* Tuition */}
         <div className="mt-6">
           <label className="mb-2 block text-base text-slate-700">
@@ -81,7 +81,7 @@ const FinancialAnalysisRHF: React.FC<{
             inputMode="decimal"
             placeholder="24,000"
             {...regCurrency("tuitionFees")}
-            className={`h-14 w-full rounded-2xl border bg-slate-50 px-4 text-base shadow-sm focus:bg-white focus:outline-none focus:ring-4 ${
+            className={`h-14 w-full text-black rounded-2xl border bg-slate-50 px-4 text-base shadow-sm focus:bg-white focus:outline-none focus:ring-4 ${
               errors.tuitionFees
                 ? "border-red-400 focus:ring-red-100"
                 : "border-slate-200 focus:border-indigo-500 focus:ring-indigo-100"

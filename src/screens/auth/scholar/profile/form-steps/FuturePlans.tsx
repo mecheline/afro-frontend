@@ -1,9 +1,11 @@
 // FuturePlansRHF.tsx
-import React from "react";
-import { useForm } from "react-hook-form";
-import { ArrowLeft, ChevronDown } from "lucide-react";
+import React, { useMemo, useState } from "react";
+import { useForm, Controller } from "react-hook-form";
+import CreatableSelect from "react-select/creatable";
+import { ArrowLeft } from "lucide-react";
 import { Req } from "../../../../../constants/Required";
 
+/* ---------- Types ---------- */
 type FormValues = {
   describeYou:
     | ""
@@ -11,8 +13,7 @@ type FormValues = {
     | "Undergraduate"
     | "Graduate"
     | "Working professional"
-    | "Entrepreneur"
-    | "Other";
+    | "Entrepreneur";
   highestDegree:
     | ""
     | "Certificate"
@@ -22,10 +23,11 @@ type FormValues = {
     | "Master’s"
     | "Doctoral"
     | "Professional";
-  careerInterest: string; // ← widened so any career label is allowed
+  careerInterest: string; // free text allowed (creatable)
 };
 
-// ── Categorized career options (expand/shrink as you like) ──
+/* ---------- Data ---------- */
+// Removed "Other" from categories entirely
 const CAREER_CATEGORIES: Record<string, string[]> = {
   "Accounting & Finance": [
     "Chartered Accountant",
@@ -306,19 +308,17 @@ const CAREER_CATEGORIES: Record<string, string[]> = {
     "Port/Harbor Operations Officer",
     "Marine Surveyor",
   ],
-  Other: ["Other"],
 };
 
-const DESCRIBE_OPTIONS: Exclude<FormValues["describeYou"], "">[] = [
+const DESCRIBE_OPTIONS: NonNullable<FormValues["describeYou"]>[] = [
   "High school student",
   "Undergraduate",
   "Graduate",
   "Working professional",
   "Entrepreneur",
-  "Other",
 ];
 
-const DEGREE_INTENT: Exclude<FormValues["highestDegree"], "">[] = [
+const DEGREE_INTENT: NonNullable<FormValues["highestDegree"]>[] = [
   "Certificate",
   "Diploma",
   "Bachelor’s",
@@ -328,6 +328,59 @@ const DEGREE_INTENT: Exclude<FormValues["highestDegree"], "">[] = [
   "Professional",
 ];
 
+/* ---------- react-select helpers ---------- */
+type Opt<T extends string = string> = { value: T; label: string };
+type Grouped = { label: string; options: Opt[] };
+
+const toOpts = <T extends string>(arr: readonly T[]): Opt<T>[] =>
+  arr.map((v) => ({ value: v, label: v }));
+
+const buildCareerGroups = (): Grouped[] =>
+  Object.entries(CAREER_CATEGORIES).map(([label, items]) => ({
+    label,
+    options: toOpts(items),
+  }));
+
+/* ---------- Styles ---------- */
+const selectStyles = {
+  control: (base: any, state: any) => ({
+    ...base,
+    minHeight: 56,
+    borderRadius: 16,
+    borderColor: state.isFocused ? "#6366f1" : "#e2e8f0",
+    boxShadow: state.isFocused ? "0 0 0 4px rgba(99,102,241,0.15)" : "none",
+    backgroundColor: "#f8fafc",
+    ":hover": { borderColor: state.isFocused ? "#6366f1" : "#e2e8f0" },
+  }),
+  option: (base: any, state: any) => ({
+    ...base,
+    color: state.isDisabled ? "#9CA3AF" : "#111827",
+    backgroundColor: state.isSelected
+      ? "#E0E7FF"
+      : state.isFocused
+      ? "#EEF2FF"
+      : "white",
+  }),
+  singleValue: (base: any) => ({ ...base, color: "#111827" }),
+  input: (base: any) => ({ ...base, color: "#111827" }),
+  placeholder: (base: any) => ({ ...base, color: "#6B7280" }),
+  menu: (base: any) => ({ ...base, zIndex: 30 }),
+  valueContainer: (base: any) => ({ ...base, padding: "0 12px" }),
+};
+
+const findOpt = (opts: Opt[], val?: string) =>
+  opts.find((o) => o.value === (val ?? "")) ?? null;
+
+const findInGroups = (groups: Grouped[], val?: string) => {
+  if (!val) return null;
+  for (const g of groups) {
+    const f = g.options.find((o) => o.value === val);
+    if (f) return f;
+  }
+  return null;
+};
+
+/* ---------- Component ---------- */
 const FuturePlansRHF: React.FC<{
   initialData?: Partial<FormValues>;
   onPrev?: (values: FormValues) => void;
@@ -336,7 +389,7 @@ const FuturePlansRHF: React.FC<{
   isSaving?: boolean;
 }> = ({ initialData, onPrev, onNext, onSave, isSaving }) => {
   const {
-    register,
+    control,
     handleSubmit,
     watch,
     getValues,
@@ -351,14 +404,81 @@ const FuturePlansRHF: React.FC<{
     mode: "onTouched",
   });
 
+  // Local option state so newly created items persist for this session
+ /*  const [describeOpts, setDescribeOpts] = useState<Opt[]>(
+    toOpts(DESCRIBE_OPTIONS)
+  );
+  const [degreeOpts, setDegreeOpts] = useState<Opt[]>(toOpts(DEGREE_INTENT));
+  const [careerGroups, setCareerGroups] = useState<Grouped[]>(
+    buildCareerGroups()
+  ); */
+
+  // For "creatable with groups": stash custom careers into a "Custom" group
+  const ensureCustomGroup = () => {
+    const has = careerGroups.some((g) => g.label === "Custom");
+    if (!has)
+      setCareerGroups((prev) => [{ label: "Custom", options: [] }, ...prev]);
+  };
+
   const submit = handleSubmit(async (v) => onSave?.(v));
 
   const isDescPlaceholder = watch("describeYou") === "";
   const isDegPlaceholder = watch("highestDegree") === "";
   const isCareerPlaceholder = watch("careerInterest") === "";
 
+  // helpers
+  const toOpt = (v: string) => ({ value: v, label: v });
+  const inOpts = (opts: { value: string }[], v?: string) =>
+    !!v && opts.some((o) => o.value === v);
+  const inGroups = (groups: Grouped[], v?: string) =>
+    !!v && groups.some((g) => g.options.some((o) => o.value === v));
+
+  // ⬇️ use lazy init so it runs once with initialData
+  const [describeOpts, setDescribeOpts] = useState<Opt[]>(() => {
+    const base = toOpts(DESCRIBE_OPTIONS);
+    const init = initialData?.describeYou ?? "";
+    return init && !inOpts(base, init) ? [...base, toOpt(init)] : base;
+  });
+
+  const [degreeOpts, setDegreeOpts] = useState<Opt[]>(() => {
+    const base = toOpts(DEGREE_INTENT);
+    const init = initialData?.highestDegree ?? "";
+    return init && !inOpts(base, init) ? [...base, toOpt(init)] : base;
+  });
+
+  const [careerGroups, setCareerGroups] = useState<Grouped[]>(() => {
+    const base = buildCareerGroups();
+    const init = initialData?.careerInterest ?? "";
+    if (init && !inGroups(base, init)) {
+      return [{ label: "Custom", options: [toOpt(init)] }, ...base];
+    }
+    return base;
+  });
+
+  React.useEffect(() => {
+    const d = initialData?.describeYou ?? "";
+    if (d && !inOpts(describeOpts, d)) setDescribeOpts((p) => [...p, toOpt(d)]);
+
+    const h = initialData?.highestDegree ?? "";
+    if (h && !inOpts(degreeOpts, h)) setDegreeOpts((p) => [...p, toOpt(h)]);
+
+    const c = initialData?.careerInterest ?? "";
+    if (c && !inGroups(careerGroups, c)) {
+      setCareerGroups((p) => {
+        const i = p.findIndex((g) => g.label === "Custom");
+        if (i === -1) return [{ label: "Custom", options: [toOpt(c)] }, ...p];
+        if (!p[i].options.some((o) => o.value === c)) {
+          const next = [...p];
+          next[i] = { ...next[i], options: [...next[i].options, toOpt(c)] };
+          return next;
+        }
+        return p;
+      });
+    }
+  }, [initialData]); // runs if the prop updates
+
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen">
       {/* Header */}
       <div className="px-4 pt-4 sm:px-6">
         <button
@@ -374,37 +494,38 @@ const FuturePlansRHF: React.FC<{
       </div>
 
       {/* Content */}
-      <main className="mx-auto w-full max-w-xl px-4 pb-40 sm:px-6">
+      <main className="mx-auto w-full max-w-2xl px-4 pb-40 sm:px-6">
         {/* Which best describes you */}
         <div className="mt-6">
           <label className="mb-2 block text-base text-slate-700">
             Which best describes you <Req />
           </label>
-          <div className="relative">
-            <select
-              {...register("describeYou", {
-                required: "Please select an option",
-              })}
-              className={`h-14 w-full appearance-none rounded-2xl border bg-slate-50 px-4 pr-10 text-base shadow-sm focus:bg-white focus:outline-none focus:ring-4
-                ${
-                  errors.describeYou
-                    ? "border-red-400 focus:ring-red-100"
-                    : "border-slate-200 focus:border-indigo-500 focus:ring-indigo-100"
+          <Controller
+            control={control}
+            name="describeYou"
+            rules={{ required: "Please select an option" }}
+            render={({ field }) => (
+              <CreatableSelect
+                instanceId="describeYou"
+                styles={selectStyles}
+                isSearchable
+                isClearable
+                options={describeOpts}
+                value={findOpt(describeOpts, field.value)}
+                onChange={(opt) => field.onChange((opt?.value as string) ?? "")}
+                onCreateOption={(input) => {
+                  const opt = { value: input, label: input };
+                  setDescribeOpts((prev) => [...prev, opt]);
+                  field.onChange(input);
+                }}
+                placeholder="Select"
+                className={
+                  isDescPlaceholder ? "text-slate-400" : "text-slate-900"
                 }
-                ${isDescPlaceholder ? "text-slate-400" : "text-slate-900"}`}
-            >
-              <option value="" disabled hidden>
-                Select
-              </option>
-              {DESCRIBE_OPTIONS.map((opt) => (
-                <option key={opt} value={opt}>
-                  {opt}
-                </option>
-              ))}
-            </select>
-            <ChevronDown className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
-          </div>
-          <div className="min-h-5 text-sm text-red-600">
+              />
+            )}
+          />
+          <div className="min-h-5 pt-1 text-sm text-red-600">
             {errors.describeYou?.message}
           </div>
         </div>
@@ -414,69 +535,84 @@ const FuturePlansRHF: React.FC<{
           <label className="mb-2 block text-base text-slate-700">
             Highest degree you intend to earn <Req />
           </label>
-          <div className="relative">
-            <select
-              {...register("highestDegree", {
-                required: "Please select a degree",
-              })}
-              className={`h-14 w-full appearance-none rounded-2xl border bg-slate-50 px-4 pr-10 text-base shadow-sm focus:bg-white focus:outline-none focus:ring-4
-                ${
-                  errors.highestDegree
-                    ? "border-red-400 focus:ring-red-100"
-                    : "border-slate-200 focus:border-indigo-500 focus:ring-indigo-100"
+          <Controller
+            control={control}
+            name="highestDegree"
+            rules={{ required: "Please select a degree" }}
+            render={({ field }) => (
+              <CreatableSelect
+                instanceId="highestDegree"
+                styles={selectStyles}
+                isSearchable
+                isClearable
+                options={degreeOpts}
+                value={findOpt(degreeOpts, field.value)}
+                onChange={(opt) => field.onChange((opt?.value as string) ?? "")}
+                onCreateOption={(input) => {
+                  const opt = { value: input, label: input };
+                  setDegreeOpts((prev) => [...prev, opt]);
+                  field.onChange(input);
+                }}
+                placeholder="Select degree"
+                className={
+                  isDegPlaceholder ? "text-slate-400" : "text-slate-900"
                 }
-                ${isDegPlaceholder ? "text-slate-400" : "text-slate-900"}`}
-            >
-              <option value="" disabled hidden>
-                Select degree
-              </option>
-              {DEGREE_INTENT.map((d) => (
-                <option key={d} value={d}>
-                  {d}
-                </option>
-              ))}
-            </select>
-            <ChevronDown className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
-          </div>
-          <div className="min-h-5 text-sm text-red-600">
+              />
+            )}
+          />
+          <div className="min-h-5 pt-1 text-sm text-red-600">
             {errors.highestDegree?.message}
           </div>
         </div>
 
-        {/* Career interest (categorized dropdown) */}
+        {/* Career interest (grouped + creatable) */}
         <div className="mt-4">
           <label className="mb-2 block text-base text-slate-700">
             Career interest <Req />
           </label>
-          <div className="relative">
-            <select
-              {...register("careerInterest", {
-                required: "Please select a career interest",
-              })}
-              className={`h-14 w-full appearance-none rounded-2xl border bg-slate-50 px-4 pr-10 text-base shadow-sm focus:bg-white focus:outline-none focus:ring-4
-                ${
-                  errors.careerInterest
-                    ? "border-red-400 focus:ring-red-100"
-                    : "border-slate-200 focus:border-indigo-500 focus:ring-indigo-100"
+          <Controller
+            control={control}
+            name="careerInterest"
+            rules={{ required: "Please select a career interest" }}
+            render={({ field }) => (
+              <CreatableSelect
+                instanceId="careerInterest"
+                styles={selectStyles}
+                isSearchable
+                isClearable
+                options={careerGroups}
+                // react-select can accept grouped options; value is still a flat option
+                value={findInGroups(careerGroups, field.value)}
+                onChange={(opt) => field.onChange((opt?.value as string) ?? "")}
+                onCreateOption={(input) => {
+                  ensureCustomGroup();
+                  setCareerGroups((prev) => {
+                    const next = [...prev];
+                    const idx = next.findIndex((g) => g.label === "Custom");
+                    const exists =
+                      idx >= 0 &&
+                      next[idx].options.some((o) => o.value === input);
+                    if (idx >= 0 && !exists) {
+                      next[idx] = {
+                        ...next[idx],
+                        options: [
+                          ...next[idx].options,
+                          { value: input, label: input },
+                        ],
+                      };
+                    }
+                    return next;
+                  });
+                  field.onChange(input);
+                }}
+                placeholder="Select career"
+                className={
+                  isCareerPlaceholder ? "text-slate-400" : "text-slate-900"
                 }
-                ${isCareerPlaceholder ? "text-slate-400" : "text-slate-900"}`}
-            >
-              <option value="" disabled hidden>
-                Select career
-              </option>
-              {Object.entries(CAREER_CATEGORIES).map(([group, careers]) => (
-                <optgroup key={group} label={group}>
-                  {careers.map((c) => (
-                    <option key={c} value={c}>
-                      {c}
-                    </option>
-                  ))}
-                </optgroup>
-              ))}
-            </select>
-            <ChevronDown className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
-          </div>
-          <div className="min-h-5 text-sm text-red-600">
+              />
+            )}
+          />
+          <div className="min-h-5 pt-1 text-sm text-red-600">
             {errors.careerInterest?.message}
           </div>
         </div>

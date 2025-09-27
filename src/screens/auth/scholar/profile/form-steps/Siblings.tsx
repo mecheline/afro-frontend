@@ -62,7 +62,7 @@ const SiblingsRHF: React.FC<{
   const save = handleSubmit(async (v) => onSave?.(v));
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen">
       {/* Header */}
       <div className="px-4 pt-4 sm:px-6">
         <button
@@ -87,7 +87,7 @@ const SiblingsRHF: React.FC<{
           <div className="relative">
             <select
               {...register("count", { valueAsNumber: true })}
-              className="h-14 w-full appearance-none rounded-2xl border border-slate-200 bg-slate-50 px-4 pr-10 text-base font-semibold shadow-sm focus:bg-white focus:border-indigo-500 focus:outline-none focus:ring-4 focus:ring-indigo-100"
+              className="h-14 w-full text-black appearance-none rounded-2xl border border-slate-200 bg-slate-50 px-4 pr-10 text-base font-semibold shadow-sm focus:bg-white focus:border-indigo-500 focus:outline-none focus:ring-4 focus:ring-indigo-100"
             >
               {Array.from({ length: MAX_SIBLINGS + 1 }).map((_, i) => (
                 <option key={i} value={i}>
@@ -117,7 +117,7 @@ const SiblingsRHF: React.FC<{
                   min: { value: 0, message: "Must be 0 or more" },
                   max: { value: 120, message: "Unrealistic age" },
                 })}
-                className={`h-14 w-full rounded-2xl border bg-slate-50 px-4 text-base font-semibold shadow-sm focus:bg-white focus:outline-none focus:ring-4 ${
+                className={`h-14 w-full text-black rounded-2xl border bg-slate-50 px-4 text-base font-semibold shadow-sm focus:bg-white focus:outline-none focus:ring-4 ${
                   errors.ages?.[idx]
                     ? "border-red-400 focus:ring-red-100"
                     : "border-slate-200 focus:ring-indigo-100 focus:border-indigo-500"

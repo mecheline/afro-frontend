@@ -1,4 +1,3 @@
-// ProfileWizard.tsx
 import React, { useEffect, useMemo, useState } from "react";
 import {
   UserRound,
@@ -20,6 +19,7 @@ import {
   ShieldCheck,
 } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
+import { useNavigate, useParams } from "react-router"; // <-- URL-driven
 import StepRenderer from "./StepRenderer";
 import { Profile } from "../../../../redux/slices/scholar/authSlice";
 import { toast } from "sonner";
@@ -71,6 +71,10 @@ const steps: SidebarItem[] = [
 
 const baseUrl = import.meta.env.VITE_API_BASE_URL;
 
+// helper: check if string is a valid StepKey from steps[]
+const isStepKey = (v: string | undefined): v is StepKey =>
+  !!v && steps.some((s) => s.key === v);
+
 /* ----------------------------- API helpers ------------------------------- */
 async function fetchStep(step: StepKey, token?: string) {
   const res = await fetch(`${baseUrl}/scholars/api/profile/${step}`, {
@@ -96,9 +100,20 @@ async function saveStep(step: StepKey, data: any, token?: string) {
 
 /* ------------------------------ Main Wizard ------------------------------ */
 const ProfileWizard: React.FC = () => {
+  const { step } = useParams<{ step?: string }>();
+  const navigate = useNavigate();
+
   const token = useSelector((s: any) => s.auth?.token);
   const dispatch = useDispatch();
-  const [active, setActive] = useState<StepKey>("personal");
+
+  // derive active from URL; guard invalid -> redirect to personal
+  const active: StepKey = isStepKey(step) ? step : "personal";
+  useEffect(() => {
+    if (!isStepKey(step)) {
+      navigate("/scholar/dashboard/profile/personal", { replace: true });
+    }
+  }, [step, navigate]);
+
   const [cache, setCache] = useState<Record<StepKey, any>>({} as any);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -106,8 +121,6 @@ const ProfileWizard: React.FC = () => {
   const idx = useMemo(() => steps.findIndex((s) => s.key === active), [active]);
   const prevKey = idx > 0 ? steps[idx - 1].key : null;
   const nextKey = idx < steps.length - 1 ? steps[idx + 1].key : null;
-
-  console.log(cache[active]);
 
   // Fetch when entering a step (if not cached)
   useEffect(() => {
@@ -117,7 +130,6 @@ const ProfileWizard: React.FC = () => {
       setLoading(true);
       try {
         const payload = await fetchStep(active, token);
-        console.log(payload);
         if (mounted) {
           setCache((c) => ({ ...c, [active]: payload?.data ?? payload }));
         }
@@ -133,24 +145,20 @@ const ProfileWizard: React.FC = () => {
   }, [active, token]); // eslint-disable-line
 
   const goPrev = (currentValues?: any) => {
-    // keep local edits when navigating without saving
     if (currentValues) setCache((c) => ({ ...c, [active]: currentValues }));
-    if (prevKey) setActive(prevKey);
+    if (prevKey) navigate(`/scholar/dashboard/profile/${prevKey}`);
   };
 
   const goNext = (currentValues?: any) => {
-    // keep local edits when navigating without saving
     if (currentValues) setCache((c) => ({ ...c, [active]: currentValues }));
-    if (nextKey) setActive(nextKey);
+    if (nextKey) navigate(`/scholar/dashboard/profile/${nextKey}`);
   };
 
   const handleSave = async (data: any) => {
-    console.log(data);
     setSaving(true);
     try {
       const res = await saveStep(active, data, token);
       setCache((c) => ({ ...c, [active]: data }));
-      // you can toast success here
       toast.success(res?.msg || "Saved");
       if (res?.step === "personal") {
         const payload = {
@@ -162,8 +170,6 @@ const ProfileWizard: React.FC = () => {
       }
     } catch (e) {
       console.error(e);
-
-      // toast error
       toast.error("Try again later");
     } finally {
       setSaving(false);
@@ -171,37 +177,14 @@ const ProfileWizard: React.FC = () => {
   };
 
   return (
-    <div className="h-screen min-h-0 flex">
-      {/* Sidebar with its own scroll */}
-      <aside className="hidden md:flex w-[280px] shrink-0 h-full overflow-y-auto bg-[#3062C8]">
-        <nav className="p-4 space-y-1">
-          {steps.map((s) => {
-            const isActive = s.key === active;
-            return (
-              <button
-                key={s.key}
-                onClick={() => setActive(s.key)}
-                className={`w-full flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-white
-                ${
-                  isActive
-                    ? "bg-white/15 ring-1 ring-white/20"
-                    : "hover:bg-white/10"
-                }`}
-              >
-                <span className="text-[#EBC31E]">{s.icon}</span>
-                <span className="text-left">{s.name}</span>
-              </button>
-            );
-          })}
-        </nav>
-      </aside>
-
-      {/* Main content with its own scroll */}
-      <section className="flex-1 h-full overflow-y-auto bg-white">
+    <div className="w-full max-w-5xl mx-auto">
+      {" "}
+      {/* stays inside Outlet width */}
+      <section className="rounded-lg border border-gray-200 bg-gray-100 shadow-sm">
         {loading ? (
-          <div className="flex items-center justify-center h-full">
+          <div className="flex items-center justify-center py-16 h-screen">
             <RotatingLines
-              visible={true}
+              visible
               width="58"
               strokeColor="#2F56D9"
               strokeWidth="5"
@@ -214,8 +197,8 @@ const ProfileWizard: React.FC = () => {
             step={active}
             initialData={cache[active]}
             onPrev={goPrev}
-            onNext={goNext} // ← does NOT save
-            onSave={handleSave} // ← persists current step
+            onNext={goNext}
+            onSave={handleSave}
             isSaving={saving}
           />
         )}

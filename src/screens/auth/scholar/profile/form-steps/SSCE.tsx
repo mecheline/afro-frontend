@@ -1,8 +1,13 @@
 // SSCEExamsRHF.tsx
-import React from "react";
-import { useForm, useFieldArray } from "react-hook-form";
-import type { Control } from "react-hook-form";
-import { ArrowLeft, ChevronDown, Plus } from "lucide-react";
+import React, { useEffect } from "react";
+import {
+  useForm,
+  useFieldArray,
+  Controller,
+  type Control,
+} from "react-hook-form";
+import Select from "react-select";
+import { ArrowLeft, Plus } from "lucide-react";
 
 /* ---------- Types ---------- */
 type MonthStr = string; // "2021-07"
@@ -11,7 +16,7 @@ type SubjectRow = { subject: string; grade: string };
 type ExamAttempt = {
   date: MonthStr;
   board: "WAEC" | "NECO" | "GCE";
-  examNumber: string; // <-- per-section exam number
+  examNumber: string; // per-section exam number
   subjects: SubjectRow[];
 };
 
@@ -41,6 +46,45 @@ const SUBJECTS = [
 
 const GRADES = ["A1", "B2", "B3", "C4", "C5", "C6", "D7", "E8", "F9"] as const;
 
+type Opt<T extends string | number = string> = { value: T; label: string };
+const toOpts = <T extends string | number>(arr: readonly T[]): Opt<T>[] =>
+  arr.map((v) => ({ value: v, label: String(v) }));
+
+const COUNT_OPTS = toOpts([1, 2, 3]);
+const BOARD_OPTS = toOpts<"WAEC" | "NECO" | "GCE">(["WAEC", "NECO", "GCE"]);
+const SUBJECT_OPTS = toOpts(SUBJECTS);
+const GRADE_OPTS = toOpts(GRADES);
+const SCORE_TYPE_OPTS: Opt<"Letter">[] = [
+  { value: "Letter", label: "Letter grades (A1–F9)" },
+];
+
+/** Shared react-select styles */
+const selectStyles = {
+  control: (base: any, state: any) => ({
+    ...base,
+    minHeight: 48,
+    borderRadius: 16,
+    borderColor: state.isFocused ? "#6366f1" : "#e2e8f0",
+    boxShadow: state.isFocused ? "0 0 0 4px rgba(99,102,241,0.15)" : "none",
+    backgroundColor: "#f8fafc",
+    ":hover": { borderColor: state.isFocused ? "#6366f1" : "#e2e8f0" },
+  }),
+  option: (base: any, state: any) => ({
+    ...base,
+    color: state.isDisabled ? "#9CA3AF" : "#111827",
+    backgroundColor: state.isSelected
+      ? "#E0E7FF"
+      : state.isFocused
+      ? "#EEF2FF"
+      : "white",
+  }),
+  singleValue: (base: any) => ({ ...base, color: "#111827" }),
+  input: (base: any) => ({ ...base, color: "#111827" }),
+  placeholder: (base: any) => ({ ...base, color: "#6B7280" }),
+  menu: (base: any) => ({ ...base, zIndex: 30 }),
+  valueContainer: (base: any) => ({ ...base, padding: "0 12px" }),
+};
+
 /* ---------- Nested Subjects table per SSCE ---------- */
 const SubjectsForExam: React.FC<{
   control: Control<FormValues>;
@@ -54,47 +98,61 @@ const SubjectsForExam: React.FC<{
   return (
     <div className="rounded-2xl border border-slate-200 p-3 sm:p-4">
       <div className="mb-2 text-base font-semibold text-slate-900">
-        Subjects & Scores (SSCE {nestIndex + 1})
+        Subjects &amp; Scores (SSCE {nestIndex + 1})
       </div>
 
       {fields.map((row, i) => (
         <div key={row.id} className="mb-3 grid gap-4 sm:grid-cols-2">
           {/* Subject */}
-          <div className="relative">
+          <div>
             <label className="mb-2 block text-sm text-slate-700">
               Subject {i + 1}
             </label>
-            <select
-              {...(control.register(
-                `exams.${nestIndex}.subjects.${i}.subject`
-              ) as any)}
-              className="peer h-12 w-full appearance-none rounded-2xl border border-slate-200 bg-slate-50 px-4 pr-10 text-base font-semibold shadow-sm focus:bg-white focus:border-indigo-500 focus:outline-none focus:ring-4 focus:ring-indigo-100"
-            >
-              {SUBJECTS.map((s) => (
-                <option key={s} value={s}>
-                  {s}
-                </option>
-              ))}
-            </select>
-            <ChevronDown className="pointer-events-none absolute right-3 top-13 h-5 w-5 -translate-y-1/2 text-slate-400" />
+            <Controller
+              control={control}
+              name={`exams.${nestIndex}.subjects.${i}.subject` as const}
+              render={({ field }) => (
+                <Select
+                  instanceId={`subject-${nestIndex}-${i}`}
+                  styles={selectStyles}
+                  isSearchable
+                  isClearable={false}
+                  options={SUBJECT_OPTS}
+                  value={
+                    SUBJECT_OPTS.find((o) => o.value === field.value) ?? null
+                  }
+                  onChange={(opt) =>
+                    field.onChange((opt?.value as string) ?? "")
+                  }
+                  placeholder="Select subject"
+                />
+              )}
+            />
           </div>
 
           {/* Grade */}
-          <div className="relative">
+          <div>
             <label className="mb-2 block text-sm text-slate-700">Score</label>
-            <select
-              {...(control.register(
-                `exams.${nestIndex}.subjects.${i}.grade`
-              ) as any)}
-              className="peer h-12 w-full appearance-none rounded-2xl border border-slate-200 bg-slate-50 px-4 pr-10 text-base font-semibold shadow-sm focus:bg-white focus:border-indigo-500 focus:outline-none focus:ring-4 focus:ring-indigo-100"
-            >
-              {GRADES.map((g) => (
-                <option key={g} value={g}>
-                  {g}
-                </option>
-              ))}
-            </select>
-            <ChevronDown className="pointer-events-none absolute right-3 top-13 h-5 w-5 -translate-y-1/2 text-slate-400" />
+            <Controller
+              control={control}
+              name={`exams.${nestIndex}.subjects.${i}.grade` as const}
+              render={({ field }) => (
+                <Select
+                  instanceId={`grade-${nestIndex}-${i}`}
+                  styles={selectStyles}
+                  isSearchable
+                  isClearable={false}
+                  options={GRADE_OPTS}
+                  value={
+                    GRADE_OPTS.find((o) => o.value === field.value) ?? null
+                  }
+                  onChange={(opt) =>
+                    field.onChange((opt?.value as string) ?? "")
+                  }
+                  placeholder="Select grade"
+                />
+              )}
+            />
           </div>
 
           {fields.length > 1 && (
@@ -136,6 +194,7 @@ const SSCEExamsRHF: React.FC<{
     watch,
     getValues,
     handleSubmit,
+    setValue,
     formState: { errors },
   } = useForm<FormValues>({
     defaultValues: {
@@ -161,7 +220,7 @@ const SSCEExamsRHF: React.FC<{
 
   // Keep exams array length in sync with count
   const ssceCount = watch("ssceCount");
-  React.useEffect(() => {
+  useEffect(() => {
     const n = Number(ssceCount || 0);
     const current = getValues("exams");
     const base: ExamAttempt = {
@@ -172,12 +231,13 @@ const SSCEExamsRHF: React.FC<{
     };
     const next = Array.from({ length: n }, (_, i) => current[i] ?? base);
     replace(next);
-  }, [ssceCount]); // eslint-disable-line
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [ssceCount]);
 
   const submit = handleSubmit(async (v) => onSave?.(v));
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen">
       {/* Header */}
       <div className="px-4 pt-4 sm:px-6">
         <button
@@ -199,19 +259,24 @@ const SSCEExamsRHF: React.FC<{
           <label className="mb-2 block text-lg text-slate-700">
             No of SSCE taken
           </label>
-          <div className="relative">
-            <select
-              {...register("ssceCount", { valueAsNumber: true })}
-              className="peer h-12 w-full appearance-none rounded-2xl border border-slate-200 bg-slate-50 px-4 pr-10 text-base font-semibold shadow-sm focus:bg-white focus:border-indigo-500 focus:outline-none focus:ring-4 focus:ring-indigo-100"
-            >
-              {[1, 2, 3].map((n) => (
-                <option key={n} value={n as 1 | 2 | 3}>
-                  {n}
-                </option>
-              ))}
-            </select>
-            <ChevronDown className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
-          </div>
+          <Controller
+            control={control}
+            name="ssceCount"
+            render={({ field }) => (
+              <Select
+                instanceId="ssceCount"
+                styles={selectStyles}
+                isSearchable={false}
+                isClearable={false}
+                options={COUNT_OPTS}
+                value={COUNT_OPTS.find((o) => o.value === field.value) ?? null}
+                onChange={(opt) =>
+                  field.onChange((opt?.value as 1 | 2 | 3) ?? 1)
+                }
+                placeholder="Select count"
+              />
+            )}
+          />
         </div>
 
         {/* Render N exam sections (each with board & exam number) */}
@@ -248,17 +313,28 @@ const SSCEExamsRHF: React.FC<{
                 <label className="mb-2 block text-lg text-slate-700">
                   Exam board (SSCE {idx + 1})
                 </label>
-                <div className="relative">
-                  <select
-                    {...register(`exams.${idx}.board` as const)}
-                    className="peer h-12 w-full appearance-none rounded-2xl border border-slate-200 bg-slate-50 px-4 pr-10 text-base font-semibold shadow-sm focus:bg-white focus:border-indigo-500 focus:outline-none focus:ring-4 focus:ring-indigo-100"
-                  >
-                    <option value="WAEC">WAEC</option>
-                    <option value="NECO">NECO</option>
-                    <option value="GCE">GCE</option>
-                  </select>
-                  <ChevronDown className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
-                </div>
+                <Controller
+                  control={control}
+                  name={`exams.${idx}.board` as const}
+                  render={({ field }) => (
+                    <Select
+                      instanceId={`board-${idx}`}
+                      styles={selectStyles}
+                      isSearchable
+                      isClearable={false}
+                      options={BOARD_OPTS}
+                      value={
+                        BOARD_OPTS.find((o) => o.value === field.value) ?? null
+                      }
+                      onChange={(opt) =>
+                        field.onChange(
+                          (opt?.value as "WAEC" | "NECO" | "GCE") ?? "WAEC"
+                        )
+                      }
+                      placeholder="Select board"
+                    />
+                  )}
+                />
               </div>
 
               {/* Exam number (per section) */}
@@ -293,17 +369,29 @@ const SSCEExamsRHF: React.FC<{
           <label className="mb-2 block text-lg text-slate-700">
             Score type
           </label>
-          <div className="relative">
-            <select
-              {...register("scoreType")}
-              className="peer h-12 w-full appearance-none rounded-2xl border border-slate-200 bg-slate-50 px-4 pr-10 text-base font-semibold shadow-sm focus:bg-white focus:border-indigo-500 focus:outline-none focus:ring-4 focus:ring-indigo-100"
-            >
-              <option value="Letter">Letter grades (A1–F9)</option>
-            </select>
-            <ChevronDown className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
-          </div>
+          <Controller
+            control={control}
+            name="scoreType"
+            render={({ field }) => (
+              <Select
+                instanceId="scoreType"
+                styles={selectStyles}
+                isSearchable={false}
+                isClearable={false}
+                options={SCORE_TYPE_OPTS}
+                value={
+                  SCORE_TYPE_OPTS.find((o) => o.value === field.value) ?? null
+                }
+                onChange={(opt) =>
+                  field.onChange((opt?.value as "Letter") ?? "Letter")
+                }
+                placeholder="Select"
+              />
+            )}
+          />
         </div>
-        <div className="mx-auto grid w-full max-w-xl grid-cols-2 gap-4 mt-8">
+
+        <div className="mx-auto grid w/full max-w-xl grid-cols-2 gap-4 mt-8">
           <button
             type="button"
             onClick={submit}
