@@ -1,5 +1,5 @@
 // EducationRHF.tsx
-import React, { useMemo, useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { useForm, Controller } from "react-hook-form";
 import Select from "react-select";
 import CreatableSelect from "react-select/creatable";

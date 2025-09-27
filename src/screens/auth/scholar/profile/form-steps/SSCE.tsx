@@ -194,7 +194,6 @@ const SSCEExamsRHF: React.FC<{
     watch,
     getValues,
     handleSubmit,
-    setValue,
     formState: { errors },
   } = useForm<FormValues>({
     defaultValues: {

@@ -2,7 +2,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import {
-  ArrowLeft,
   Calendar,
   ChevronDown,
   Pencil,

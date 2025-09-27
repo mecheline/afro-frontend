@@ -86,15 +86,7 @@ const MOCK: Scholarship[] = [
   },
 ];
 
-const CATEGORIES: Scholarship["category"][] = [
-  "All",
-  "WASSCE",
-  "Undergraduate",
-  "Masters",
-  "PhD",
-  "Secondary",
-  "Essay",
-];
+
 
 // ------------------------------------------------------------------
 // Small UI helpers
@@ -123,22 +115,7 @@ const SectionHeader: React.FC<{ title: string; href?: string }> = ({
   </div>
 );
 
-const Chip: React.FC<{
-  label: string;
-  active?: boolean;
-  onClick?: () => void;
-}> = ({ label, active, onClick }) => (
-  <button
-    onClick={onClick}
-    className={`whitespace-nowrap rounded-xl border px-4 py-2 text-sm font-medium transition [text-wrap:nowrap] ${
-      active
-        ? "border-indigo-600 bg-indigo-50 text-indigo-700"
-        : "border-slate-300 bg-white text-slate-700 hover:bg-slate-50"
-    }`}
-  >
-    {label}
-  </button>
-);
+
 
 const Tag: React.FC<React.PropsWithChildren<{}>> = ({ children }) => (
   <span className="rounded-full border border-slate-200 px-2.5 py-1 text-xs text-slate-600">
@@ -236,18 +213,12 @@ const LearnBanner: React.FC = () => (
 // Dashboard
 // ------------------------------------------------------------------
 const ScholarDashboard: React.FC = () => {
-  const [activeCategory, setActiveCategory] =
-    useState<Scholarship["category"]>("All");
+
   const [bookmarks, setBookmarks] = useState<Record<string, boolean>>({});
 
   const recommended = useMemo(() => MOCK.filter((m) => m.recommended), []);
-  const matched = useMemo(() => MOCK.filter((m) => m.matched), []);
+  
 
-  const externals = useMemo(() => {
-    const list = MOCK.filter((m) => !m.recommended && !m.matched);
-    if (activeCategory === "All") return list;
-    return list.filter((m) => m.category === activeCategory);
-  }, [activeCategory]);
 
   const toggleBookmark = (id: string, v: boolean) => {
     setBookmarks((prev) => ({ ...prev, [id]: v }));
