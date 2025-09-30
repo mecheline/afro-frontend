@@ -36,6 +36,10 @@ label{
 .dialog label{
   color:black
 }
+
+.sponsorLabel label{
+  color: black;
+}
 input {
   color: black;
   background-color: white;

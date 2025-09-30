@@ -39,7 +39,7 @@ const Step1Details: React.FC<{
   const btnText = isSubmitted ? "Update" : "Proceed";
 
   return (
-    <form id={formId} onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+    <form id={formId} onSubmit={handleSubmit(onSubmit)} className="space-y-4 sponsorLabel">
       <div>
         <label className="block text-sm font-medium">Scholarship Title</label>
         <input

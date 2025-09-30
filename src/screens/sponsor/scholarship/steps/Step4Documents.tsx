@@ -110,7 +110,7 @@ const Step4Documents: React.FC<{
       onSubmit={handleSubmit(async (vals) => {
         await onSubmit(normalizeForApi({ ...vals, complete: true }));
       })}
-      className="space-y-6"
+      className="space-y-6 sponsorLabel"
     >
       <div>
         <div className="mb-2 text-sm font-semibold">

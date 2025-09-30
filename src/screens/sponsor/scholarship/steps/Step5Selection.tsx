@@ -44,7 +44,7 @@ const Step5Selection: React.FC<{
         // If SelfSelection and not submitted yet, parent will advance to Docs step.
         // If MatchedScholar, final action is on the button below.
       })}
-      className="space-y-4"
+      className="space-y-4 sponsorLabel"
     >
       <div className="space-y-3">
         {/* Self Selection card */}

@@ -119,7 +119,11 @@ const Step3Eligibility: React.FC<{
   const fieldOptions = useMemo(() => FIELDS, []);
 
   return (
-    <form id={formId} onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+    <form
+      id={formId}
+      onSubmit={handleSubmit(onSubmit)}
+      className="space-y-4 sponsorLabel"
+    >
       {/* Description */}
       <div>
         <label className="block text-sm font-medium">Description</label>

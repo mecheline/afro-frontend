@@ -92,7 +92,7 @@ export default function Step2Funding({
         if (!v.agree) return;
         await onInit(v.plan, v.amount);
       })}
-      className="space-y-4"
+      className="space-y-4 sponsorLabel"
     >
       <div className="grid gap-3 sm:grid-cols-2">
         <PlanCard label="₦1.4m / 4 years" plan="FOUR_YEARS" amount={1400000} />
