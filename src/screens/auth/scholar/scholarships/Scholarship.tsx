@@ -41,7 +41,7 @@ export default function ScholarshipsPage() {
     isLoading: loadingAll,
     isFetching: fetchingAll,
     isError: isErrorAll,
-    error: errorAll,
+    //error: errorAll,
     refetch: refetchAll,
   } = useGetActiveScholarshipsQuery(
     { selectionMethod: "SelfSelection", page, limit },
