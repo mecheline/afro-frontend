@@ -54,7 +54,7 @@ export default function ScholarshipsPage() {
     isLoading: loadingRec,
     isFetching: fetchingRec,
     isError: isErrorRec,
-    error: errorRec,
+    //error: errorRec,
     refetch: refetchRec,
   } = useGetRecommendedScholarshipsQuery(
     { page, limit, selectionMethod: "SelfSelection" },
@@ -67,7 +67,7 @@ export default function ScholarshipsPage() {
   const isLoading =
     tab === "all" ? loadingAll || fetchingAll : loadingRec || fetchingRec;
   const isError = tab === "all" ? isErrorAll : isErrorRec;
-  const error = tab === "all" ? errorAll : errorRec;
+  //const error = tab === "all" ? errorAll : errorRec;
   const refetch = tab === "all" ? refetchAll : refetchRec;
 
   const items = paged?.data ?? [];
@@ -220,7 +220,7 @@ export default function ScholarshipsPage() {
                         Field: {s.eligibility.fieldOfStudy}
                       </span>
                     )}
-                  {/*   {typeof s.eligibility?.recipients === "number" && (
+                    {/*   {typeof s.eligibility?.recipients === "number" && (
                       <span className="rounded-full bg-amber-50 px-2 py-0.5 text-amber-700 dark:bg-amber-900/30 dark:text-amber-200">
                         {s.eligibility.recipients} recipient
                         {s.eligibility.recipients > 1 ? "s" : ""}
