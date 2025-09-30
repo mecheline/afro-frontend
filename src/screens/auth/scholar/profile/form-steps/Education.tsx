@@ -134,14 +134,14 @@ const QUAL_OPTS: Opt<Qualification | "">[] = [
 ];
 
 /** Common select styles (visible text, height, rounded) */
-const selectStyles = {
+export const selectStyles = {
   control: (base: any, state: any) => ({
     ...base,
     minHeight: 56,
     borderRadius: 16,
     borderColor: state.isFocused ? "#6366f1" : "#e2e8f0",
     boxShadow: state.isFocused ? "0 0 0 4px rgba(99,102,241,0.15)" : "none",
-    backgroundColor: "#f8fafc",
+    backgroundColor: "white",
     ":hover": { borderColor: state.isFocused ? "#6366f1" : "#e2e8f0" },
   }),
   option: (base: any, state: any) => ({
@@ -232,7 +232,7 @@ const EducationRHF: React.FC<{
         aria-expanded={isOpen}
         aria-controls={`${section}-panel`}
       >
-        <span className="text-2xl font-extrabold text-slate-900">{title}</span>
+        <span className="text-2xl font-extrabold text-[#cbd5e1]">{title}</span>
         <ChevronDown
           className={`h-5 w-5 text-slate-500 transition-transform duration-200 ${
             isOpen ? "rotate-180" : ""
@@ -385,10 +385,10 @@ const EducationRHF: React.FC<{
         <button
           type="button"
           onClick={() => onPrev?.(getValues())}
-          className="inline-flex items-center gap-2 rounded-full p-2 hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          className="headerTitle"
         >
-          <ArrowLeft className="h-6 w-6 text-slate-800" />
-          <span className="text-2xl font-extrabold text-slate-900">
+          <ArrowLeft className="h-6 w-6 " />
+          <span className="text-2xl font-extrabold">
             Education
           </span>
         </button>

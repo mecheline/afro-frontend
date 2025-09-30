@@ -166,10 +166,10 @@ const ResultsCertificationsRHF: React.FC<{
         <button
           type="button"
           onClick={() => onPrev?.(getValues())}
-          className="inline-flex items-center gap-2 rounded-full p-2 hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          className="headerTitle"
         >
-          <ArrowLeft className="h-6 w-6 text-slate-800" />
-          <span className="text-2xl font-extrabold text-slate-900">
+          <ArrowLeft className="h-6 w-6 " />
+          <span className="text-2xl font-extrabold ">
             Results &amp; Certifications
           </span>
         </button>
@@ -179,7 +179,7 @@ const ResultsCertificationsRHF: React.FC<{
       <main className="mx-auto w-full max-w-xl px-4 pb-40 sm:px-6">
         {/* SSCE */}
         <section className="mt-6 space-y-3">
-          <div className="text-lg font-semibold text-slate-700">SSCE</div>
+          <div className="text-lg font-semibold ">SSCE</div>
 
           {ssce ? (
             <RowCard>
@@ -265,7 +265,7 @@ const ResultsCertificationsRHF: React.FC<{
 
         {/* Primary School Cert */}
         <section className="mt-8 space-y-3">
-          <div className="text-lg font-semibold text-slate-700">
+          <div className="text-lg font-semibold">
             Primary School Cert.
           </div>
 
@@ -355,7 +355,7 @@ const ResultsCertificationsRHF: React.FC<{
 
         {/* Others */}
         <section className="mt-10 space-y-5">
-          <div className="text-xl font-bold text-slate-900">Others</div>
+          <div className="text-xl font-bold">Others</div>
 
           {fields.map((f, i) => {
             const fi = others?.[i]?.file as File | null;

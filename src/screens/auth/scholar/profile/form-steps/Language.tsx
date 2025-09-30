@@ -103,11 +103,11 @@ const LanguageRHF: React.FC<{
         <button
           type="button"
           onClick={() => onPrev?.(getValues())}
-          className="inline-flex items-center gap-2 rounded-full p-2 hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          className="headerTitle"
           aria-label="Go back"
         >
-          <ArrowLeft className="h-6 w-6 text-slate-800" />
-          <span className="text-3xl font-extrabold text-slate-900">
+          <ArrowLeft className="h-6 w-6 " />
+          <span className="text-3xl font-extrabold">
             Language <Req />
           </span>
         </button>
@@ -117,7 +117,7 @@ const LanguageRHF: React.FC<{
       <main className="mx-auto w-full max-w-2xl px-5 sm:px-6 pb-40">
         {/* How many languages */}
         <section className="mt-8">
-          <label className="mb-3 block text-xl font-semibold text-slate-700">
+          <label className="mb-3 block text-xl font-semibold">
             How many no of language are you proficient in
           </label>
           <div className="relative">
@@ -154,13 +154,13 @@ const LanguageRHF: React.FC<{
         {/* N language + proficiency pairs */}
         {fields.map((f, idx) => (
           <section key={f.id} className="mt-6">
-            <h3 className="mb-3 text-lg font-semibold text-slate-900">{`Language ${
+            <label className="text-lg font-semibold ">{`Language ${
               idx + 1
-            }`}</h3>
+            }`}</label>
 
             {/* Language select */}
             <div className="mb-4">
-              <label className="mb-2 block text-base text-slate-700">
+              <label className="mb-2  mt-6 block text-base">
                 Select language
               </label>
               <div className="relative">
@@ -198,7 +198,7 @@ const LanguageRHF: React.FC<{
 
             {/* Proficiency select */}
             <div>
-              <label className="mb-2 block text-base text-slate-700">
+              <label className="mb-2 block text-base">
                 Language Proficiency
               </label>
               <div className="relative">

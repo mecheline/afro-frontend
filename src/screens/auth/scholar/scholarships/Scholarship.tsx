@@ -3,6 +3,7 @@ import * as React from "react";
 import {
   useGetActiveScholarshipsQuery,
   useGetRecommendedScholarshipsQuery,
+  useGetMyApplicationsQuery, // ⬅️ NEW
 } from "../../../../redux/services/scholar/api";
 import type {
   ScholarshipItem,
@@ -10,15 +11,29 @@ import type {
 } from "../../../../redux/services/scholar/api";
 import { Skeleton, Pagination } from "antd";
 import { Link } from "react-router";
+import ApplyWizardModal from "./ApplyWizardModal";
 
-// local utility to avoid depending on "@/lib/utils"
 const cn = (...classes: Array<string | false | null | undefined>) =>
   classes.filter(Boolean).join(" ");
 
 export default function ScholarshipsPage() {
+  const [applyFor, setApplyFor] = React.useState<ScholarshipItem | null>(null);
   const [tab, setTab] = React.useState<"all" | "recommended">("all");
   const [page, setPage] = React.useState<number>(1);
-  const [limit, setLimit] = React.useState<number>(9); // 9 cards per page
+  const [limit, setLimit] = React.useState<number>(9);
+
+  // ⬇️ Load my applications once to know which scholarships are already applied
+  //    (use a large page size; backend already caps to 50 in your controller. Adjust if needed.)
+  const {
+    data: myAppsPaged,
+    refetch: refetchMyApps,
+    isFetching: fetchingApps,
+  } = useGetMyApplicationsQuery({ page: 1, limit: 50 }); // status omitted => all
+
+  const appliedSet = React.useMemo(() => {
+    const rows = myAppsPaged?.data ?? [];
+    return new Set<string>(rows.map((a: any) => String(a.scholarshipId)));
+  }, [myAppsPaged]);
 
   // --- ALL (SelfSelection) ---
   const {
@@ -33,7 +48,7 @@ export default function ScholarshipsPage() {
     { skip: tab !== "all" }
   );
 
-  // --- RECOMMENDED (server matches scholar profile) ---
+  // --- RECOMMENDED ---
   const {
     data: recPaged,
     isLoading: loadingRec,
@@ -46,7 +61,6 @@ export default function ScholarshipsPage() {
     { skip: tab !== "recommended" }
   );
 
-  // Pick the visible dataset based on tab
   const paged: Paged<ScholarshipItem> | undefined =
     tab === "all" ? allPaged : recPaged;
 
@@ -59,7 +73,6 @@ export default function ScholarshipsPage() {
   const items = paged?.data ?? [];
   const total = paged?.meta?.total ?? 0;
 
-  // reset pagination when switching tabs
   React.useEffect(() => {
     setPage(1);
   }, [tab]);
@@ -72,14 +85,11 @@ export default function ScholarshipsPage() {
           Failed to load scholarships.{" "}
           <button
             onClick={() => refetch()}
-            className="underline underline-offset-2"
+            className="underline underline-offset-3 cursor-pointer"
           >
             Try again
           </button>
         </div>
-        <pre className="text-xs opacity-70">
-          {JSON.stringify(error, null, 2)}
-        </pre>
       </div>
     );
   }
@@ -126,7 +136,6 @@ export default function ScholarshipsPage() {
         </div>
       </header>
 
-      {/* Loading skeletons (Ant Design) */}
       {isLoading && (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {Array.from({ length: limit }).map((_, i) => (
@@ -143,7 +152,6 @@ export default function ScholarshipsPage() {
         </div>
       )}
 
-      {/* Empty state */}
       {!isLoading && items.length === 0 && (
         <div className="rounded-lg border border-gray-200 bg-white p-8 text-center text-sm text-gray-600 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-300">
           {tab === "all" ? (
@@ -157,71 +165,111 @@ export default function ScholarshipsPage() {
         </div>
       )}
 
-      {/* Cards */}
       {!isLoading && items.length > 0 && (
         <>
           <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {items.map((s) => (
-              <li
-                key={s._id}
-                className="group rounded-lg border bg-white p-4 shadow-sm transition hover:shadow-md dark:border-gray-800 dark:bg-gray-900"
-              >
-                <div className="flex items-start justify-between gap-3">
-                  <div>
-                    <h3 className="text-base font-semibold leading-tight">
-                      {s.title}
-                    </h3>
-                    <p className="mt-0.5 text-xs text-gray-500">
-                      {s.category} • {s.selectionMethod}
-                    </p>
+            {items.map((s) => {
+              const alreadyApplied = appliedSet.has(String(s._id));
+              return (
+                <li
+                  key={s._id}
+                  className="group rounded-lg border bg-white p-4 shadow-sm transition hover:shadow-md dark:border-gray-800 dark:bg-gray-900"
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <h3 className="text-base font-semibold leading-tight">
+                        {s.title}
+                      </h3>
+                      {/* <p className="mt-0.5 text-xs text-gray-500">
+                        {s.category} • {s.selectionMethod}
+                      </p> */}
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      {alreadyApplied && (
+                        <span className="rounded-full bg-emerald-50 px-2 py-0.5 text-[11px] font-medium text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-200">
+                          Applied
+                        </span>
+                      )}
+                      {s.createdAt && (
+                        <time
+                          dateTime={s.createdAt}
+                          className="rounded bg-gray-100 px-2 py-0.5 text-[11px] text-gray-700 dark:bg-gray-800 dark:text-gray-300"
+                          title={new Date(s.createdAt).toLocaleString()}
+                        >
+                          {new Date(s.createdAt).toLocaleDateString()}
+                        </time>
+                      )}
+                    </div>
                   </div>
-                  {s.createdAt && (
-                    <time
-                      dateTime={s.createdAt}
-                      className="rounded bg-gray-100 px-2 py-0.5 text-[11px] text-gray-700 dark:bg-gray-800 dark:text-gray-300"
-                      title={new Date(s.createdAt).toLocaleString()}
+
+                  {/* {s.eligibility?.description && (
+                    <p className="mt-3 line-clamp-3 text-sm text-gray-600 dark:text-gray-300">
+                      {s.eligibility.description}
+                    </p>
+                  )} */}
+
+                  <div className="mt-4 flex flex-wrap items-center gap-2 text-xs">
+                    {s.eligibility?.minimumQualifications && (
+                      <span className="rounded-full bg-indigo-50 px-2 py-0.5 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-200">
+                        Min: {s.eligibility.minimumQualifications}
+                      </span>
+                    )}
+                    {s.eligibility?.fieldOfStudy && (
+                      <span className="rounded-full bg-emerald-50 px-2 py-0.5 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-200">
+                        Field: {s.eligibility.fieldOfStudy}
+                      </span>
+                    )}
+                  {/*   {typeof s.eligibility?.recipients === "number" && (
+                      <span className="rounded-full bg-amber-50 px-2 py-0.5 text-amber-700 dark:bg-amber-900/30 dark:text-amber-200">
+                        {s.eligibility.recipients} recipient
+                        {s.eligibility.recipients > 1 ? "s" : ""}
+                      </span>
+                    )} */}
+                  </div>
+
+                  <div className="mt-5 flex space-x-2">
+                    <Link
+                      to={`/scholar/dashboard/scholarships/${s._id}`}
+                      className="inline-flex items-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                     >
-                      {new Date(s.createdAt).toLocaleDateString()}
-                    </time>
-                  )}
-                </div>
+                      View details
+                    </Link>
 
-                {s.eligibility?.description && (
-                  <p className="mt-3 line-clamp-3 text-sm text-gray-600 dark:text-gray-300">
-                    {s.eligibility.description}
-                  </p>
-                )}
-
-                <div className="mt-4 flex flex-wrap items-center gap-2 text-xs">
-                  {s.eligibility?.minimumQualifications && (
-                    <span className="rounded-full bg-indigo-50 px-2 py-0.5 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-200">
-                      Min: {s.eligibility.minimumQualifications}
-                    </span>
-                  )}
-                  {s.eligibility?.fieldOfStudy && (
-                    <span className="rounded-full bg-emerald-50 px-2 py-0.5 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-200">
-                      Field: {s.eligibility.fieldOfStudy}
-                    </span>
-                  )}
-                  {typeof s.eligibility?.recipients === "number" && (
-                    <span className="rounded-full bg-amber-50 px-2 py-0.5 text-amber-700 dark:bg-amber-900/30 dark:text-amber-200">
-                      {s.eligibility.recipients} recipient
-                      {s.eligibility.recipients > 1 ? "s" : ""}
-                    </span>
-                  )}
-                </div>
-
-                <div className="mt-5">
-                  <Link
-                    to={`/scholar/dashboard/scholarships/${s._id}`}
-                    className="inline-flex items-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                  >
-                    View details
-                  </Link>
-                </div>
-              </li>
-            ))}
+                    <button
+                      onClick={() => setApplyFor(s)}
+                      disabled={alreadyApplied || fetchingApps}
+                      aria-disabled={alreadyApplied || fetchingApps}
+                      title={
+                        alreadyApplied ? "You have already applied" : undefined
+                      }
+                      className={cn(
+                        "inline-flex items-center rounded-md px-3 py-2 text-sm font-medium",
+                        alreadyApplied || fetchingApps
+                          ? "cursor-not-allowed bg-gray-300 text-gray-600"
+                          : "bg-indigo-600 text-white hover:bg-indigo-700"
+                      )}
+                    >
+                      {alreadyApplied ? "Applied" : "Apply now"}
+                    </button>
+                  </div>
+                </li>
+              );
+            })}
           </ul>
+
+          {/* Modal */}
+          {applyFor && (
+            <ApplyWizardModal
+              open
+              scholarship={applyFor}
+              onClose={() => {
+                setApplyFor(null);
+                // refresh my applications so the “Apply now” button disables instantly after submit
+                refetchMyApps();
+              }}
+            />
+          )}
 
           {/* Pagination */}
           <div className="mt-6 flex justify-center">
@@ -234,7 +282,6 @@ export default function ScholarshipsPage() {
               onChange={(p, ps) => {
                 setPage(p);
                 setLimit(ps);
-                // scroll to top of list on page change
                 if (typeof window !== "undefined") {
                   window.scrollTo({ top: 0, behavior: "smooth" });
                 }

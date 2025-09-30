@@ -23,7 +23,7 @@ const mainNav = [
     to: "/scholar/dashboard/scholarships",
     label: "Scholarships",
     icon: GraduationCap,
-    end: true,
+    //end: true,
   },
   {
     to: "/scholar/dashboard/applications",

@@ -180,7 +180,7 @@ const ProfileWizard: React.FC = () => {
     <div className="w-full max-w-5xl mx-auto">
       {" "}
       {/* stays inside Outlet width */}
-      <section className="rounded-lg border border-gray-200 bg-gray-100 shadow-sm">
+      <section className="rounded-lg border border-gray-700  shadow-sm">
         {loading ? (
           <div className="flex items-center justify-center py-16 h-screen">
             <RotatingLines

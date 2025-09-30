@@ -68,10 +68,10 @@ const SiblingsRHF: React.FC<{
         <button
           type="button"
           onClick={() => onPrev?.(getValues())}
-          className="inline-flex items-center gap-2 rounded-full p-2 hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+         className="headerTitle"
         >
-          <ArrowLeft className="h-6 w-6 text-slate-800" />
-          <span className="text-2xl font-extrabold text-slate-900">
+          <ArrowLeft className="h-6 w-6" />
+          <span className="text-2xl font-extrabold">
             Siblings
           </span>
         </button>
@@ -81,7 +81,7 @@ const SiblingsRHF: React.FC<{
       <main className="mx-auto w-full max-w-xl px-4 pb-40 sm:px-6">
         {/* How many siblings */}
         <div className="mt-6">
-          <label className="mb-2 block text-lg text-slate-700">
+          <label className="mb-2 block text-lg">
             How many siblings
           </label>
           <div className="relative">

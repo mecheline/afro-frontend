@@ -1,14 +1,43 @@
-
-
+// Header.tsx
 import { Menu, Bell, User } from "lucide-react";
 import { useSelector } from "react-redux";
 import type { RootState } from "../../../redux/services/scholar/store";
-
+import { useLocation, matchPath } from "react-router"; // or react-router-dom
 
 type Props = { onMenuClick: () => void };
 
+// Centralize the sections your sidebar highlights.
+// Use wildcard patterns so detail pages still match the parent label.
+const SECTIONS: Array<{ label: string; pattern: string }> = [
+  { label: "Scholarships", pattern: "/scholar/dashboard/scholarships/*" },
+  { label: "Applications", pattern: "/scholar/dashboard/applications/*" },
+  { label: "Profile", pattern: "/scholar/dashboard/profile/*" },
+  { label: "Settings", pattern: "/scholar/dashboard/settings/*" },
+
+  // sponsor area (if the same header is reused there)
+  { label: "My Scholarships", pattern: "/sponsor/dashboard/scholarships/*" },
+  { label: "Transactions", pattern: "/sponsor/dashboard/transactions/*" },
+];
+
+function useActiveHeaderTitle() {
+  const { pathname } = useLocation();
+
+  // Try to match one of the known sidebar sections
+  const hit = SECTIONS.find((s) =>
+    matchPath({ path: s.pattern, end: false }, pathname)
+  );
+  if (hit) return hit.label;
+
+  // Fallback: derive something readable from the URL
+  const parts = pathname.split("/").filter(Boolean);
+  const last = parts[parts.length - 1] || "dashboard";
+  return last.replace(/[-_]/g, " ").replace(/\b\w/g, (m) => m.toUpperCase());
+}
+
 export default function Header({ onMenuClick }: Props) {
   const user = useSelector((state: RootState) => state.auth);
+  const title = useActiveHeaderTitle();
+
   return (
     <header className="sticky top-0 z-30 border-b border-gray-200 bg-white/80 backdrop-blur supports-[backdrop-filter]:bg-white/60 dark:border-gray-800 dark:bg-gray-900/70">
       <div className="mx-auto flex h-16 w-full max-w-7xl items-center gap-3 px-4 sm:px-6 lg:px-8">
@@ -20,7 +49,7 @@ export default function Header({ onMenuClick }: Props) {
           <Menu className="size-5" />
         </button>
 
-        <div className="ml-1 text-lg font-semibold sm:text-xl">Dashboard</div>
+        <div className="ml-1 text-lg font-semibold sm:text-xl">{title}</div>
 
         <div className="ml-auto flex items-center gap-2">
           <div className="hidden sm:block">
@@ -37,14 +66,15 @@ export default function Header({ onMenuClick }: Props) {
           >
             <Bell className="size-5" />
           </button>
+
           {user?.avatar ? (
             <img
-              src={user?.avatar}
+              src={user.avatar}
               alt="Profile"
               className="size-8 rounded-full ring-1 ring-gray-200 dark:ring-gray-700"
             />
           ) : (
-            <User />
+            <User className="size-5" />
           )}
         </div>
       </div>

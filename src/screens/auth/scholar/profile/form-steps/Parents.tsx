@@ -177,14 +177,14 @@ function ParentSection({
   const QUAL_OPTS = toOpts(QUALS);
 
   return (
-    <section className="rounded-2xl border border-slate-200 p-4">
+    <section>
       {/* Section Header */}
       <button
         type="button"
         onClick={onToggle}
         className="flex w-full items-center justify-between"
       >
-        <h2 className="text-base font-semibold text-slate-900">{title}</h2>
+        <h2 className="text-base font-semibold text-[cbd5e1]">{title}</h2>
         {open ? (
           <ChevronUp className="h-5 w-5 text-slate-500" />
         ) : (
@@ -615,16 +615,16 @@ const ParentRHF: React.FC<{
   const save = handleSubmit(async (v) => onSave?.(v));
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen">
       {/* Header */}
       <div className="px-4 pt-4 sm:px-6">
         <button
           type="button"
           onClick={() => onPrev?.(getValues())}
-          className="inline-flex items-center gap-2 rounded-full p-2 hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          className="headerTitle"
         >
-          <ArrowLeft className="h-6 w-6 text-slate-800" />
-          <span className="text-2xl font-extrabold text-slate-900">Parent</span>
+          <ArrowLeft className="h-6 w-6 " />
+          <span className="text-2xl font-extrabold">Parent</span>
         </button>
       </div>
 

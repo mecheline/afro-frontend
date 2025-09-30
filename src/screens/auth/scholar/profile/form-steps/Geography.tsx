@@ -367,11 +367,11 @@ const GeographyNationalityRHF: React.FC<{
         <button
           type="button"
           onClick={() => onPrev?.(getValues())}
-          className="inline-flex items-center gap-2 rounded-full p-2 hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          className="headerTitle"
           aria-label="Go back"
         >
-          <ArrowLeft className="h-6 w-6 text-slate-800" />
-          <span className="text-3xl font-extrabold text-slate-900">
+          <ArrowLeft className="h-6 w-6 " />
+          <span className="text-3xl font-extrabold ">
             Geography and nationality
           </span>
         </button>

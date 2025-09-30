@@ -89,18 +89,16 @@ const CommunityBasedOrgRHF: React.FC<{
         <button
           type="button"
           onClick={() => onPrev?.(getValues())}
-          className="inline-flex items-center gap-2 rounded-full p-2 hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          className="headerTitle"
         >
-          <ArrowLeft className="h-6 w-6 text-slate-800" />
-          <span className="text-2xl font-extrabold text-slate-900">
-            Community Based Org.
-          </span>
+          <ArrowLeft className="h-6 w-6 " />
+          <span className="text-2xl font-extrabold">Community Based Org.</span>
         </button>
       </div>
 
       {/* Content */}
       <main className="mx-auto w-full max-w-2xl px-4 pb-40 sm:px-6">
-        <p className="mt-4 text-slate-600">
+        <p className="mt-4 text-[#cbd5e1]">
           Summary of community based or voluntary organization(s) that have
           supported your educational pursuit either financially, mentoring,
           career guidance or in any other way
@@ -108,9 +106,9 @@ const CommunityBasedOrgRHF: React.FC<{
 
         {/* Count */}
         <div className="mt-5">
-          <div className="mb-2 text-base font-semibold text-slate-700">
+          <label className="mb-2 text-base font-semibold text-slate-700">
             How many organizations?
-          </div>
+          </label>
           <div className="relative">
             <select
               {...register("orgCount", {

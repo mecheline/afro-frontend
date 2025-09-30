@@ -1,355 +1,249 @@
-import React, { useMemo, useState } from "react";
-import { Bookmark, BookmarkCheck, ChevronRight, Search } from "lucide-react";
+// src/features/scholar/dashboard/HomeDashboard.tsx
+import * as React from "react";
 import { Link } from "react-router";
+import { Skeleton } from "antd";
+import {
+  useGetActiveScholarshipsQuery,
+  useGetMyApplicationsQuery,
+  type Paged,
+  type ScholarshipItem,
+} from "../../../redux/services/scholar/api";
 
-// ------------------------------------------------------------------
-// Types & Mock Data (replace with your API results)
-// ------------------------------------------------------------------
-export type Scholarship = {
-  id: string;
-  title: string;
-  organization: string; // e.g., Mae Foundation
-  level: string; // e.g., Masters Degrees Program
-  logo: string; // url
-  durationLabel: string; // e.g., "2 years duration"
-  amountLabel: string; // e.g., "$10,000 Stipends /monthly"
-  tags?: string[]; // e.g., ["Full Time", "Remote"]
-  category:
-    | "All"
-    | "WASSCE"
-    | "Undergraduate"
-    | "Masters"
-    | "PhD"
-    | "Essay"
-    | "Secondary";
-  recommended?: boolean;
-  matched?: boolean;
+/* ---------- tiny helpers ---------- */
+const cn = (...x: Array<string | false | null | undefined>) =>
+  x.filter(Boolean).join(" ");
+
+const fmtDate = (iso?: string) =>
+  iso ? new Date(iso).toLocaleDateString() : "—";
+
+const statusPillCls: Record<string, string> = {
+  Submitted: "bg-indigo-100 text-indigo-700",
+  UnderReview: "bg-amber-100 text-amber-700",
+  Shortlisted: "bg-blue-100 text-blue-700",
+  Rejected: "bg-rose-100 text-rose-700",
+  Awarded: "bg-emerald-100 text-emerald-700",
+  Withdrawn: "bg-gray-100 text-gray-600",
 };
 
-const MOCK: Scholarship[] = [
-  {
-    id: "1",
-    title: "Mae Foundation",
-    organization: "Mae Foundation",
-    level: "Masters Degrees Program",
-    logo: "https://images.unsplash.com/photo-1600962815726-457c5ac3ff51?w=120&h=120&fit=crop&auto=format",
-    durationLabel: "2 years duration",
-    amountLabel: "$10,000 Stipends /monthly",
-    tags: ["4.2/5.0 Undergrad GPAA"],
-    category: "Masters",
-    recommended: true,
-  },
-  {
-    id: "2",
-    title: "Marian’s For Girls",
-    organization: "Marian’s Foundation",
-    level: "Masters Degrees Program",
-    logo: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=120&h=120&fit=crop&auto=format",
-    durationLabel: "2 years duration",
-    amountLabel: "$10,000 Stipends /monthly",
-    tags: ["4.2/5.0 Undergrad GPAA"],
-    category: "Masters",
-    matched: true,
-  },
-  {
-    id: "3",
-    title: "Common Wealth",
-    organization: "Common Wealth",
-    level: "PHD",
-    logo: "https://images.unsplash.com/photo-1603415526960-f7e0328d13fd?w=120&h=120&fit=crop&auto=format",
-    durationLabel: "4 years duration",
-    amountLabel: "$20,000 /month",
-    tags: ["Full Time", "Remote"],
-    category: "PhD",
-  },
-  {
-    id: "4",
-    title: "Agbani Scholarship",
-    organization: "Agbani Foundation",
-    level: "Junior & Senior Secondary",
-    logo: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=120&h=120&fit=crop&auto=format",
-    durationLabel: "Jss1 - Ss3",
-    amountLabel: "N25,000 - 50,000 /Term",
-    tags: ["JSSCE result req", "WASSCE result req"],
-    category: "Secondary",
-  },
-  {
-    id: "5",
-    title: "OPM Scholarship",
-    organization: "OPM",
-    level: "Senior Secondary Essay",
-    logo: "https://images.unsplash.com/photo-1556157382-97eda2d62296?w=120&h=120&fit=crop&auto=format",
-    durationLabel: "Ss2 - Ss3 Students",
-    amountLabel: "N120,000",
-    tags: ["Essay", "Spelling Bee"],
-    category: "Essay",
-  },
-];
-
-
-
-// ------------------------------------------------------------------
-// Small UI helpers
-// ------------------------------------------------------------------
-const Container: React.FC<React.PropsWithChildren<{ className?: string }>> = ({
-  className = "",
-  children,
-}) => (
-  <div className={`mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8 ${className}`}>
-    {children}
-  </div>
-);
-
-const SectionHeader: React.FC<{ title: string; href?: string }> = ({
-  title,
-  href = "#",
-}) => (
-  <div className="mb-3 flex items-center justify-between gap-4">
-    <h2 className="text-lg font-semibold text-slate-900 sm:text-xl">{title}</h2>
-    <Link
-      to={href}
-      className="text-sm font-semibold text-indigo-600 hover:underline"
-    >
-      See All
-    </Link>
-  </div>
-);
-
-
-
-const Tag: React.FC<React.PropsWithChildren<{}>> = ({ children }) => (
-  <span className="rounded-full border border-slate-200 px-2.5 py-1 text-xs text-slate-600">
-    {children}
-  </span>
-);
-
-// ------------------------------------------------------------------
-// Scholarship Card
-// ------------------------------------------------------------------
-const ScholarshipCard: React.FC<{
-  item: Scholarship;
-  onBookmark?: (id: string, v: boolean) => void;
-  isBookmarked?: boolean;
-}> = ({ item, onBookmark, isBookmarked }) => {
-  return (
-    <article className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm transition hover:shadow-md">
-      <div className="flex items-start justify-between gap-3">
-        <div className="flex items-start gap-3">
-          <div className="grid h-12 w-12 place-items-center rounded-xl bg-white ring-1 ring-slate-200">
-            <img
-              src={item.logo}
-              alt={`${item.organization} logo`}
-              className="h-10 w-10 rounded-lg object-cover"
-            />
-          </div>
-          <div>
-            <h3 className="text-base font-semibold text-slate-900">
-              {item.title}
-            </h3>
-            <p className="text-sm text-slate-500">{item.level}</p>
-          </div>
-        </div>
-
-        <button
-          aria-label="Toggle bookmark"
-          onClick={() => onBookmark?.(item.id, !isBookmarked)}
-          className="rounded-lg p-1.5 text-slate-500 hover:bg-slate-100"
-        >
-          {isBookmarked ? (
-            <BookmarkCheck className="h-5 w-5 text-indigo-600" />
-          ) : (
-            <Bookmark className="h-5 w-5" />
-          )}
-        </button>
-      </div>
-
-      <div className="my-4 h-px w-full bg-slate-200/70" />
-
-      <div className="space-y-2">
-        <p className="text-sm text-slate-500">{item.durationLabel}</p>
-        <p className="text-base font-semibold text-indigo-600">
-          {item.amountLabel}
-        </p>
-        {item.tags && item.tags.length > 0 && (
-          <div className="mt-2 flex flex-wrap gap-2">
-            {item.tags.map((t, i) => (
-              <Tag key={i}>{t}</Tag>
-            ))}
-          </div>
-        )}
-      </div>
-    </article>
-  );
-};
-
-// ------------------------------------------------------------------
-// Banner
-// ------------------------------------------------------------------
-const LearnBanner: React.FC = () => (
-  <div className="relative overflow-hidden rounded-2xl bg-[linear-gradient(135deg,#c7d2fe_0%,#93c5fd_40%,#60a5fa_100%)] p-5 text-white shadow-sm">
-    <div className="flex items-center gap-4">
-      <div className="w-full md:w-2/3">
-        <h3 className="text-xl font-bold leading-snug sm:text-2xl">
-          See how you can
-          <br /> find a scholarship
+/* ---------- cards ---------- */
+const ScholarshipCard: React.FC<{ s: ScholarshipItem }> = ({ s }) => (
+  <li className="rounded-lg border bg-white p-4 shadow-sm transition hover:shadow-md dark:border-gray-800 dark:bg-gray-900">
+    <div className="flex items-start justify-between gap-3">
+      <div>
+        <h3 className="text-base font-semibold leading-tight line-clamp-1">
+          {s.title}
         </h3>
-        <button className="mt-4 inline-flex items-center gap-2 rounded-xl bg-white/90 px-4 py-2 text-sm font-semibold text-slate-800 hover:bg-white">
-          Read more
-          <ChevronRight className="h-4 w-4" />
-        </button>
+        <p className="mt-0.5 text-xs text-gray-500">{s.category}</p>
       </div>
-      <div className="hidden w-1/3 justify-end md:flex">
-        <img
-          src="https://images.unsplash.com/photo-1544717297-fa95b6ee9643?w=400&h=300&fit=crop&auto=format"
-          alt="student"
-          className="h-28 w-28 rounded-xl object-cover shadow-md lg:h-36 lg:w-36"
-        />
-      </div>
+      {s.createdAt && (
+        <time
+          dateTime={s.createdAt}
+          className="rounded bg-gray-100 px-2 py-0.5 text-[11px] text-gray-700 dark:bg-gray-800 dark:text-gray-300"
+          title={new Date(s.createdAt).toLocaleString()}
+        >
+          {fmtDate(s.createdAt)}
+        </time>
+      )}
     </div>
-  </div>
+
+    {s.eligibility?.description && (
+      <p className="mt-3 line-clamp-3 text-sm text-gray-600 dark:text-gray-300">
+        {s.eligibility.description}
+      </p>
+    )}
+
+    <div className="mt-4 flex gap-2">
+      <Link
+        to={`/scholar/dashboard/scholarships/${s._id}`}
+        className="inline-flex items-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-medium text-white hover:bg-indigo-700"
+      >
+        View details
+      </Link>
+    </div>
+  </li>
 );
 
-// ------------------------------------------------------------------
-// Dashboard
-// ------------------------------------------------------------------
-const ScholarDashboard: React.FC = () => {
-
-  const [bookmarks, setBookmarks] = useState<Record<string, boolean>>({});
-
-  const recommended = useMemo(() => MOCK.filter((m) => m.recommended), []);
-  
-
-
-  const toggleBookmark = (id: string, v: boolean) => {
-    setBookmarks((prev) => ({ ...prev, [id]: v }));
-  };
-
-  return (
-    <div className="min-h-screen bg-white text-slate-800 overflow-x-hidden pt-16 md:pt-20">
-      {/* Top bar */}
-
-      {/* Search */}
-      <Container className="mt-4">
-        <div className="rounded-2xl border border-slate-200 bg-slate-50/60 p-2">
-          <div className="flex items-center gap-2 rounded-xl bg-white px-3 py-2 shadow-sm">
-            <Search className="h-5 w-5 text-slate-400" />
-            <input
-              placeholder="Search for a Scholarship"
-              className="w-full bg-transparent text-sm outline-none placeholder:text-slate-400"
-            />
-          </div>
-        </div>
-      </Container>
-
-      {/* Banner */}
-      <Container className="mt-4">
-        <LearnBanner />
-      </Container>
-
-      {/* Recommended */}
-      {recommended.length > 0 && (
-        <Container className="mt-6">
-          <SectionHeader
-            title="Scholarships"
-            href="/scholar/dashboard/scholarships"
-          />
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-            {recommended.map((item) => (
-              <ScholarshipCard
-                key={item.id}
-                item={item}
-                isBookmarked={!!bookmarks[item.id]}
-                onBookmark={toggleBookmark}
-              />
-            ))}
-          </div>
-        </Container>
-      )}
-
-      {/*   {matched.length > 0 && (
-        <Container className="mt-6">
-          <SectionHeader title="Matched Scholarships" />
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-            {matched.map((item) => (
-              <ScholarshipCard
-                key={item.id}
-                item={item}
-                isBookmarked={!!bookmarks[item.id]}
-                onBookmark={toggleBookmark}
-              />
-            ))}
-          </div>
-        </Container>
-      )}  */}
-
-      {/* External */}
-      {/* <Container className="mt-6">
-        <SectionHeader title="External Scholarships" />
-        <div className="no-scrollbar -mx-2 mb-4 flex gap-2 overflow-x-auto px-2 pb-1">
-          {CATEGORIES.map((c) => (
-            <Chip
-              key={c}
-              label={c}
-              active={activeCategory === c}
-              onClick={() => setActiveCategory(c)}
-            />
-          ))}
-        </div>
-
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-          {externals.map((item) => (
-            <ScholarshipCard
-              key={item.id}
-              item={item}
-              isBookmarked={!!bookmarks[item.id]}
-              onBookmark={toggleBookmark}
-            />
-          ))}
-        </div>
-      </Container> */}
-
-      {/* Mobile Tabbar */}
-      {/*   <nav className="sticky bottom-0 z-20 mt-8 block border-t border-slate-200 bg-white/95 backdrop-blur md:hidden">
-        <Container className="px-2">
-          <ul className="grid grid-cols-5 py-2 text-xs text-slate-500">
-            <li className="text-center">
-              <Link
-                to="#"
-                className="flex flex-col items-center gap-1 text-indigo-600"
-              >
-                <span className="inline-block h-1.5 w-10 rounded-full bg-indigo-600/20" />
-                Home
-              </Link>
-            </li>
-            <li className="text-center">
-              <Link to="#" className="flex flex-col items-center gap-1">
-                <span className="inline-block h-1.5 w-10 rounded-full bg-slate-200" />
-                Dashboard
-              </Link>
-            </li>
-            <li className="text-center">
-              <Link to="#" className="flex flex-col items-center gap-1">
-                <span className="inline-block h-1.5 w-10 rounded-full bg-slate-200" />
-                Applicatio...
-              </Link>
-            </li>
-            <li className="text-center">
-              <Link to="#" className="flex flex-col items-center gap-1">
-                <span className="inline-block h-1.5 w-10 rounded-full bg-slate-200" />
-                Message
-              </Link>
-            </li>
-            <li className="text-center">
-              <Link to="#" className="flex flex-col items-center gap-1">
-                <span className="inline-block h-1.5 w-10 rounded-full bg-slate-200" />
-                Profile
-              </Link>
-            </li>
-          </ul>
-        </Container>
-      </nav> */}
-    </div>
-  );
+type AppItem = {
+  _id: string;
+  scholarshipId: string;
+  scholarshipTitle: string;
+  category?: string;
+  selectionMethod?: string;
+  applicationStatus:
+    | "Submitted"
+    | "UnderReview"
+    | "Shortlisted"
+    | "Rejected"
+    | "Awarded"
+    | "Withdrawn";
+  createdAt?: string;
 };
 
-export default ScholarDashboard;
+const ApplicationCard: React.FC<{ a: AppItem }> = ({ a }) => (
+  <li className="rounded-lg border bg-white p-4 shadow-sm transition hover:shadow-md dark:border-gray-800 dark:bg-gray-900">
+    <div className="flex items-start justify-between gap-3">
+      <div>
+        <h3 className="text-base font-semibold leading-tight line-clamp-1">
+          {a.scholarshipTitle}
+        </h3>
+        <p className="mt-0.5 text-xs text-gray-500">{a.category ?? "—"}</p>
+      </div>
+      {a.createdAt && (
+        <time
+          dateTime={a.createdAt}
+          className="rounded bg-gray-100 px-2 py-0.5 text-[11px] text-gray-700 dark:bg-gray-800 dark:text-gray-300"
+          title={new Date(a.createdAt).toLocaleString()}
+        >
+          {fmtDate(a.createdAt)}
+        </time>
+      )}
+    </div>
+
+    <div className="mt-3">
+      <span
+        className={cn(
+          "rounded-full px-2 py-0.5 text-xs",
+          statusPillCls[a.applicationStatus] ?? "bg-gray-100 text-gray-700"
+        )}
+      >
+        {a.applicationStatus}
+      </span>
+    </div>
+
+    <div className="mt-4 flex gap-2">
+      <Link
+        to={`/scholar/dashboard/applications/${a._id}`}
+        className="inline-flex items-center rounded-md border px-3 py-2 text-sm font-medium text-indigo-700 hover:bg-indigo-50"
+      >
+        View application
+      </Link>
+    </div>
+  </li>
+);
+
+/* ---------- main ---------- */
+export default function HomeDashboard() {
+  // Top: 6 latest active scholarships
+  const {
+    data: schPaged,
+    isLoading: loadingSch,
+    isFetching: fetchingSch,
+    isError: errSch,
+    refetch: refetchSch,
+  } = useGetActiveScholarshipsQuery({
+    page: 1,
+    limit: 6,
+    selectionMethod: "SelfSelection",
+  });
+
+  // Bottom: 6 latest applications (all statuses)
+  const {
+    data: appPaged,
+    isLoading: loadingApp,
+    isFetching: fetchingApp,
+    isError: errApp,
+    refetch: refetchApp,
+  } = useGetMyApplicationsQuery({
+    page: 1,
+    limit: 6,
+  });
+
+  const schItems = (schPaged as Paged<ScholarshipItem> | undefined)?.data ?? [];
+  const appItems = (appPaged as Paged<AppItem> | undefined)?.data ?? [];
+
+  return (
+    <div className="space-y-8">
+      {/* Scholarships */}
+      <section className="space-y-4">
+        <div className="flex items-center justify-between">
+          <h2 className="text-lg font-semibold">Scholarships</h2>
+          <Link
+            to="/scholar/dashboard/scholarships"
+            className="text-sm text-indigo-600 hover:underline"
+          >
+            View all
+          </Link>
+        </div>
+
+        {errSch ? (
+          <div className="rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+            Failed to load scholarships.{" "}
+            <button onClick={() => refetchSch()} className="underline">
+              Retry
+            </button>
+          </div>
+        ) : (loadingSch || fetchingSch) && schItems.length === 0 ? (
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <div
+                key={i}
+                className="rounded-lg border bg-white p-4 dark:border-gray-800 dark:bg-gray-900"
+              >
+                <Skeleton active title paragraph={{ rows: 3 }} />
+                <div className="mt-4">
+                  <Skeleton.Button active />
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : schItems.length === 0 ? (
+          <div className="rounded-md border bg-white p-6 text-center text-sm text-gray-600 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-300">
+            No active scholarships yet.
+          </div>
+        ) : (
+          <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {schItems.map((s) => (
+              <ScholarshipCard key={s._id} s={s} />
+            ))}
+          </ul>
+        )}
+      </section>
+
+      {/* Applications */}
+      <section className="space-y-4">
+        <div className="flex items-center justify-between">
+          <h2 className="text-lg font-semibold">Applications</h2>
+          <Link
+            to="/scholar/dashboard/applications?tab=Submitted"
+            className="text-sm text-indigo-600 hover:underline"
+          >
+            View all
+          </Link>
+        </div>
+
+        {errApp ? (
+          <div className="rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+            Failed to load applications.{" "}
+            <button onClick={() => refetchApp()} className="underline">
+              Retry
+            </button>
+          </div>
+        ) : (loadingApp || fetchingApp) && appItems.length === 0 ? (
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <div
+                key={i}
+                className="rounded-lg border bg-white p-4 dark:border-gray-800 dark:bg-gray-900"
+              >
+                <Skeleton active title paragraph={{ rows: 2 }} />
+                <div className="mt-4">
+                  <Skeleton.Button active />
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : appItems.length === 0 ? (
+          <div className="rounded-md border bg-white p-6 text-center text-sm text-gray-600 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-300">
+            You haven’t submitted any applications yet.
+          </div>
+        ) : (
+          <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {appItems.map((a) => (
+              <ApplicationCard key={a._id} a={a} />
+            ))}
+          </ul>
+        )}
+      </section>
+    </div>
+  );
+}

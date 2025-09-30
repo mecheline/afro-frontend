@@ -68,7 +68,7 @@ export default function ScholarshipDetail() {
               <h2 className="text-lg font-semibold leading-tight">{s.title}</h2>
               <div className="mt-1 flex flex-wrap items-center gap-2 text-xs">
                 <Tag>{s.category}</Tag>
-                <Tag color="blue">{s.selectionMethod}</Tag>
+                {/* <Tag color="blue">{s.selectionMethod}</Tag> */}
                 {s.createdAt && (
                   <span className="rounded bg-gray-100 px-2 py-0.5 text-[11px] text-gray-700 dark:bg-gray-800 dark:text-gray-300">
                     {new Date(s.createdAt).toLocaleDateString()}
@@ -102,13 +102,13 @@ export default function ScholarshipDetail() {
               </span>
             </Row>
 
-            <Row label="Recipients">
+           {/*  <Row label="Recipients">
               <span className="text-sm">
                 {typeof s.eligibility?.recipients === "number"
                   ? s.eligibility.recipients
                   : "—"}
               </span>
-            </Row>
+            </Row> */}
 
             <Row label="Documents">
               {Array.isArray(s.documents?.personal) ||

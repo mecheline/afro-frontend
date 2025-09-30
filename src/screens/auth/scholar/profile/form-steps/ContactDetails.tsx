@@ -58,11 +58,11 @@ const ContactDetailsRHF: React.FC<{
         <button
           type="button"
           onClick={() => onPrev?.(getValues())}
-          className="inline-flex items-center gap-2 rounded-full p-2 hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          className="headerTitle"
           aria-label="Go back"
         >
-          <ArrowLeft className="h-6 w-6 text-slate-800" />
-          <span className="text-3xl font-extrabold text-slate-900">
+          <ArrowLeft className="h-6 w-6" />
+          <span className="text-3xl font-extrabold">
             Contact Details
           </span>
         </button>
@@ -72,9 +72,9 @@ const ContactDetailsRHF: React.FC<{
       <main className="mx-auto w-full max-w-2xl px-5 sm:px-6 pb-40">
         {/* Preferred phone */}
         <section className="mt-8">
-          <h3 className="text-xl font-semibold text-slate-700">
+          <label className="text-xl font-semibold ">
             Preferred phone <Req />
-          </h3>
+          </label>
 
           <div className="mt-3 rounded-2xl bg-slate-50/70 p-3">
             <div className="relative">
@@ -102,9 +102,7 @@ const ContactDetailsRHF: React.FC<{
 
         {/* Alternate phone */}
         <section className="mt-8">
-          <h3 className="text-xl font-semibold text-slate-700">
-            Alternate phone
-          </h3>
+          <label className="text-xl font-semibold ">Alternate phone</label>
 
           <div className="mt-3 rounded-2xl bg-slate-50/70 p-3">
             <div className="relative">

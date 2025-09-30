@@ -97,12 +97,12 @@ const SubjectsForExam: React.FC<{
 
   return (
     <div className="rounded-2xl border border-slate-200 p-3 sm:p-4">
-      <div className="mb-2 text-base font-semibold text-slate-900">
+      <label className="mb-2 text-base font-semibold ">
         Subjects &amp; Scores (SSCE {nestIndex + 1})
-      </div>
+      </label>
 
       {fields.map((row, i) => (
-        <div key={row.id} className="mb-3 grid gap-4 sm:grid-cols-2">
+        <div key={row.id} className="mb-3 grid gap-4 sm:grid-cols-2 mt-4">
           {/* Subject */}
           <div>
             <label className="mb-2 block text-sm text-slate-700">
@@ -242,10 +242,10 @@ const SSCEExamsRHF: React.FC<{
         <button
           type="button"
           onClick={() => onPrev?.(getValues())}
-          className="inline-flex items-center gap-2 rounded-full p-2 hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          className="headerTitle"
         >
-          <ArrowLeft className="h-6 w-6 text-slate-800" />
-          <span className="text-2xl font-extrabold text-slate-900">
+          <ArrowLeft className="h-6 w-6" />
+          <span className="text-2xl font-extrabold">
             SSCE Examinations
           </span>
         </button>
@@ -282,12 +282,12 @@ const SSCEExamsRHF: React.FC<{
         <div className="space-y-8">
           {examFields.map((f, idx) => (
             <div key={f.id} className="space-y-4">
-              <div className="text-base font-semibold text-slate-900">
+              <label className="text-base font-semibold">
                 SSCE {idx + 1}
-              </div>
+              </label>
 
               {/* Date */}
-              <div>
+              <div className="mt-4">
                 <label className="mb-2 block text-lg text-slate-700">
                   Date taken (SSCE {idx + 1})
                 </label>

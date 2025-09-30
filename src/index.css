@@ -28,16 +28,32 @@ body {
   background: transparent;
 }
 
+
+label{
+  color:#cbd5e1
+}
+
+.dialog label{
+  color:black
+}
 input {
   color: black;
   background-color: white;
 }
 textarea{
   color: black;
+  background-color: white;
 }
 select{
   color: black;
+   background-color: white;
 }
 
+@layer utilities {
+  .headerTitle {
+    @apply inline-flex items-center gap-3 rounded-full p-2 hover:bg-slate-100 text-white hover:text-black focus:outline-none focus:ring-2 focus:ring-indigo-500
+  }
+  
+}
 
 

@@ -21,6 +21,8 @@ import { ScholarshipsTab } from "./screens/sponsor/ScholarshipsTab";
 import { TransactionsTab } from "./screens/sponsor/TransactionsTab";
 import Scholarship from "./screens/auth/scholar/scholarships/Scholarship";
 import ScholarshipDetail from "./screens/auth/scholar/scholarships/ScholarshipDetails";
+import ApplicationsPage from "./screens/auth/scholar/applications/Applications";
+import ApplicationDetailsPage from "./screens/auth/scholar/applications/ApplicatioDetails";
 
 function App() {
   const ProtectedScholarDashboardLayout = withAuth(ScholarDashboardLayout);
@@ -54,7 +56,19 @@ function App() {
             <Route path=":step" element={<ProfileWizard />} />
           </Route>
           <Route path="dashboard/scholarships" element={<Scholarship />} />
-          <Route path="dashboard/scholarships/:id" element={<ScholarshipDetail />} />
+          <Route
+            path="dashboard/scholarships/:id"
+            element={<ScholarshipDetail />}
+          />
+
+          <Route
+            path="dashboard/applications"
+            element={<ApplicationsPage />}
+          />
+          <Route
+            path="dashboard/applications/:appId"
+            element={<ApplicationDetailsPage />}
+          />
 
           {/* other pages in the same shell */}
           <Route path="account-setup" element={<AccountSetupWizardRHF />} />

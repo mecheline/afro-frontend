@@ -192,11 +192,8 @@ const PersonalStepForm: React.FC<{
     <div className="min-h-screen">
       {/* Top bar */}
       <div className="mx-auto w-full pt-4 sm:pt-6">
-        <button
-          className="inline-flex items-center gap-3 rounded-full p-2 hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-          aria-label="Go back"
-        >
-          <span className="text-2xl font-extrabold text-slate-900">
+        <button className="headerTitle" aria-label="Go back">
+          <span className="text-2xl font-extrabold headerTitle">
             Personal Info
           </span>
         </button>
@@ -295,7 +292,7 @@ const PersonalStepForm: React.FC<{
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5 items-start">
             {/* First Name */}
             <div className="flex-1">
-              <label className="mb-2 block text-base text-slate-700">
+              <label className="mb-2 block text-base ">
                 Legal First Name <Req />
               </label>
               <input
@@ -322,7 +319,7 @@ const PersonalStepForm: React.FC<{
             {/* Preferred Name */}
             <div className="flex-1">
               <div className="mb-2 flex items-end justify-between">
-                <label className="block text-base text-slate-700">
+                <label className="block text-base ">
                   Do you have a different Name People Call You
                 </label>
                 <span className="text-sm italic text-slate-400">
@@ -342,9 +339,7 @@ const PersonalStepForm: React.FC<{
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5 items-start">
             {/* Middle Name */}
             <div className="flex-1">
-              <label className="mb-2 block text-base text-slate-700">
-                Middle Name
-              </label>
+              <label className="mb-2 block text-base ">Middle Name</label>
               <input
                 {...register("middleName")}
                 className="h-12 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 text-base placeholder:text-slate-400 shadow-sm focus:bg-white focus:border-indigo-500 focus:outline-none focus:ring-4 focus:ring-indigo-100"
@@ -355,7 +350,7 @@ const PersonalStepForm: React.FC<{
 
             {/* Family Surname */}
             <div className="flex-1">
-              <label className="mb-2 block text-base text-slate-700">
+              <label className="mb-2 block text-base ">
                 Family Surname <Req />
               </label>
               <input
@@ -384,10 +379,7 @@ const PersonalStepForm: React.FC<{
           <div className="flex flex-col md:flex-row gap-5 items-start">
             {/* Suffix */}
             <div className="w-full md:w-auto">
-              <label
-                htmlFor="suffix"
-                className="mb-2 block text-base text-slate-700"
-              >
+              <label htmlFor="suffix" className="mb-2 block text-base ">
                 Suffix <Req />
               </label>
               <div className="relative">
@@ -421,7 +413,7 @@ const PersonalStepForm: React.FC<{
 
             {/* Former legal name materials */}
             <div className="w-full flex-1">
-              <label className="mb-2 block text-base text-slate-700">
+              <label className="mb-2 block text-base ">
                 Do you ave any material under a former legal name
               </label>
               <div className="relative">
@@ -444,7 +436,7 @@ const PersonalStepForm: React.FC<{
 
             {/* DOB */}
             <div className="w-full flex-1">
-              <label className="mb-2 block text-base text-slate-700">
+              <label className="mb-2 block text-base ">
                 Date of Birth <Req />
               </label>
               <div className="relative">
@@ -473,7 +465,7 @@ const PersonalStepForm: React.FC<{
           </div>
 
           {/* Bottom action bar */}
-          <div className="border-slate-200 bg-white/95 p-4 backdrop-blur">
+          <div className="border-slate-200 p-4 backdrop-blur">
             <div className="mx-auto w-full max-w-xl">
               <div className="grid grid-cols-2 gap-4">
                 <button

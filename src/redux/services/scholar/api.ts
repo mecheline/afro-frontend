@@ -195,7 +195,7 @@ const baseQuery = fetchBaseQuery({
 export const scholarApi = createApi({
   reducerPath: "scholar",
   baseQuery,
-  tagTypes: ["Transactions", "Scholarships"],
+  tagTypes: ["Transactions", "Scholarships", "MyApplications"],
   endpoints: (builder) => ({
     /* ---------------------------
      * Scholar Auth & Account
@@ -527,6 +527,43 @@ export const scholarApi = createApi({
       query: () => `/sponsors/api/scholarship/stats`,
       providesTags: ["Scholarships"],
     }),
+    createApplication: builder.mutation<
+      { ok: true; applicationId: string; msg:string },
+      FormData
+    >({
+      query: (body) => ({
+        url: "/scholars/api/applications",
+        method: "POST",
+        body, // FormData
+      }),
+    }),
+    getMyApplications: builder.query<
+      Paged<any>,
+      { status?: string; page: number; limit: number; q?: string }
+    >({
+      query: ({ status, page, limit, q }) => {
+        const params = new URLSearchParams();
+        if (status) params.set("status", status);
+        params.set("page", String(page));
+        params.set("limit", String(limit));
+        if (q) params.set("q", q);
+        return `/scholars/api/applications?${params.toString()}`;
+      },
+      providesTags: ["MyApplications"],
+    }),
+
+    getMyApplicationStats: builder.query<
+      { [k: string]: number } & { total: number },
+      void
+    >({
+      query: () => `/scholars/api/applications/stats`,
+      providesTags: ["MyApplications"],
+    }),
+
+    getMyApplicationById: builder.query<any, string>({
+      query: (id) => `/scholars/api/applications/${id}`,
+      providesTags: (_r, _e, id) => [{ type: "MyApplications", id }],
+    }),
   }),
 });
 
@@ -572,4 +609,8 @@ export const {
   useGetTransactionsQuery,
   useGetScholarshipStatsQuery,
   useLazyGetScholarshipStatsQuery,
+  useCreateApplicationMutation,
+  useGetMyApplicationsQuery,
+  useGetMyApplicationStatsQuery,
+  useGetMyApplicationByIdQuery,
 } = scholarApi;
