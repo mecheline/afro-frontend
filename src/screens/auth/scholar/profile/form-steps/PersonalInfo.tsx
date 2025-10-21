@@ -1,7 +1,7 @@
 // PersonalInfoRHF.tsx
 import React, { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
-import { Calendar, ChevronDown, Pencil, UploadCloud } from "lucide-react";
+import { Pencil, UploadCloud } from "lucide-react";
 import { useGetAccountQuery } from "../../../../../redux/services/scholar/api";
 import moment from "moment";
 import { Req } from "../../../../../constants/Required";
@@ -96,8 +96,8 @@ const PersonalStepForm: React.FC<{
     }
   });
 
-  const suffix = watch("suffix");
-  const isPlaceholder = !suffix;
+  //const suffix = watch("suffix");
+  //const isPlaceholder = !suffix;
 
   // Avatar state
   const fileRef = useRef<HTMLInputElement | null>(null);
@@ -322,7 +322,6 @@ const PersonalStepForm: React.FC<{
                 className="textInput h-12 w-full rounded-md border border-slate-200 bg-slate-50 px-4 text-base font-semibold text-slate-900  focus:bg-white focus:outline-none"
                 placeholder="Joeyet"
               />
-              <p className="mt-1 h-5 text-sm invisible">placeholder</p>
             </div>
           </div>
 
@@ -348,7 +347,7 @@ const PersonalStepForm: React.FC<{
                 {...register("lastName", {
                   required: "Family surname is required",
                 })}
-                className={`textInput h-12 w-full rounded-md border border-gray-200 px-4 text-base font-semibold 
+                className={`textInput h-12 w-full rounded-md border border-gray-200 px-4 text-base 
                 ${errors.lastName ? "border-red-400 focus:ring-red-100" : ""}`}
                 placeholder="Adeniran"
               />
@@ -369,14 +368,12 @@ const PersonalStepForm: React.FC<{
               <label htmlFor="suffix" className="mb-2 block text-base ">
                 Suffix <Req />
               </label>
-              <div className="relative">
+              <div className="">
                 <select
                   id="suffix"
                   {...register("suffix", { required: "Select a suffix" })}
                   className={`textInput h-12 w-full rounded-md border border-gray-200 px-4 pr-10
-                    text-base font-semibold  appearance-none [&::-ms-expand]:hidden
-                    focus:bg-white focus:outline-none
-                    ${isPlaceholder ? "text-slate-400" : "text-slate-900"}`}
+                    text-base`}
                 >
                   <option value="" disabled hidden>
                     Select suffix
@@ -387,7 +384,6 @@ const PersonalStepForm: React.FC<{
                     </option>
                   ))}
                 </select>
-                <ChevronDown className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
               </div>
               <p
                 className={`mt-1 h-5 text-sm ${
@@ -406,19 +402,12 @@ const PersonalStepForm: React.FC<{
               <div className="relative">
                 <select
                   {...register("formerMaterial")}
-                  className="peer textInput h-12 w-full appearance-none rounded-md border border-slate-200 px-4 pr-10 text-base font-semibold 
-                    focus:bg-white 
-                    [&::-ms-expand]:hidden"
+                  className="textInput h-12 w-full rounded-md border border-slate-200 px-4 pr-10 text-base"
                 >
                   <option>Yes</option>
                   <option>No</option>
                 </select>
-                <ChevronDown
-                  aria-hidden="true"
-                  className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400 peer-focus:text-indigo-500"
-                />
               </div>
-              <p className="mt-1 h-5 text-sm invisible">placeholder</p>
             </div>
 
             {/* DOB */}
@@ -426,8 +415,7 @@ const PersonalStepForm: React.FC<{
               <label className="mb-2 block text-base ">
                 Date of Birth <Req />
               </label>
-              <div className="relative">
-                <Calendar className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
+              <div className="">
                 <input
                   type="date"
                   {...register("dateOfBirth", {

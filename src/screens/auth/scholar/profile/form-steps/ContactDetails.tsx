@@ -24,6 +24,8 @@ const ContactDetailsRHF: React.FC<{
     preferredPhone: account?.profile?.phone,
   });
 
+  console.log(mapAccountToPersonalInfo(accountInfo));
+
   const { register, handleSubmit, getValues, reset, formState } =
     useForm<FormValues>({
       defaultValues: {
@@ -35,6 +37,8 @@ const ContactDetailsRHF: React.FC<{
     });
 
   const { errors } = formState;
+
+  console.log(initialData);
 
   useEffect(() => {
     if (initialData) reset({ ...initialData });
