@@ -63,10 +63,10 @@ const selectStyles = {
   control: (base: any, state: any) => ({
     ...base,
     minHeight: 48,
-    borderRadius: 16,
+    borderRadius: 8,
     borderColor: state.isFocused ? "#6366f1" : "#e2e8f0",
     boxShadow: state.isFocused ? "0 0 0 4px rgba(99,102,241,0.15)" : "none",
-    backgroundColor: "#f8fafc",
+    backgroundColor: "#fff",
     ":hover": { borderColor: state.isFocused ? "#6366f1" : "#e2e8f0" },
   }),
   option: (base: any, state: any) => ({
@@ -245,9 +245,7 @@ const SSCEExamsRHF: React.FC<{
           className="headerTitle"
         >
           <ArrowLeft className="h-6 w-6" />
-          <span className="text-2xl font-extrabold">
-            SSCE Examinations
-          </span>
+          <span className="text-2xl font-extrabold">SSCE Examinations</span>
         </button>
       </div>
 
@@ -282,9 +280,7 @@ const SSCEExamsRHF: React.FC<{
         <div className="space-y-8">
           {examFields.map((f, idx) => (
             <div key={f.id} className="space-y-4">
-              <label className="text-base font-semibold">
-                SSCE {idx + 1}
-              </label>
+              <label className="text-base font-semibold">SSCE {idx + 1}</label>
 
               {/* Date */}
               <div className="mt-4">
@@ -296,10 +292,10 @@ const SSCEExamsRHF: React.FC<{
                   {...register(`exams.${idx}.date` as const, {
                     required: "Select date",
                   })}
-                  className={`h-12 w-full rounded-2xl border bg-slate-50 px-4 text-base shadow-sm focus:bg-white focus:outline-none focus:ring-4 ${
+                  className={`textInput h-12 w-full rounded-md border px-4 text-base focus:bg-white focus:outline-none ${
                     (errors.exams?.[idx] as any)?.date
                       ? "border-red-400 focus:ring-red-100"
-                      : "border-slate-200 focus:border-indigo-500 focus:ring-indigo-100"
+                      : "border-slate-200"
                   }`}
                 />
                 <div className="min-h-5 pt-1 text-sm text-red-600">
@@ -346,10 +342,10 @@ const SSCEExamsRHF: React.FC<{
                     required: "Examination number is required",
                   })}
                   placeholder="e.g., 10CH020"
-                  className={`h-12 w-full rounded-2xl border bg-slate-50 px-4 text-base shadow-sm focus:bg-white focus:outline-none focus:ring-4 ${
+                  className={`textInput h-12 w-full rounded-md border px-4 text-base focus:bg-white focus:outline-none ${
                     (errors.exams?.[idx] as any)?.examNumber
                       ? "border-red-400 focus:ring-red-100"
-                      : "border-slate-200 focus:border-indigo-500 focus:ring-indigo-100"
+                      : "border-slate-200"
                   }`}
                 />
                 <div className="min-h-5 pt-1 text-sm text-red-600">

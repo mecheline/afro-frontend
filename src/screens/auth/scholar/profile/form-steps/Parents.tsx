@@ -105,10 +105,10 @@ const selectStyles = {
   control: (base: any, state: any) => ({
     ...base,
     minHeight: 48,
-    borderRadius: 12,
+    borderRadius: 8,
     borderColor: state.isFocused ? "#6366f1" : "#e2e8f0",
     boxShadow: state.isFocused ? "0 0 0 4px rgba(99,102,241,0.15)" : "none",
-    backgroundColor: "#f8fafc",
+    backgroundColor: "#fff",
     ":hover": { borderColor: state.isFocused ? "#6366f1" : "#e2e8f0" },
   }),
   option: (base: any, state: any) => ({
@@ -278,7 +278,7 @@ function ParentSection({
                 {...register(`${path}.firstName` as const, {
                   required: "First name is required",
                 })}
-                className={`h-12 w-full rounded-xl text-black border bg-slate-50 px-4 text-sm font-semibold shadow-sm focus:bg-white focus:border-indigo-500 focus:outline-none focus:ring-4 focus:ring-indigo-100 ${
+                className={`textInput h-12 w-full rounded-md text-black border px-4 text-sm font-semibold focus:bg-white focus:outline-none ${
                   e?.firstName ? "border-red-400" : "border-slate-200"
                 }`}
                 placeholder="First name"
@@ -290,7 +290,7 @@ function ParentSection({
               <Label>Middle name</Label>
               <input
                 {...register(`${path}.middleName` as const)}
-                className="h-12 w-full text-black rounded-xl border border-slate-200 bg-slate-50 px-4 text-sm font-semibold shadow-sm focus:bg-white focus:border-indigo-500 focus:outline-none focus:ring-4 focus:ring-indigo-100"
+                className="textInput h-12 w-full text-black rounded-md border border-slate-200 bg-slate-50 px-4 text-sm font-semibold focus:bg-white focus:outline-none"
                 placeholder="Middle name"
               />
               <FieldError />
@@ -302,7 +302,7 @@ function ParentSection({
                 {...register(`${path}.lastName` as const, {
                   required: "Last name is required",
                 })}
-                className={`h-12 w-full text-black rounded-xl border bg-slate-50 px-4 text-sm font-semibold shadow-sm focus:bg-white focus:border-indigo-500 focus:outline-none focus:ring-4 focus:ring-indigo-100 ${
+                className={`textInput h-12 w-full text-black rounded-md border bg-slate-50 px-4 text-sm font-semibold focus:bg-white  focus:outline-none ${
                   e?.lastName ? "border-red-400" : "border-slate-200"
                 }`}
                 placeholder="Last name"
@@ -314,7 +314,7 @@ function ParentSection({
               <Label>Former last name</Label>
               <input
                 {...register(`${path}.formerLastName` as const)}
-                className="h-12 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 text-sm font-semibold shadow-sm focus:bg-white focus:border-indigo-500 focus:outline-none focus:ring-4 focus:ring-indigo-100"
+                className="textInput h-12 w-full rounded-md border border-slate-200 bg-slate-50 px-4 text-sm font-semibold focus:bg-white focus:outline-none"
                 placeholder="Former last name"
               />
               <FieldError />
@@ -351,7 +351,7 @@ function ParentSection({
               <input
                 type="email"
                 {...register(`${path}.email` as const)}
-                className="h-12 w-full text-black rounded-xl border border-slate-200 bg-slate-50 px-4 text-sm font-semibold shadow-sm focus:bg-white focus:border-indigo-500 focus:outline-none focus:ring-4 focus:ring-indigo-100"
+                className="textInput h-12 w-full text-black rounded-md border border-slate-200 bg-slate-50 px-4 text-sm font-semibold focus:bg-white focus:outline-none"
                 placeholder="email@example.com"
               />
               <FieldError />
@@ -362,7 +362,7 @@ function ParentSection({
               <input
                 type="tel"
                 {...register(`${path}.phone` as const)}
-                className="h-12 w-full text-black  rounded-xl border border-slate-200 bg-slate-50 px-4 text-sm font-semibold shadow-sm focus:bg-white focus:border-indigo-500 focus:outline-none focus:ring-4 focus:ring-indigo-100"
+                className="textInput h-12 w-full text-black  rounded-md border border-slate-200 bg-slate-50 px-4 text-sm font-semibold focus:bg-white focus:outline-none"
                 placeholder="+234 801 234 5678"
               />
               <FieldError />
@@ -373,7 +373,7 @@ function ParentSection({
               <Label>Occupation</Label>
               <input
                 {...register(`${path}.occupation` as const)}
-                className="h-12 w-full text-black rounded-xl border border-slate-200 bg-slate-50 px-4 text-sm font-semibold shadow-sm focus:bg-white focus:border-indigo-500 focus:outline-none focus:ring-4 focus:ring-indigo-100"
+                className="textInput h-12 w-full text-black rounded-md border border-slate-200 bg-slate-50 px-4 text-sm font-semibold focus:bg-white focus:outline-none"
                 placeholder="Accountant"
               />
               <FieldError />
@@ -481,7 +481,7 @@ function ParentSection({
                 type="number"
                 min={0}
                 {...register(`${path}.institutionsCount` as const)}
-                className="h-12 w-full text-black rounded-xl border border-slate-200 bg-slate-50 px-4 text-sm font-semibold shadow-sm focus:bg-white focus:border-indigo-500 focus:outline-none focus:ring-4 focus:ring-indigo-100"
+                className="textInput h-12 w-full text-black rounded-md border border-slate-200 bg-slate-50 px-4 text-sm font-semibold focus:bg-white focus:outline-none"
                 placeholder="e.g. 2"
               />
               {/* <FieldError /> */}
@@ -492,7 +492,7 @@ function ParentSection({
               <Label>Degrees received by parent from college</Label>
               <input
                 {...register(`${path}.degreeReceived` as const)}
-                className="h-12 w-full text-black rounded-xl border border-slate-200 bg-slate-50 px-4 text-sm font-semibold shadow-sm focus:bg-white focus:border-indigo-500 focus:outline-none focus:ring-4 focus:ring-indigo-100"
+                className="textInput h-12 w-full text-black rounded-md border border-slate-200 px-4 text-sm font-semibold focus:bg-white focus:outline-none"
                 placeholder="-"
               />
               {/* <FieldError /> */}
@@ -506,7 +506,7 @@ function ParentSection({
                   type="date"
                   placeholder="Date of Birth"
                   {...register(`${path}.dateOfBirth` as const)}
-                  className="h-14 w-full text-black rounded-2xl border bg-slate-50/60 px-4 pr-10 text-base shadow-sm focus:bg-white focus:outline-none focus:ring-4 border-slate-200 focus:border-indigo-500 focus:ring-indigo-100"
+                  className="textInput h-14 w-full text-black rounded-md border px-4 pr-10 text-base focus:bg-white focus:outline-none border-slate-200 "
                 />
               </div>
             </div>

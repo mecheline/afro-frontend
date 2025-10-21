@@ -20,7 +20,13 @@ import { Profile } from "../../../../redux/slices/scholar/authSlice";
 
 // ---- helpers/data (trim/extend as you like) ----
 const EMPLOYMENT = ["Unemployed", "Part-time", "Full-time", "Others"] as const;
-const DEGREES = ["WASSCE", "Bachelor's", "Master's", "Doctoral"] as const;
+const DEGREES = [
+  "Certificate",
+  "Diploma",
+  "Bachelors",
+  "Masters",
+  "Doctorate",
+] as const;
 
 const COUNTRIES = [
   "Afghanistan",

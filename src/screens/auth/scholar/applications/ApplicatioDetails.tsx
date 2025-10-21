@@ -25,7 +25,7 @@ const Section: React.FC<{ title: string; children: React.ReactNode }> = ({
   title,
   children,
 }) => (
-  <section className="rounded-lg border p-4 shadow-sm">
+  <section className="rounded-lg border border-gray-200 p-4 shadow-sm">
     <h3 className="mb-2 text-sm font-semibold uppercase tracking-wide text-gray-600">
       {title}
     </h3>
@@ -75,7 +75,7 @@ export default function ApplicationDetailsPage() {
           <StatusPill status={a.applicationStatus} />
           <Link
             to="/scholar/dashboard/applications"
-            className="rounded-md border px-3 py-1.5 text-sm hover:bg-gray-50 hover:text-black"
+            className="rounded-md border border-gray-200 px-3 py-1.5 text-sm hover:bg-gray-50 hover:text-black"
           >
             Back to Applications
           </Link>

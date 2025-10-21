@@ -2,7 +2,7 @@
 import React, { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { ArrowLeft, MapPin } from "lucide-react";
-import  { Req } from "../../../../../constants/Required";
+import { Req } from "../../../../../constants/Required";
 
 type AddressForm = { homeAddress: string; altAddress?: string };
 
@@ -40,9 +40,7 @@ const AddressStepForm: React.FC<{
           aria-label="Go back"
         >
           <ArrowLeft className="h-6 w-6" />
-          <span className="text-3xl font-extrabold">
-            Address
-          </span>
+          <span className="text-3xl font-extrabold">Address</span>
         </button>
       </header>
 
@@ -64,12 +62,11 @@ const AddressStepForm: React.FC<{
                   required: "Home address is required",
                 })}
                 placeholder="12, Akanbi Disu, Ikota, Lekki, Lagos"
-                className={`h-14 w-full rounded-2xl border bg-slate-50/70 pl-10 pr-4 text-base font-semibold text-slate-900 shadow-sm
-                focus:bg-white focus:outline-none focus:ring-4
+                className={`textInput h-14 w-full rounded-md border pl-10 pr-4 text-base font-semibold text-slate-900
                 ${
                   errors.homeAddress
                     ? "border-red-400 focus:ring-red-100"
-                    : "border-slate-200 focus:border-indigo-500 focus:ring-indigo-100"
+                    : "border-slate-200"
                 }`}
               />
             </div>
@@ -97,7 +94,7 @@ const AddressStepForm: React.FC<{
               <input
                 {...register("altAddress")}
                 placeholder="12, Akanbi Disu, Ikota, Lekki, Lagos"
-                className="h-14 w-full rounded-2xl border border-slate-200 bg-slate-50/70 pl-10 pr-4 text-base font-semibold text-slate-900 shadow-sm focus:bg-white focus:border-indigo-500 focus:outline-none focus:ring-4 focus:ring-indigo-100"
+                className="textInput h-14 w-full rounded-md border pl-10 pr-4 text-base font-semibold "
               />
             </div>
             <p className="mt-1 h-5 text-sm invisible">placeholder</p>

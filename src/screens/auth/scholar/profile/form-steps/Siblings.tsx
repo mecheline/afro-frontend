@@ -8,7 +8,6 @@ import { ArrowLeft, ChevronDown } from "lucide-react";
   ages: (number | "")[]; // dynamic ages
 }; */
 
-
 type FormValues = {
   count: number;
   ages: { value: number | "" }[];
@@ -68,12 +67,10 @@ const SiblingsRHF: React.FC<{
         <button
           type="button"
           onClick={() => onPrev?.(getValues())}
-         className="headerTitle"
+          className="headerTitle"
         >
           <ArrowLeft className="h-6 w-6" />
-          <span className="text-2xl font-extrabold">
-            Siblings
-          </span>
+          <span className="text-2xl font-extrabold">Siblings</span>
         </button>
       </div>
 
@@ -81,13 +78,11 @@ const SiblingsRHF: React.FC<{
       <main className="mx-auto w-full max-w-xl px-4 pb-40 sm:px-6">
         {/* How many siblings */}
         <div className="mt-6">
-          <label className="mb-2 block text-lg">
-            How many siblings
-          </label>
+          <label className="mb-2 block text-lg">How many siblings</label>
           <div className="relative">
             <select
               {...register("count", { valueAsNumber: true })}
-              className="h-14 w-full text-black appearance-none rounded-2xl border border-slate-200 bg-slate-50 px-4 pr-10 text-base font-semibold shadow-sm focus:bg-white focus:border-indigo-500 focus:outline-none focus:ring-4 focus:ring-indigo-100"
+              className="textInput h-14 w-full text-black appearance-none rounded-md border border-slate-200 bg-slate-50 px-4 pr-10 text-base font-semibold focus:bg-white focus:outline-none"
             >
               {Array.from({ length: MAX_SIBLINGS + 1 }).map((_, i) => (
                 <option key={i} value={i}>
@@ -117,10 +112,10 @@ const SiblingsRHF: React.FC<{
                   min: { value: 0, message: "Must be 0 or more" },
                   max: { value: 120, message: "Unrealistic age" },
                 })}
-                className={`h-14 w-full text-black rounded-2xl border bg-slate-50 px-4 text-base font-semibold shadow-sm focus:bg-white focus:outline-none focus:ring-4 ${
+                className={`textInput h-14 w-full text-black rounded-md border bg-slate-50 px-4 text-base font-semibold focus:bg-white focus:outline-none  ${
                   errors.ages?.[idx]
                     ? "border-red-400 focus:ring-red-100"
-                    : "border-slate-200 focus:ring-indigo-100 focus:border-indigo-500"
+                    : "border-slate-200"
                 }`}
               />
               {/* reserved error space to avoid layout shift */}

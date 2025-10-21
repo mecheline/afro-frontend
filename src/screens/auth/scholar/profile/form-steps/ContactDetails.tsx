@@ -62,9 +62,7 @@ const ContactDetailsRHF: React.FC<{
           aria-label="Go back"
         >
           <ArrowLeft className="h-6 w-6" />
-          <span className="text-3xl font-extrabold">
-            Contact Details
-          </span>
+          <span className="text-3xl font-extrabold">Contact Details</span>
         </button>
       </header>
 
@@ -86,7 +84,7 @@ const ContactDetailsRHF: React.FC<{
                   required: "Preferred phone is required",
                   minLength: { value: 6, message: "Enter a valid phone" },
                 })}
-                className={`h-12 w-full rounded-xl border bg-white pl-10 pr-3 text-base font-semibold shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-4 focus:ring-indigo-100 ${
+                className={`h-12 w-full rounded-md border bg-white pl-10 pr-3 text-base font-semibold focus:outline-none ${
                   errors.preferredPhone
                     ? "border-red-400 focus:ring-red-100"
                     : "border-slate-200"
@@ -111,7 +109,7 @@ const ContactDetailsRHF: React.FC<{
                 inputMode="tel"
                 placeholder="+234 816 503 3526"
                 {...register("alternatePhone")}
-                className="h-12 w-full rounded-xl border border-slate-200 bg-white pl-10 pr-3 text-base font-semibold shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-4 focus:ring-indigo-100"
+                className="h-12 w-full rounded-md border border-slate-200 bg-white pl-10 pr-3 text-base font-semibold focus:outline-none "
               />
             </div>
           </div>

@@ -64,9 +64,7 @@ const FinancialAnalysisRHF: React.FC<{
           className="headerTitle"
         >
           <ArrowLeft className="h-6 w-6" />
-          <span className="text-2xl font-extrabold">
-            Financial Analysis
-          </span>
+          <span className="text-2xl font-extrabold">Financial Analysis</span>
         </button>
       </div>
 
@@ -81,10 +79,10 @@ const FinancialAnalysisRHF: React.FC<{
             inputMode="decimal"
             placeholder="24,000"
             {...regCurrency("tuitionFees")}
-            className={`h-14 w-full text-black rounded-2xl border bg-slate-50 px-4 text-base shadow-sm focus:bg-white focus:outline-none focus:ring-4 ${
+            className={`textInput h-14 w-full text-black rounded-md border bg-slate-50 px-4 text-base focus:bg-white focus:outline-none ${
               errors.tuitionFees
                 ? "border-red-400 focus:ring-red-100"
-                : "border-slate-200 focus:border-indigo-500 focus:ring-indigo-100"
+                : "border-slate-200"
             }`}
           />
           {errors.tuitionFees && (
@@ -103,10 +101,10 @@ const FinancialAnalysisRHF: React.FC<{
             inputMode="decimal"
             placeholder="140,000"
             {...regCurrency("accommodationFees")}
-            className={`h-14 w-full rounded-2xl border bg-slate-50 px-4 text-base shadow-sm focus:bg-white focus:outline-none focus:ring-4 ${
+            className={`textInput h-14 w-full rounded-md border bg-slate-50 px-4 text-base focus:bg-white focus:outline-none ${
               errors.accommodationFees
                 ? "border-red-400 focus:ring-red-100"
-                : "border-slate-200 focus:border-indigo-500 focus:ring-indigo-100"
+                : "border-slate-200"
             }`}
           />
         </div>
@@ -120,10 +118,10 @@ const FinancialAnalysisRHF: React.FC<{
             inputMode="decimal"
             placeholder="140,000"
             {...regCurrency("feedingAllowance")}
-            className={`h-14 w-full rounded-2xl border bg-slate-50 px-4 text-base shadow-sm focus:bg-white focus:outline-none focus:ring-4 ${
+            className={`textInput h-14 w-full rounded-md border bg-slate-50 px-4 text-base focus:bg-white focus:outline-none ${
               errors.feedingAllowance
                 ? "border-red-400 focus:ring-red-100"
-                : "border-slate-200 focus:border-indigo-500 focus:ring-indigo-100"
+                : "border-slate-200"
             }`}
           />
         </div>
@@ -137,7 +135,7 @@ const FinancialAnalysisRHF: React.FC<{
             rows={8}
             placeholder="Tell us more about your financial situation…"
             {...register("notes")}
-            className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-base shadow-sm focus:bg-white focus:border-indigo-500 focus:outline-none focus:ring-4 focus:ring-indigo-100"
+            className="textInput w-full rounded-md border border-slate-200 bg-slate-50 px-4 py-3 text-base focus:bg-white focus:outline-none"
           />
         </div>
         <div className="mx-auto w-full max-w-xl mt-8">

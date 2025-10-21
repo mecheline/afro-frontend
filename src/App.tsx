@@ -23,6 +23,19 @@ import Scholarship from "./screens/auth/scholar/scholarships/Scholarship";
 import ScholarshipDetail from "./screens/auth/scholar/scholarships/ScholarshipDetails";
 import ApplicationsPage from "./screens/auth/scholar/applications/Applications";
 import ApplicationDetailsPage from "./screens/auth/scholar/applications/ApplicatioDetails";
+import SettingsPage from "./screens/auth/scholar/settings/Settings";
+import SponsorSettingsPage from "./screens/sponsor/settings/Settings";
+import ProfileWizardShell from "./screens/sponsor/profile/Shell";
+import PersonalInformation from "./screens/sponsor/profile/PersonalInformation";
+import CountryOfResidence from "./screens/sponsor/profile/CountryOfResidence";
+import EmploymentStatus from "./screens/sponsor/profile/EmploymentStatus";
+import SocialMedia from "./screens/sponsor/profile/SocialMedia";
+import Hobbies from "./screens/sponsor/profile/Hobbies";
+import Anniversaries from "./screens/sponsor/profile/Anniversaries";
+import VerificationDocument from "./screens/sponsor/profile/VerificationDocument";
+import MatchedScholars from "./screens/sponsor/MatchedScholars";
+import Applications from "./screens/sponsor/Applications";
+import ApplicationDetail from "./screens/sponsor/ApplicationDetail";
 
 function App() {
   const ProtectedScholarDashboardLayout = withAuth(ScholarDashboardLayout);
@@ -39,7 +52,10 @@ function App() {
 
         <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="/resets-password" element={<ResetsPassword />} />
-
+        <Route
+          path="/scholar/account-setup"
+          element={<AccountSetupWizardRHF />}
+        />
         {/* SCHOLAR DASHBOARD SHELL (Header + Sidebar) */}
         <Route path="/scholar" element={<ProtectedScholarDashboardLayout />}>
           {/* dashboard home */}
@@ -61,17 +77,14 @@ function App() {
             element={<ScholarshipDetail />}
           />
 
-          <Route
-            path="dashboard/applications"
-            element={<ApplicationsPage />}
-          />
+          <Route path="dashboard/applications" element={<ApplicationsPage />} />
           <Route
             path="dashboard/applications/:appId"
             element={<ApplicationDetailsPage />}
           />
+          <Route path="dashboard/settings" element={<SettingsPage />} />
 
           {/* other pages in the same shell */}
-          <Route path="account-setup" element={<AccountSetupWizardRHF />} />
         </Route>
 
         {/* SPONSOR SIDE */}
@@ -95,7 +108,31 @@ function App() {
 
         <Route path="/sponsor/dashboard" element={<SponsorDashboardLayout />}>
           <Route index element={<ScholarshipsTab />} />
+          <Route path="matched-scholars/:id" element={<MatchedScholars />} />
+          <Route path="applications/:id" element={<Applications />} />
+          <Route
+            path="applications/:id/application/:appId"
+            element={<ApplicationDetail />}
+          />
           <Route path="transactions" element={<TransactionsTab />} />
+          <Route path="settings" element={<SponsorSettingsPage />} />
+          <Route
+            path="/sponsor/dashboard/profile"
+            element={<ProfileWizardShell />}
+          >
+            {/* default to personal */}
+            <Route index element={<Navigate to="personal" replace />} />
+            <Route path="personal" element={<PersonalInformation />} />
+            <Route path="residence" element={<CountryOfResidence />} />
+            <Route path="employment" element={<EmploymentStatus />} />
+            <Route path="social" element={<SocialMedia />} />
+            <Route path="hobbies" element={<Hobbies />} />
+            <Route path="anniversaries" element={<Anniversaries />} />
+            <Route
+              path="verification"
+              element={<VerificationDocument step={7} />}
+            />
+          </Route>
         </Route>
       </Routes>
 

@@ -68,7 +68,7 @@ const LeadershipTrackRecordRHF: React.FC<{
       <main className="mx-auto w-full max-w-2xl px-4 pb-40 sm:px-6">
         {/* Contribution textarea */}
         <div className="mt-6">
-          <p className="mb-2 text-[#cbd5e1]">
+          <p className="mb-2">
             Share your contribution to make your community better
           </p>
           <textarea
@@ -78,10 +78,10 @@ const LeadershipTrackRecordRHF: React.FC<{
               required: "Please tell us about your contribution",
               minLength: { value: 20, message: "At least 20 characters" },
             })}
-            className={`w-full rounded-2xl border bg-slate-50 px-4 py-3 text-base shadow-sm focus:bg-white focus:outline-none focus:ring-4 ${
+            className={`textInput w-full rounded-md border px-4 py-3 text-base focus:bg-white focus:outline-none ${
               errors.contribution
                 ? "border-red-400 focus:ring-red-100"
-                : "border-slate-200 focus:border-indigo-500 focus:ring-indigo-100"
+                : "border-slate-200"
             }`}
           />
           <div className="min-h-5 text-sm text-red-600">
@@ -122,10 +122,10 @@ const LeadershipTrackRecordRHF: React.FC<{
                           required: "Organization name is required",
                         })}
                         placeholder="Enter"
-                        className={`h-12 w-full rounded-2xl border bg-slate-50 px-4 text-base shadow-sm focus:bg-white focus:outline-none focus:ring-4 ${
+                        className={`textInput h-12 w-full rounded-md border bg-slate-50 px-4 text-base focus:bg-white focus:outline-none  ${
                           errors.organizations?.[i]?.name
                             ? "border-red-400 focus:ring-red-100"
-                            : "border-slate-200 focus:border-indigo-500 focus:ring-indigo-100"
+                            : "border-slate-200"
                         }`}
                       />
                       <div className="min-h-5 text-sm text-red-600">
@@ -142,7 +142,7 @@ const LeadershipTrackRecordRHF: React.FC<{
                       <input
                         {...register(`organizations.${i}.address` as const)}
                         placeholder="Enter"
-                        className="h-12 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 text-base shadow-sm focus:bg-white focus:border-indigo-500 focus:outline-none focus:ring-4 focus:ring-indigo-100"
+                        className="textInput h-12 w-full rounded-md border border-slate-200 px-4 text-base focus:bg-white focus:outline-none"
                       />
                     </div>
 
@@ -155,7 +155,7 @@ const LeadershipTrackRecordRHF: React.FC<{
                         inputMode="tel"
                         {...register(`organizations.${i}.phone` as const)}
                         placeholder="Enter"
-                        className="h-12 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 text-base shadow-sm focus:bg-white focus:border-indigo-500 focus:outline-none focus:ring-4 focus:ring-indigo-100"
+                        className="textInput h-12 w-full rounded-md border border-slate-200 px-4 text-base focus:bg-white focus:outline-none"
                       />
                     </div>
 
@@ -173,10 +173,10 @@ const LeadershipTrackRecordRHF: React.FC<{
                           },
                         })}
                         placeholder="Enter"
-                        className={`h-12 w-full rounded-2xl border bg-slate-50 px-4 text-base shadow-sm focus:bg-white focus:outline-none focus:ring-4 ${
+                        className={`textInput h-12 w-full rounded-md border bg-slate-50 px-4 text-base focus:bg-white focus:outline-none ${
                           errors.organizations?.[i]?.email
                             ? "border-red-400 focus:ring-red-100"
-                            : "border-slate-200 focus:border-indigo-500 focus:ring-indigo-100"
+                            : "border-slate-200"
                         }`}
                       />
                       <div className="min-h-5 text-sm text-red-600">

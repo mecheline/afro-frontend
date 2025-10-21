@@ -1,5 +1,5 @@
 import { Fragment, useEffect, useState } from "react";
-import { NavLink, useLocation } from "react-router"; // <-- fix import
+import { NavLink, useLocation } from "react-router"; // fixed
 import {
   X,
   LayoutGrid,
@@ -9,21 +9,21 @@ import {
   User,
   ChevronDown,
   ChevronRight,
+  LogOut,
 } from "lucide-react";
 import clsx from "clsx";
 import logo from "../../../assets/logo.png";
+import useScholarLogout from "../../../hooks/useScholarLogout";
 
 type Variant = "mobile" | "desktop";
 type Props = { open?: boolean; onClose?: () => void; variant: Variant };
 
-/** Primary nav (excluding Profile, which becomes a collapsible group) */
 const mainNav = [
   { to: "/scholar/dashboard", label: "Dashboard", icon: LayoutGrid, end: true },
   {
     to: "/scholar/dashboard/scholarships",
     label: "Scholarships",
     icon: GraduationCap,
-    //end: true,
   },
   {
     to: "/scholar/dashboard/applications",
@@ -33,7 +33,6 @@ const mainNav = [
   { to: "/scholar/dashboard/settings", label: "Settings", icon: Settings },
 ];
 
-/** Profile steps -> child links under Profile group */
 const profileSteps = [
   { key: "personal", name: "Personal Info" },
   { key: "address", name: "Address" },
@@ -87,14 +86,12 @@ function ProfileGroup({ onItemClick }: { onItemClick?: () => void }) {
         )}
       </button>
 
-      {/* Collapsible container with height animation */}
       <div
         className={clsx(
           "overflow-hidden transition-[max-height] duration-300",
           open ? "max-h-[1000px]" : "max-h-0"
         )}
       >
-        {/* Scrollable inner wrapper with thin scrollbar */}
         <div className="max-h-64 overflow-y-auto pr-1 scrollbar-thin">
           <nav className="mt-1 space-y-1 pl-7 pr-1">
             {profileSteps.map(({ key, name }) => (
@@ -122,55 +119,110 @@ function ProfileGroup({ onItemClick }: { onItemClick?: () => void }) {
 }
 
 function NavItems({ onClick }: { onClick?: () => void }) {
-  return (
-    <nav className="mt-4 space-y-1 px-3">
-      {mainNav.map(({ to, label, icon: Icon, end }) => (
-        <NavLink
-          key={to}
-          to={to}
-          end={end}
-          onClick={onClick}
-          className={({ isActive }) =>
-            clsx(
-              "group flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium",
-              isActive
-                ? "bg-indigo-600 text-white"
-                : "text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-800"
-            )
-          }
-        >
-          <Icon className="size-4 shrink-0" />
-          <span className="truncate">{label}</span>
-        </NavLink>
-      ))}
+  const logout = useScholarLogout();
+  const [showConfirm, setShowConfirm] = useState(false);
 
-      {/* Collapsible Profile group */}
-      <ProfileGroup onItemClick={onClick} />
-    </nav>
+  return (
+    // Make this a full-height flex column so mt-auto works
+    <div className="flex h-full flex-col">
+      <nav className="mt-4 space-y-1 px-3">
+        {mainNav.map(({ to, label, icon: Icon, end }) => (
+          <NavLink
+            key={to}
+            to={to}
+            end={end}
+            onClick={onClick}
+            className={({ isActive }) =>
+              clsx(
+                "group flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium",
+                isActive
+                  ? "bg-indigo-600 text-white"
+                  : "text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-800"
+              )
+            }
+          >
+            <Icon className="size-4 shrink-0" />
+            <span className="truncate">{label}</span>
+          </NavLink>
+        ))}
+
+        <ProfileGroup onItemClick={onClick} />
+      </nav>
+
+      {/* Bottom-fixed Logout */}
+      <div className="mt-auto border-t p-3 dark:border-gray-800">
+        <button
+          type="button"
+          onClick={() => setShowConfirm(true)}
+          className="mb-12 rounded-full p-2 cursor-pointer z-50 flex items-center gap-x-1 text-white
+             transition-all duration-200 ease-out
+             hover:-translate-y-0.5 hover:scale-105 
+             hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-red-500/60"
+          aria-label="Log out"
+        >
+          <LogOut size={18} /> Logout
+        </button>
+      </div>
+
+      {showConfirm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div
+            className="absolute inset-0 bg-black/40"
+            onClick={() => setShowConfirm(false)}
+          />
+          <div className="relative z-50 w-[95%] max-w-sm rounded-lg border border-gray-200 bg-white p-5 shadow-xl">
+            <h3 className="text-lg font-semibold">Log out</h3>
+            <p className="mt-1 text-sm text-gray-600">
+              Are you sure you want to log out?
+            </p>
+            <div className="mt-5 flex items-center justify-end gap-2">
+              <button
+                onClick={() => setShowConfirm(false)}
+                className="rounded-md border border-gray-300 bg-white px-4 py-2 text-sm hover:bg-gray-50"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={async () => {
+                  setShowConfirm(false);
+                  await logout();
+                }}
+                className="rounded-md bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700"
+              >
+                Continue
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
   );
 }
 
 export default function Sidebar({ open, onClose, variant }: Props) {
-  // Desktop: static column
   if (variant === "desktop") {
     return (
       <aside className="sticky top-0 hidden h-dvh border-r border-gray-200 bg-white lg:block dark:border-gray-800 dark:bg-gray-900">
-        <div className="flex h-16 items-center px-4">
-          <img
-            src={logo}
-            alt="logo"
-            className="text-white bg-white p-1 rounded-full"
-          />
+        {/* Make the column fill the viewport so NavItems can stretch */}
+        <div className="flex h-dvh flex-col">
+          <div className="flex h-16 items-center px-4">
+            <img
+              src={logo}
+              alt="logo"
+              className="rounded-full bg-white p-1 text-white"
+            />
+          </div>
+          {/* Let NavItems take remaining space */}
+          <div className="min-h-0 flex-1">
+            <NavItems />
+          </div>
         </div>
-        <NavItems />
       </aside>
     );
   }
 
-  // Mobile: slide-over drawer
   return (
     <Fragment>
-      {/* Backdrop */}
       <div
         className={clsx(
           "fixed inset-0 z-40 bg-black/40 transition-opacity lg:hidden",
@@ -179,12 +231,12 @@ export default function Sidebar({ open, onClose, variant }: Props) {
         aria-hidden="true"
         onClick={onClose}
       />
-      {/* Panel */}
       <div
         role="dialog"
         aria-modal="true"
         className={clsx(
-          "fixed inset-y-0 left-0 z-50 w-80 transform bg-white shadow-xl transition-transform dark:bg-gray-900 lg:hidden",
+          // Make mobile panel a flex column too
+          "fixed inset-y-0 left-0 z-50 w-80 transform bg-white shadow-xl transition-transform dark:bg-gray-900 lg:hidden flex flex-col",
           open ? "translate-x-0" : "-translate-x-full"
         )}
       >
@@ -198,7 +250,10 @@ export default function Sidebar({ open, onClose, variant }: Props) {
             <X className="size-5" />
           </button>
         </div>
-        <NavItems onClick={onClose} />
+        {/* Let NavItems fill and push logout to bottom */}
+        <div className="min-h-0 flex-1">
+          <NavItems onClick={onClose} />
+        </div>
       </div>
     </Fragment>
   );

@@ -9,7 +9,6 @@ import {
 import { useSearchParams } from "react-router";
 import { fmtDate, fmtNGN } from "../../constants/Format";
 
-
 // tiny debounce
 function useDebouncedValue<T>(value: T, delay = 400) {
   const [v, setV] = useState(value);
@@ -33,11 +32,35 @@ const Pill: React.FC<{ status: TxStatus }> = ({ status }) => {
     </span>
   );
 };
+
 const typeLabel = (t: TxType) =>
   t === "funding" ? "Wallet Funding" : t === "refund" ? "Refund" : "Adjustment";
 
 const STATUSES: TxStatus[] = ["success", "failed", "abandoned", "pending"];
-//const TYPES: TxType[] = ["funding", "refund", "adjustment"];
+
+// NEW: skeleton row that matches the 6 columns
+const TableSkeletonRow: React.FC = () => (
+  <tr className="animate-pulse">
+    <td className="px-4 py-3">
+      <div className="h-3 w-28 rounded bg-gray-200" />
+    </td>
+    <td className="px-4 py-3">
+      <div className="h-3 w-32 rounded bg-gray-200" />
+    </td>
+    <td className="px-4 py-3">
+      <div className="h-3 w-44 rounded bg-gray-200" />
+    </td>
+    <td className="px-4 py-3">
+      <div className="h-3 w-56 rounded bg-gray-200" />
+    </td>
+    <td className="px-4 py-3">
+      <div className="h-5 w-16 rounded-full bg-gray-200" />
+    </td>
+    <td className="px-4 py-3">
+      <div className="ml-auto h-3 w-24 rounded bg-gray-200" />
+    </td>
+  </tr>
+);
 
 export const TransactionsTab: React.FC = () => {
   const [sp, setSp] = useSearchParams();
@@ -97,30 +120,27 @@ export const TransactionsTab: React.FC = () => {
 
   return (
     <div className="space-y-4">
-      <div className="font-bold text-[40px] mb-8">Transactions</div>
+      <div className="mb-8 text-[40px] font-bold">Transactions</div>
+
       {/* Toolbar */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div className="flex flex-1 flex-col gap-2 sm:flex-row">
           <div className="sm:w-64">
-            <label className="mb-1 block text-xs font-medium text-gray-600">
-              Search
-            </label>
+            <div className="mb-1 block text-xs font-medium">Search</div>
             <input
               value={q}
               onChange={(e) => setQ(e.target.value)}
               placeholder="Search ref / message / scholarship"
-              className="w-full rounded-md border px-3 py-2"
+              className="w-full rounded-md border border-gray-200 px-3 py-2"
             />
           </div>
 
           <div className="sm:w-40">
-            <label className="mb-1 block text-xs font-medium text-gray-600">
-              Status
-            </label>
+            <div className="mb-1 block text-xs font-medium">Status</div>
             <select
               value={status}
               onChange={(e) => setStatus(e.target.value as any)}
-              className="w-full rounded-md border px-3 py-2"
+              className="w-full rounded-md border border-gray-200 px-3 py-2"
             >
               <option value="">All</option>
               {STATUSES.map((s) => (
@@ -131,52 +151,30 @@ export const TransactionsTab: React.FC = () => {
             </select>
           </div>
 
-          {/*  <div className="sm:w-44">
-            <label className="mb-1 block text-xs font-medium text-gray-600">
-              Type
-            </label>
-            <select
-              value={type}
-              onChange={(e) => setType(e.target.value as any)}
-              className="w-full rounded-md border px-3 py-2"
-            >
-              <option value="">All</option>
-              {TYPES.map((t) => (
-                <option key={t} value={t}>
-                  {typeLabel(t)}
-                </option>
-              ))}
-            </select>
-          </div> */}
-
           <div className="sm:w-44">
-            <label className="mb-1 block text-xs font-medium text-gray-600">
-              Date from
-            </label>
+            <div className="mb-1 block text-xs font-medium">Date from</div>
             <input
               type="date"
               value={dateFrom}
               onChange={(e) => setDateFrom(e.target.value)}
-              className="w-full rounded-md border px-3 py-2"
+              className="w-full rounded-md border border-gray-200 px-3 py-2"
             />
           </div>
 
           <div className="sm:w-44">
-            <label className="mb-1 block text-xs font-medium text-gray-600">
-              Date to
-            </label>
+            <div className="mb-1 block text-xs font-medium">Date to</div>
             <input
               type="date"
               value={dateTo}
               onChange={(e) => setDateTo(e.target.value)}
-              className="w-full rounded-md border px-3 py-2"
+              className="w-full rounded-md border border-gray-200 px-3 py-2"
             />
           </div>
         </div>
 
         <div className="flex gap-2">
           <button
-            className="rounded-md border px-3 py-2 text-sm"
+            className="rounded-md border border-gray-200 px-3 py-2 text-sm"
             onClick={() => {
               setQ("");
               setStatus("");
@@ -191,7 +189,7 @@ export const TransactionsTab: React.FC = () => {
       </div>
 
       {/* Table */}
-      <div className="overflow-x-auto rounded-lg border bg-white shadow-sm">
+      <div className="overflow-x-auto rounded-lg border border-gray-200 bg-white shadow-sm">
         <table className="min-w-full whitespace-nowrap text-left text-sm">
           <thead className="bg-gray-50 text-xs uppercase tracking-wide text-gray-600">
             <tr>
@@ -203,26 +201,38 @@ export const TransactionsTab: React.FC = () => {
               <th className="px-4 py-3 text-right">Amount</th>
             </tr>
           </thead>
-          <tbody className="divide-y">
-            {isLoading ? (
-              <tr>
-                <td colSpan={6} className="px-4 py-6 text-center text-gray-500">
-                  Loading…
-                </td>
-              </tr>
-            ) : isError ? (
+          <tbody className="divide-y divide-gray-200">
+            {/* SKELETON while loading */}
+            {isLoading && (
+              <>
+                {Array.from({ length: 8 }).map((_, i) => (
+                  <TableSkeletonRow key={`sk-${i}`} />
+                ))}
+              </>
+            )}
+
+            {/* ERROR */}
+            {!isLoading && isError && (
               <tr>
                 <td colSpan={6} className="px-4 py-6 text-center text-red-600">
                   Failed to load transactions.
                 </td>
               </tr>
-            ) : rows.length === 0 ? (
+            )}
+
+            {/* EMPTY */}
+            {!isLoading && !isError && rows.length === 0 && (
               <tr>
                 <td colSpan={6} className="px-4 py-6 text-center text-gray-500">
                   No transactions found.
                 </td>
               </tr>
-            ) : (
+            )}
+
+            {/* DATA */}
+            {!isLoading &&
+              !isError &&
+              rows.length > 0 &&
               rows.map((t) => (
                 <tr key={t._id} className="hover:bg-gray-50">
                   <td className="px-4 py-3 text-gray-700">
@@ -244,8 +254,7 @@ export const TransactionsTab: React.FC = () => {
                     {fmtNGN(Math.max(0, t.amount || 0))}
                   </td>
                 </tr>
-              ))
-            )}
+              ))}
           </tbody>
         </table>
       </div>

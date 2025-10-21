@@ -13,6 +13,7 @@ const FundingCallback: React.FC = () => {
     (async () => {
       //if (!id) return;
       const reference = sp.get("reference") || sp.get("trxref");
+      console.log(reference, "REFERENCE");
       if (reference) {
         try {
           const r = await triggerVerify({ reference }).unwrap();
@@ -36,7 +37,11 @@ const FundingCallback: React.FC = () => {
     })();
   }, [sp, triggerVerify, navigate]);
 
-  return <div className="p-6">Finalizing payment…</div>;
+  return (
+    <div className="flex items-center justify-center mt-16 text-green-500">
+      Finalizing payment…
+    </div>
+  );
 };
 
 export default FundingCallback;

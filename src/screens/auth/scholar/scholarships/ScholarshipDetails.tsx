@@ -1,6 +1,6 @@
 // src/features/scholar/dashboard/ScholarshipDetail.tsx
 import * as React from "react";
-import { useParams, Link } from "react-router";
+import { Link, useParams } from "react-router";
 import { Skeleton, Alert, Tag } from "antd";
 import { useGetActiveScholarshipDetailQuery } from "../../../../redux/services/scholar/api";
 
@@ -8,7 +8,7 @@ const Row: React.FC<{ label: string; children?: React.ReactNode }> = ({
   label,
   children,
 }) => (
-  <div className="grid grid-cols-12 gap-3 py-2 border-b border-gray-100 dark:border-gray-800">
+  <div className="grid grid-cols-12 gap-3 border-b border-gray-100 py-3">
     <div className="col-span-4 md:col-span-3 text-xs font-medium text-gray-500 uppercase">
       {label}
     </div>
@@ -18,15 +18,15 @@ const Row: React.FC<{ label: string; children?: React.ReactNode }> = ({
 
 export default function ScholarshipDetail() {
   const { id } = useParams<{ id: string }>();
-  const { data, isLoading, isError, error, refetch } =
-    useGetActiveScholarshipDetailQuery(id || "", {
-      skip: !id,
-    });
+
+  const { data, isLoading, isFetching, isError, error, refetch } =
+    useGetActiveScholarshipDetailQuery(id ?? "", { skip: !id });
 
   const s = data?.scholarship;
 
   return (
     <div className="space-y-4">
+      {/* Top bar */}
       <div className="flex items-center justify-between gap-3">
         <h1 className="text-xl font-semibold">Scholarship Details</h1>
         <Link
@@ -37,18 +37,21 @@ export default function ScholarshipDetail() {
         </Link>
       </div>
 
-      {isLoading && (
-        <div className="rounded-lg border bg-white p-4 dark:border-gray-800 dark:bg-gray-900">
-          <Skeleton active title paragraph={{ rows: 6 }} />
+      {/* Loading */}
+      {(isLoading || isFetching) && (
+        <div className="rounded-lg border bg-white p-4">
+          <Skeleton active title paragraph={{ rows: 8 }} />
         </div>
       )}
 
+      {/* Error */}
       {isError && (
         <Alert
           type="error"
+          showIcon
           message="Failed to load scholarship"
           description={
-            <pre className="text-xs overflow-auto">
+            <pre className="max-h-48 overflow-auto text-xs">
               {JSON.stringify(error, null, 2)}
             </pre>
           }
@@ -57,35 +60,61 @@ export default function ScholarshipDetail() {
               Try again
             </button>
           }
-          showIcon
         />
       )}
 
-      {!isLoading && !isError && s && (
-        <div className="rounded-lg border bg-white p-4 dark:border-gray-800 dark:bg-gray-900">
-          <div className="flex items-start justify-between gap-3">
-            <div>
-              <h2 className="text-lg font-semibold leading-tight">{s.title}</h2>
-              <div className="mt-1 flex flex-wrap items-center gap-2 text-xs">
-                <Tag>{s.category}</Tag>
-                {/* <Tag color="blue">{s.selectionMethod}</Tag> */}
-                {s.createdAt && (
-                  <span className="rounded bg-gray-100 px-2 py-0.5 text-[11px] text-gray-700 dark:bg-gray-800 dark:text-gray-300">
-                    {new Date(s.createdAt).toLocaleDateString()}
-                  </span>
-                )}
-                {s.sponsorName && (
-                  <span className="text-xs text-gray-500">
-                    by {s.sponsorName}
-                  </span>
-                )}
+      {/* Empty (invalid id / not active) */}
+      {!isLoading && !isError && !s && (
+        <div className="rounded-lg border bg-white p-6 text-sm text-gray-600">
+          Scholarship not found or not active.
+        </div>
+      )}
+
+      {/* Content */}
+      {s && (
+        <div className="rounded-lg border border-gray-200 bg-white py-8 px-4">
+          {/* Header with logo & meta */}
+          <div className="flex items-start justify-between gap-4">
+            <div className="flex items-start gap-3">
+              {/* Logo */}
+              {s.logo?.url ? (
+                <img
+                  src={s.logo.url}
+                  alt={`${s.title} logo`}
+                  className="h-14 w-14 flex-shrink-0 rounded-full border object-cover dark:border-gray-700"
+                />
+              ) : (
+                <div className="h-14 w-14 flex-shrink-0 rounded-md border bg-gray-50 text-[10px] text-gray-400 dark:border-gray-700 dark:bg-gray-800 flex items-center justify-center">
+                  No logo
+                </div>
+              )}
+
+              {/* Title + tags */}
+              <div>
+                <h2 className="text-lg font-semibold leading-tight">
+                  {s.title}
+                </h2>
+                <div className="mt-1 flex flex-wrap items-center gap-2 text-xs">
+                  <Tag>{s.category}</Tag>
+                  {s.createdAt && (
+                    <span className="rounded bg-gray-100 px-2 py-0.5 text-[11px] text-gray-700 dark:bg-gray-800 dark:text-gray-300">
+                      {new Date(s.createdAt).toLocaleDateString()}
+                    </span>
+                  )}
+                  {s.sponsorName && (
+                    <span className="text-xs text-gray-500">
+                      by {s.sponsorName}
+                    </span>
+                  )}
+                </div>
               </div>
             </div>
           </div>
 
+          {/* Body */}
           <div className="mt-6">
             <Row label="Description">
-              <p className="text-sm text-gray-700 dark:text-gray-300">
+              <p className="text-sm text-gray-700">
                 {s.eligibility?.description || "—"}
               </p>
             </Row>
@@ -102,18 +131,11 @@ export default function ScholarshipDetail() {
               </span>
             </Row>
 
-           {/*  <Row label="Recipients">
-              <span className="text-sm">
-                {typeof s.eligibility?.recipients === "number"
-                  ? s.eligibility.recipients
-                  : "—"}
-              </span>
-            </Row> */}
-
             <Row label="Documents">
               {Array.isArray(s.documents?.personal) ||
-              Array.isArray(s.documents?.educational) ? (
-                <ul className="text-sm list-disc pl-5 space-y-1">
+              Array.isArray(s.documents?.educational) ||
+              s.documents?.deadline ? (
+                <ul className="list-disc space-y-1 pl-5 text-sm">
                   {(s.documents?.personal || []).map((d, i) => (
                     <li key={`p-${i}`}>Personal: {d}</li>
                   ))}
@@ -121,7 +143,10 @@ export default function ScholarshipDetail() {
                     <li key={`e-${i}`}>Educational: {d}</li>
                   ))}
                   {s.documents?.deadline && (
-                    <li>Deadline: {s.documents.deadline}</li>
+                    <li>
+                      Deadline:{" "}
+                      {new Date(s.documents.deadline).toLocaleString()}
+                    </li>
                   )}
                 </ul>
               ) : (

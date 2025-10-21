@@ -177,16 +177,15 @@ const ProfileWizard: React.FC = () => {
   };
 
   return (
-    <div className="w-full max-w-5xl mx-auto">
-      {" "}
+    <div className="w-full max-w-5xl mx-auto text-black">
       {/* stays inside Outlet width */}
-      <section className="rounded-lg border border-gray-700  shadow-sm">
+      <section className="">
         {loading ? (
           <div className="flex items-center justify-center py-16 h-screen">
             <RotatingLines
               visible
               width="58"
-              strokeColor="#2F56D9"
+              strokeColor="#ccc"
               strokeWidth="5"
               animationDuration="0.75"
               ariaLabel="rotating-lines-loading"

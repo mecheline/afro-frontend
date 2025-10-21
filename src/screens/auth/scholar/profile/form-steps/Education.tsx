@@ -1,9 +1,10 @@
 // EducationRHF.tsx
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useForm, Controller } from "react-hook-form";
 import Select from "react-select";
 import CreatableSelect from "react-select/creatable";
 import { ArrowLeft, ChevronDown } from "lucide-react";
+import { useLazyGetFieldsQuery } from "../../../../../redux/services/scholar/api";
 
 /** ---------- Types ---------- */
 type YesNo = "Yes" | "No";
@@ -24,7 +25,14 @@ type Level = {
   willGraduate: YesNo;
   graduateMonth?: string; // YYYY-MM
   // tertiary-only
+  // legacy text field (kept for backward compatibility)
   fieldOfStudy?: string;
+
+  // Catalog-powered fields
+  fieldOfStudyKey?: string; // canonical key (for matching)
+  fieldOfStudyLabel?: string; // canonical label
+  fieldOfStudyVariant?: string; // the exact variant the scholar picked
+
   minQualification?: Qualification | "";
   gradeClassification?: string;
   cgpa?: string;
@@ -36,65 +44,7 @@ type FormValues = {
   tertiary: Level;
 };
 
-/** ---------- Constants ---------- */
-const FIELDS_OF_STUDY = [
-  "Accounting",
-  "Agricultural Science",
-  "Architecture",
-  "Biochemistry",
-  "Biology",
-  "Biomedical Engineering",
-  "Business Administration",
-  "Chemical Engineering",
-  "Chemistry",
-  "Civil Engineering",
-  "Computer Engineering",
-  "Computer Science",
-  "Criminology",
-  "Data Science",
-  "Dentistry",
-  "Economics",
-  "Education",
-  "Electrical/Electronic Engineering",
-  "English",
-  "Environmental Science",
-  "Finance",
-  "Geography",
-  "Geology",
-  "History",
-  "Human Resource Management",
-  "Information Systems",
-  "Information Technology",
-  "International Relations",
-  "Law",
-  "Linguistics",
-  "Management",
-  "Marketing",
-  "Mass Communication",
-  "Mathematics",
-  "Mechanical Engineering",
-  "Mechatronics",
-  "Medicine & Surgery",
-  "Microbiology",
-  "Nursing",
-  "Petroleum Engineering",
-  "Pharmacy",
-  "Philosophy",
-  "Physics",
-  "Physiology",
-  "Political Science",
-  "Project Management",
-  "Psychology",
-  "Public Administration",
-  "Public Health",
-  "Quantity Surveying",
-  "Sociology",
-  "Software Engineering",
-  "Statistics",
-  "Theatre Arts",
-  "Urban & Regional Planning",
-] as const;
-
+/** ---------- Grade options ---------- */
 const GRADE_BY_QUAL: Record<Qualification, string[]> = {
   Bachelors: [
     "First Class",
@@ -102,7 +52,6 @@ const GRADE_BY_QUAL: Record<Qualification, string[]> = {
     "Second Class Lower (2:2)",
     "Third Class",
     "Pass",
-
   ],
   Diploma: ["Distinction", "Upper Credit", "Lower Credit", "Pass"],
   Certificate: ["Distinction", "Merit", "Pass"],
@@ -110,11 +59,10 @@ const GRADE_BY_QUAL: Record<Qualification, string[]> = {
   Doctorate: ["Pass"],
 };
 
-/** react-select option helpers */
+/** ---------- react-select helpers ---------- */
 type Opt<T extends string = string> = { value: T; label: string };
 const toOpts = <T extends string>(arr: readonly T[] | T[]): Opt<T>[] =>
   arr.map((v) => ({ value: v, label: v }));
-
 const YES_NO_OPTS = toOpts<YesNo>(["Yes", "No"]);
 const SCHOOL_TYPE_OPTS = toOpts<SchoolType>([
   "Single",
@@ -133,12 +81,11 @@ const QUAL_OPTS: Opt<Qualification | "">[] = [
   ]),
 ];
 
-/** Common select styles (visible text, height, rounded) */
 export const selectStyles = {
   control: (base: any, state: any) => ({
     ...base,
     minHeight: 56,
-    borderRadius: 16,
+    borderRadius: 8,
     borderColor: state.isFocused ? "#6366f1" : "#e2e8f0",
     boxShadow: state.isFocused ? "0 0 0 4px rgba(99,102,241,0.15)" : "none",
     backgroundColor: "white",
@@ -160,9 +107,17 @@ export const selectStyles = {
   valueContainer: (base: any) => ({ ...base, padding: "0 12px" }),
 };
 
-/** helper */
 const findOpt = <T extends string>(opts: Opt<T>[], value?: T | "") =>
   opts.find((o) => o.value === (value ?? "")) ?? null;
+
+const useDebounced = (value: string, ms = 300) => {
+  const [v, setV] = useState(value);
+  useEffect(() => {
+    const t = setTimeout(() => setV(value), ms);
+    return () => clearTimeout(t);
+  }, [value, ms]);
+  return v;
+};
 
 const EducationRHF: React.FC<{
   initialData?: Partial<FormValues>;
@@ -171,6 +126,7 @@ const EducationRHF: React.FC<{
   onSave?: (values: FormValues) => Promise<void> | void;
   isSaving?: boolean;
 }> = ({ initialData, onPrev, onNext, onSave, isSaving }) => {
+  /** form first */
   const { register, handleSubmit, getValues, watch, setValue, control } =
     useForm<FormValues>({
       defaultValues: {
@@ -200,7 +156,12 @@ const EducationRHF: React.FC<{
           schoolType: "Mixed",
           willGraduate: "No",
           graduateMonth: "",
+          // legacy
           fieldOfStudy: "",
+          // catalog-powered
+          fieldOfStudyKey: "",
+          fieldOfStudyLabel: "",
+          fieldOfStudyVariant: "",
           minQualification: "",
           gradeClassification: "",
           cgpa: "",
@@ -217,8 +178,6 @@ const EducationRHF: React.FC<{
     tertiary: false,
   });
 
-  const save = handleSubmit(async (v) => onSave?.(v));
-
   const SectionHeader: React.FC<{
     title: string;
     section: keyof FormValues;
@@ -228,11 +187,11 @@ const EducationRHF: React.FC<{
       <button
         type="button"
         onClick={() => setOpen((p) => ({ ...p, [section]: !p[section] }))}
-        className="flex w-full items-center justify-between rounded-xl py-3 text-left"
+        className="flex w-full items-center border border-gray-200 px-2 mt-6 justify-between rounded-xl py-3 text-left"
         aria-expanded={isOpen}
         aria-controls={`${section}-panel`}
       >
-        <span className="text-2xl font-extrabold text-[#cbd5e1]">{title}</span>
+        <span className="text-xl">{title}</span>
         <ChevronDown
           className={`h-5 w-5 text-slate-500 transition-transform duration-200 ${
             isOpen ? "rotate-180" : ""
@@ -243,123 +202,185 @@ const EducationRHF: React.FC<{
     );
   };
 
-  /** watches for conditional UI */
+  /** watches */
   const pOngoing = watch("primary.ongoing");
   const sOngoing = watch("secondary.ongoing");
   const tOngoing = watch("tertiary.ongoing");
   const pWillGrad = watch("primary.willGraduate");
   const sWillGrad = watch("secondary.willGraduate");
   const tWillGrad = watch("tertiary.willGraduate");
+  const minQual = watch("tertiary.minQualification");
+  const currentGrade = watch("tertiary.gradeClassification");
 
-  const minQual = watch("tertiary.minQualification"); // string | ""
-  const currentGrade = watch("tertiary.gradeClassification"); // string | ""
+  /** ---------------- Field of Study: show VARIANTS to scholars ---------------- */
+  const [triggerGetFields, { data: fieldRows, isFetching }] =
+    useLazyGetFieldsQuery();
+  const [search, setSearch] = useState("");
+  const debounced = useDebounced(search, 300);
 
-  /** Local option state for creatable fields */
-  /* const [fosOptions, setFosOptions] = useState<Opt<string>[]>([
+  // Build: options from variants; also map key->label so we can store canonical label
+  type VariantOpt = Opt<string> & { metaKey?: string; metaLabel?: string };
+  const [fosOptions, setFosOptions] = useState<VariantOpt[]>([
     { value: "", label: "Select" },
-    ...toOpts(FIELDS_OF_STUDY),
-  ]); */
+  ]);
 
-  
-  const toOpt = (v: string) => ({ value: v, label: v });
-  const hasVal = (opts: { value: string }[], v?: string) =>
-    !!v && opts.some((o) => o.value === v);
+  useEffect(() => {
+    triggerGetFields({ q: debounced || undefined });
+  }, [debounced, triggerGetFields]);
 
-  const [fosOptions, setFosOptions] = useState<Opt<string>[]>(() => {
-    const base = [{ value: "", label: "Select" }, ...toOpts(FIELDS_OF_STUDY)];
-    const init = initialData?.tertiary?.fieldOfStudy ?? "";
-    // If the saved value isn't in the list, append it so CreatableSelect can show it.
-    return init && !hasVal(base, init) ? [...base, toOpt(init)] : base;
-  });
+  useEffect(() => {
+    // fieldRows: [{ key, label, parentKey, variants? }]
+    const byKeyLabel = new Map<string, string>();
+    const next: VariantOpt[] = [{ value: "", label: "Select" }];
 
-/*   const [gradeOptions, setGradeOptions] = useState<Opt<string>[]>([
-    { value: "", label: "Select" },
-  ]); */
+    (fieldRows ?? []).forEach((row: any) => {
+      const key: string = row.key;
+      const canonicalLabel: string = row.label;
+      byKeyLabel.set(key, canonicalLabel);
 
+      // Make unique, human-friendly visible options out of variants.
+      // If no variants, include the canonical label as the visible option.
+      const vis =
+        Array.isArray(row.variants) && row.variants.length > 0
+          ? row.variants
+          : [canonicalLabel];
+
+      vis.forEach((variant: string) => {
+        const trimmed = (variant || "").trim();
+        if (!trimmed) return;
+        next.push({
+          value: key,
+          label: trimmed,
+          metaKey: key,
+          metaLabel: canonicalLabel,
+        });
+      });
+    });
+
+    // Keep any previously saved selection present (e.g., when search is filtered out)
+    const savedKey = getValues("tertiary.fieldOfStudyKey") || "";
+    const savedVariant = getValues("tertiary.fieldOfStudyVariant") || "";
+    const savedLabel =
+      getValues("tertiary.fieldOfStudyLabel") ||
+      (savedKey ? byKeyLabel.get(savedKey) || "" : "");
+
+    const exists =
+      savedKey &&
+      savedVariant &&
+      next.some(
+        (o) =>
+          o.value === savedKey &&
+          o.label.toLowerCase() === savedVariant.toLowerCase()
+      );
+
+    setFosOptions(
+      exists || !savedVariant
+        ? next
+        : [
+            ...next,
+            {
+              value: savedKey,
+              label: savedVariant,
+              metaKey: savedKey,
+              metaLabel: savedLabel,
+            },
+          ]
+    );
+  }, [fieldRows, getValues]);
+
+  /** ---------------- Grade options (depend on qualification) ---------------- */
   const [gradeOptions, setGradeOptions] = useState<Opt<string>[]>(() => {
-    const initQual = initialData?.tertiary?.minQualification as
-      | Qualification
-      | ""
-      | undefined;
+    const initQual =
+      (initialData?.tertiary?.minQualification as
+        | Qualification
+        | ""
+        | undefined) || "";
     const initGrade = initialData?.tertiary?.gradeClassification ?? "";
-
     if (!initQual) return [{ value: "", label: "Select" }];
-
     const base = GRADE_BY_QUAL[initQual as Qualification] ?? [];
     const opts = [{ value: "", label: "Select" }, ...toOpts(base)];
-    // If saved grade was user-created and not in base, add it so it pre-fills.
-    return initGrade && !hasVal(opts, initGrade)
-      ? [...opts, toOpt(initGrade)]
+    return initGrade && !opts.some((o) => o.value === initGrade)
+      ? [...opts, { value: initGrade, label: initGrade }]
       : opts;
   });
 
-
-  /** Recompute grade options when qualification changes */
-  /* useEffect(() => {
-    if (!minQual) {
-      setGradeOptions([{ value: "", label: "Select" }]);
-      return;
-    }
-    const base = GRADE_BY_QUAL[minQual as Qualification] ?? [];
-    const next = [{ value: "", label: "Select" }, ...toOpts(base)];
-    setGradeOptions(next);
-
-    if (currentGrade && !["", ...base].includes(currentGrade)) {
-      setValue("tertiary.gradeClassification", "");
-    }
-   
-  }, [minQual]); */
-
   useEffect(() => {
-    const currentQual = minQual as Qualification | "" | undefined;
+    const currentQual = (minQual as Qualification | "" | undefined) || "";
     const current = currentGrade ?? "";
 
     if (!currentQual) {
       setGradeOptions([{ value: "", label: "Select" }]);
-      // Clear the grade since there is no qual selected
       if (current) setValue("tertiary.gradeClassification", "");
       return;
     }
 
     const base = GRADE_BY_QUAL[currentQual] ?? [];
     let next = [{ value: "", label: "Select" }, ...toOpts(base)];
-
-    // If there's a saved/custom grade not in base, include it so CreatableSelect can display it.
     if (current && !["", ...base].includes(current)) {
-      next = [...next, toOpt(current)];
+      next = [...next, { value: current, label: current }];
     }
     setGradeOptions(next);
-
-    // Optional: if you *must* reset invalid grades on qual change, uncomment:
-    // if (current && !["", ...base].includes(current)) setValue("tertiary.gradeClassification", "");
   }, [minQual, currentGrade, setValue]);
-
 
   /** Creatable handlers */
   const handleCreateFieldOfStudy = (input: string) => {
-    const opt = { value: input, label: input };
+    const custom = (input || "").trim();
+    if (!custom) return;
+
+    // Custom has no canonical key. We store variant & label as the string, key as empty.
+    const opt: VariantOpt = { value: "", label: custom };
     setFosOptions((prev) => [...prev, opt]);
-    setValue("tertiary.fieldOfStudy", input, {
+
+    setValue("tertiary.fieldOfStudyKey", "", {
       shouldDirty: true,
       shouldTouch: true,
     });
+    setValue("tertiary.fieldOfStudyLabel", custom, {
+      shouldDirty: true,
+      shouldTouch: true,
+    });
+    setValue("tertiary.fieldOfStudyVariant", custom, {
+      shouldDirty: true,
+      shouldTouch: true,
+    });
+    setValue("tertiary.fieldOfStudy", custom, {
+      shouldDirty: true,
+      shouldTouch: true,
+    }); // legacy
   };
 
   const handleCreateGrade = (input: string) => {
-    const opt = { value: input, label: input };
+    const custom = (input || "").trim();
+    if (!custom) return;
+    const opt = { value: custom, label: custom };
     setGradeOptions((prev) => [...prev, opt]);
-    setValue("tertiary.gradeClassification", input, {
+    setValue("tertiary.gradeClassification", custom, {
       shouldDirty: true,
       shouldTouch: true,
     });
   };
 
-
-
+  /** sync initialData once (if it changes) */
   useEffect(() => {
-    const fos = initialData?.tertiary?.fieldOfStudy ?? "";
-    if (fos && !hasVal(fosOptions, fos)) {
-      setFosOptions((prev) => [...prev, toOpt(fos)]);
+    const key = initialData?.tertiary?.fieldOfStudyKey || "";
+    const label = initialData?.tertiary?.fieldOfStudyLabel || "";
+    const variant =
+      initialData?.tertiary?.fieldOfStudyVariant ||
+      label ||
+      initialData?.tertiary?.fieldOfStudy ||
+      "";
+
+    if (
+      variant &&
+      !fosOptions.some(
+        (o) =>
+          o.value === key && o.label.toLowerCase() === variant.toLowerCase()
+      )
+    ) {
+      setFosOptions((prev) => [
+        ...prev,
+        { value: key, label: variant, metaKey: key, metaLabel: label },
+      ]);
     }
 
     const qual = initialData?.tertiary?.minQualification as
@@ -371,12 +392,22 @@ const EducationRHF: React.FC<{
       const base = GRADE_BY_QUAL[qual] ?? [];
       const baseOpts = [{ value: "", label: "Select" }, ...toOpts(base)];
       const withCustom =
-        grade && !hasVal(baseOpts, grade)
-          ? [...baseOpts, toOpt(grade)]
+        grade && !baseOpts.some((o) => o.value === grade)
+          ? [...baseOpts, { value: grade, label: grade }]
           : baseOpts;
       setGradeOptions(withCustom);
     }
-  }, [initialData]); // runs if the prop updates
+  }, [initialData]); // only when prop updates
+
+  /** actions */
+  const save = handleSubmit(async (v) => {
+    // maintain a sensible legacy value for fieldOfStudy (display text)
+    if (!v.tertiary.fieldOfStudy) {
+      v.tertiary.fieldOfStudy =
+        v.tertiary.fieldOfStudyVariant || v.tertiary.fieldOfStudyLabel || "";
+    }
+    onSave?.(v);
+  });
 
   return (
     <div className="min-h-screen">
@@ -388,9 +419,7 @@ const EducationRHF: React.FC<{
           className="headerTitle"
         >
           <ArrowLeft className="h-6 w-6 " />
-          <span className="text-2xl font-extrabold">
-            Education
-          </span>
+          <span className="text-2xl font-extrabold">Education</span>
         </button>
       </div>
 
@@ -400,7 +429,6 @@ const EducationRHF: React.FC<{
         <SectionHeader title="Primary" section="primary" />
         {open.primary && (
           <div className="mt-2 space-y-5">
-            {/* Date of Entry */}
             <div>
               <label className="mb-2 block text-base text-slate-700">
                 Date of entry
@@ -409,11 +437,10 @@ const EducationRHF: React.FC<{
                 type="month"
                 placeholder="May 2018"
                 {...register("primary.entryMonth")}
-                className="h-14 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 text-base shadow-sm focus:bg-white focus:border-indigo-500 focus:outline-none focus:ring-4 focus:ring-indigo-100"
+                className="textInput h-14 w-full rounded-md border border-slate-200 px-4 text-base focus:bg-white focus:outline-none"
               />
             </div>
 
-            {/* Graduation date */}
             <div>
               <label className="mb-2 block text-base text-slate-700">
                 Graduation Date
@@ -421,12 +448,11 @@ const EducationRHF: React.FC<{
               <input
                 type="month"
                 {...register("primary.gradMonth")}
-                className="h-14 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 text-base shadow-sm focus:bg-white focus:border-indigo-500 focus:outline-none focus:ring-4 focus:ring-indigo-100"
+                className="textInput h-14 w-full rounded-md border border-slate-200 px-4 text-base focus:bg-white focus:outline-none"
                 disabled={pOngoing}
               />
             </div>
 
-            {/* Ongoing switch */}
             <div>
               <label className="mb-2 block text-base text-slate-700">
                 Ongoing
@@ -442,7 +468,6 @@ const EducationRHF: React.FC<{
               </label>
             </div>
 
-            {/* Boarding */}
             <div>
               <label className="mb-2 block text-base text-slate-700">
                 Is it a boarding school
@@ -467,7 +492,6 @@ const EducationRHF: React.FC<{
               />
             </div>
 
-            {/* Row: School type / Will graduate */}
             <div className="grid gap-4 sm:grid-cols-2">
               <div>
                 <label className="mb-2 block text-base text-slate-700">
@@ -518,7 +542,6 @@ const EducationRHF: React.FC<{
               </div>
             </div>
 
-            {/* Graduate date */}
             <div>
               <label className="mb-2 block text-base text-slate-700">
                 Graduate date
@@ -528,7 +551,7 @@ const EducationRHF: React.FC<{
                   type="month"
                   {...register("primary.graduateMonth")}
                   disabled={pWillGrad === "No"}
-                  className="h-14 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 text-base shadow-sm focus:bg-white focus:border-indigo-500 focus:outline-none focus:ring-4 focus:ring-indigo-100 disabled:opacity-60"
+                  className="textInput h-14 w-full rounded-md border border-slate-200 px-4 text-base focus:bg-white focus:outline-none"
                 />
               </div>
             </div>
@@ -547,7 +570,7 @@ const EducationRHF: React.FC<{
                 <input
                   type="month"
                   {...register("secondary.entryMonth")}
-                  className="h-14 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 text-base shadow-sm focus:bg-white focus:border-indigo-500 focus:outline-none focus:ring-4 focus:ring-indigo-100"
+                  className="textInput h-14 w-full rounded-md border border-slate-200 px-4 text-base focus:bg-white focus:outline-none"
                 />
               </div>
 
@@ -559,7 +582,7 @@ const EducationRHF: React.FC<{
                   type="month"
                   {...register("secondary.gradMonth")}
                   disabled={sOngoing}
-                  className="h-14 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 text-base shadow-sm focus:bg-white focus:border-indigo-500 focus:outline-none focus:ring-4 focus:ring-indigo-100 disabled:opacity-60"
+                  className="textInput h-14 w-full rounded-md border border-slate-200 px-4 text-base focus:bg-white focus:outline-none"
                 />
               </div>
 
@@ -636,7 +659,7 @@ const EducationRHF: React.FC<{
                   type="month"
                   {...register("secondary.graduateMonth")}
                   disabled={sWillGrad === "No"}
-                  className="h-14 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 text-base shadow-sm focus:bg-white focus:border-indigo-500 focus:outline-none focus:ring-4 focus:ring-indigo-100 disabled:opacity-60"
+                  className="textInput h-14 w-full rounded-md border border-slate-200 px-4 text-base focus:bg-white focus:outline-none"
                 />
               </div>
             </div>
@@ -655,7 +678,7 @@ const EducationRHF: React.FC<{
                 <input
                   type="month"
                   {...register("tertiary.entryMonth")}
-                  className="h-14 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 text-base shadow-sm focus:bg-white focus:border-indigo-500 focus:outline-none focus:ring-4 focus:ring-indigo-100"
+                  className="textInput h-14 w-full rounded-md border border-slate-200 px-4 text-base focus:bg-white focus:outline-none"
                 />
               </div>
 
@@ -667,7 +690,7 @@ const EducationRHF: React.FC<{
                   type="month"
                   {...register("tertiary.gradMonth")}
                   disabled={tOngoing}
-                  className="h-14 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 text-base shadow-sm focus:bg-white focus:border-indigo-500 focus:outline-none focus:ring-4 focus:ring-indigo-100 disabled:opacity-60"
+                  className="textInput h-14 w-full rounded-md border border-slate-200 px-4 text-base focus:bg-white focus:outline-none"
                 />
               </div>
 
@@ -712,14 +735,14 @@ const EducationRHF: React.FC<{
                   />
                 </div>
 
-                {/* Field of study (Creatable) */}
+                {/* Field of study — show VARIANTS as labels */}
                 <div>
                   <label className="mb-2 block text-base text-slate-700">
                     Field of study
                   </label>
                   <Controller
                     control={control}
-                    name="tertiary.fieldOfStudy"
+                    name="tertiary.fieldOfStudyKey"
                     render={({ field }) => (
                       <CreatableSelect
                         instanceId="tertiary-fieldOfStudy"
@@ -727,18 +750,68 @@ const EducationRHF: React.FC<{
                         isClearable
                         styles={selectStyles}
                         options={fosOptions}
+                        isLoading={isFetching}
                         value={
+                          // pick the option that matches both key & saved variant (best UX),
+                          // else fall back to any option with that key.
+                          fosOptions.find(
+                            (o) =>
+                              o.value === (field.value ?? "") &&
+                              o.label.toLowerCase() ===
+                                (
+                                  getValues("tertiary.fieldOfStudyVariant") ||
+                                  ""
+                                ).toLowerCase()
+                          ) ||
                           fosOptions.find(
                             (o) => o.value === (field.value ?? "")
-                          ) ?? null
+                          ) ||
+                          null
                         }
-                        onChange={(opt) =>
-                          field.onChange((opt?.value as string) ?? "")
-                        }
+                        onChange={(opt) => {
+                          const key = (opt?.value as string) ?? "";
+                          const chosenVariant = opt?.label ?? "";
+                          // Find canonical label from the matched option (metaLabel) or fallback by looking up
+                          const canonicalLabel =
+                            (opt as any)?.metaLabel ||
+                            (fieldRows ?? []).find((r: any) => r.key === key)
+                              ?.label ||
+                            "";
+
+                          field.onChange(key);
+                          setValue(
+                            "tertiary.fieldOfStudyVariant",
+                            chosenVariant,
+                            { shouldDirty: true }
+                          );
+                          setValue(
+                            "tertiary.fieldOfStudyLabel",
+                            canonicalLabel,
+                            { shouldDirty: true }
+                          );
+                          // legacy text for display elsewhere
+                          setValue(
+                            "tertiary.fieldOfStudy",
+                            chosenVariant || canonicalLabel,
+                            { shouldDirty: true }
+                          );
+                        }}
+                        onInputChange={(input, meta) => {
+                          if (meta.action === "input-change") setSearch(input);
+                        }}
                         onCreateOption={handleCreateFieldOfStudy}
-                        placeholder="Select or type to add…"
+                        placeholder="Search (e.g., 'comp sci', 'EEE', 'mass comm')…"
                       />
                     )}
+                  />
+                  {/* keep hidden fields in the form state */}
+                  <input
+                    type="hidden"
+                    {...register("tertiary.fieldOfStudyLabel")}
+                  />
+                  <input
+                    type="hidden"
+                    {...register("tertiary.fieldOfStudyVariant")}
                   />
                 </div>
               </div>
@@ -771,7 +844,7 @@ const EducationRHF: React.FC<{
                 />
               </div>
 
-              {/* Grade / Classification (Creatable, depends on qualification) */}
+              {/* Grade / Classification */}
               <div className="grid gap-4 sm:grid-cols-2">
                 <div>
                   <label className="mb-2 block text-base text-slate-700">
@@ -816,7 +889,7 @@ const EducationRHF: React.FC<{
                     type="text"
                     placeholder="e.g., 4.21 / 5.0"
                     {...register("tertiary.cgpa")}
-                    className="h-14 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 text-base shadow-sm focus:bg-white focus:border-indigo-500 focus:outline-none focus:ring-4 focus:ring-indigo-100"
+                    className="textInput h-14 w-full rounded-md border border-slate-200 px-4 text-base focus:bg-white focus:outline-none"
                   />
                 </div>
               </div>
@@ -854,7 +927,7 @@ const EducationRHF: React.FC<{
                   type="month"
                   {...register("tertiary.graduateMonth")}
                   disabled={tWillGrad === "No"}
-                  className="h-14 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 text-base shadow-sm focus:bg-white focus:border-indigo-500 focus:outline-none focus:ring-4 focus:ring-indigo-100 disabled:opacity-60"
+                  className="textInput h-14 w-full rounded-md border border-slate-200 px-4 text-base focus:bg-white focus:outline-none"
                 />
               </div>
             </div>

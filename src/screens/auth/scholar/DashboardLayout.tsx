@@ -24,7 +24,7 @@ export default function ScholarDashboardLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   return (
-    <div className="mx-auto max-w-screen-2xl min-h-dvh bg-gray-50 text-gray-900 dark:bg-gray-950 dark:text-gray-100">
+    <div className="mx-auto max-w-screen-2xl min-h-dvh bg-gray-50">
       {/* Mobile sidebar (drawer) */}
       <Sidebar
         open={sidebarOpen}

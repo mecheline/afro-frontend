@@ -36,12 +36,10 @@ const ActivityRHF: React.FC<{
         <button
           type="button"
           onClick={() => onPrev?.(getValues())}
-         className="headerTitle"
+          className="headerTitle"
         >
           <ArrowLeft className="h-6 w-6" />
-          <span className="text-2xl font-extrabold">
-            Activity
-          </span>
+          <span className="text-2xl font-extrabold">Activity</span>
         </button>
       </div>
 
@@ -57,11 +55,11 @@ const ActivityRHF: React.FC<{
           })}
           placeholder="Write here…"
           rows={10}
-          className={`w-full rounded-2xl border bg-slate-50 px-4 py-4 text-base leading-relaxed shadow-sm focus:bg-white focus:outline-none focus:ring-4
+          className={`textInput w-full rounded-md border px-4 py-4 text-base leading-relaxed focus:bg-white focus:outline-none 
             ${
               errors.activityNote
                 ? "border-red-400 focus:ring-red-100"
-                : "border-slate-200 focus:border-indigo-500 focus:ring-indigo-100"
+                : "border-slate-200"
             }`}
         />
         <div className="min-h-5 pt-1 text-sm text-red-600">

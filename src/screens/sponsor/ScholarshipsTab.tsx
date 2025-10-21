@@ -10,7 +10,7 @@ import { Link, useSearchParams } from "react-router";
 import useDebouncedValue from "../../hooks/useDebouncedValue";
 import { fmtDate } from "../../constants/Format";
 import Card from "./SummaryCards";
-import { Plus } from "lucide-react";
+import { PencilLine, Plus, View } from "lucide-react";
 
 const StatusBadge: React.FC<{ active: boolean }> = ({ active }) => (
   <span
@@ -20,6 +20,17 @@ const StatusBadge: React.FC<{ active: boolean }> = ({ active }) => (
   >
     {active ? "Active" : "Draft"}
   </span>
+);
+
+// NEW: table skeleton row
+const TableSkeletonRow: React.FC = () => (
+  <tr className="animate-pulse">
+    {[...Array(6)].map((_, i) => (
+      <td key={i} className="px-4 py-3">
+        <div className="h-3 w-full max-w-[160px] rounded bg-gray-200" />
+      </td>
+    ))}
+  </tr>
 );
 
 const categories = ["Secondary", "WASSCE", "Undergraduate", "Masters", "PHD"];
@@ -65,11 +76,11 @@ export const ScholarshipsTab: React.FC = () => {
   const rows = data?.data ?? [];
   const meta = data?.meta ?? { page, limit, total: 0 };
 
-  // NEW: fetch stats (total/active/draft)
+  // Stats
   const { data: stats, isLoading: statsLoading } =
     useGetScholarshipStatsQuery();
 
-  // Keep URL in sync (nice for refresh/back/forward)
+  // Keep URL in sync
   useEffect(() => {
     const params = new URLSearchParams();
     params.set("page", String(page));
@@ -88,17 +99,17 @@ export const ScholarshipsTab: React.FC = () => {
 
   return (
     <div className="space-y-3">
-      <div className="flex items-center justify-between mb-8">
+      <div className="mb-8 flex items-center justify-between">
         <div>
-          <div className="font-bold text-[40px]">Scholarships</div>
+          <div className="text-[40px] font-bold">Scholarships</div>
           <div className="flex items-center space-x-2">
-            <div className="font-medium text-lg">Total:</div>
+            <div className="text-lg font-medium">Total:</div>
             <span className="font-extralight">
-              {data?.meta?.total}
+              {data?.meta?.total ?? (isLoading ? "—" : 0)}
             </span>
           </div>
         </div>
-        <button className=" bg-[#3062C8] text-white p-2 rounded-lg">
+        <button className="rounded-lg bg-gray-800 p-2 text-white">
           <Link to={"/sponsor/scholarships/create"} className="flex gap-2">
             <Plus />
             Add New Scholarship
@@ -127,29 +138,28 @@ export const ScholarshipsTab: React.FC = () => {
           tone="gray"
         />
       </div>
+
       {/* Toolbar */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-        <div className="flex flex-1 flex-col gap-2 sm:flex-row">
+        <div className="mt-6 flex flex-1 flex-col gap-2 sm:flex-row">
           <div className="sm:w-64">
-            <label className="mb-1 block text-xs font-medium text-gray-600">
+            <div className="mb-1 block text-xs font-medium text-black">
               Search
-            </label>
+            </div>
             <input
               value={q}
               onChange={(e) => setQ(e.target.value)}
               placeholder="Search title / category"
-              className="w-full rounded-md border px-3 py-2"
+              className="w-full rounded-md border border-gray-200 px-3 py-2"
             />
           </div>
 
           <div className="sm:w-40">
-            <label className="mb-1 block text-xs font-medium text-gray-600">
-              Status
-            </label>
+            <div className="mb-1 block text-xs font-medium">Status</div>
             <select
               value={status}
               onChange={(e) => setStatus(e.target.value as any)}
-              className="w-full rounded-md border px-3 py-2"
+              className="w-full rounded-md border border-gray-200 px-3 py-2"
             >
               <option value="">All</option>
               <option value="active">Active</option>
@@ -158,13 +168,11 @@ export const ScholarshipsTab: React.FC = () => {
           </div>
 
           <div className="sm:w-48">
-            <label className="mb-1 block text-xs font-medium text-gray-600">
-              Category
-            </label>
+            <div className="mb-1 block text-xs font-medium">Category</div>
             <select
               value={category}
               onChange={(e) => setCategory(e.target.value)}
-              className="w-full rounded-md border px-3 py-2"
+              className="w-full rounded-md border border-gray-200 px-3 py-2"
             >
               <option value="">All</option>
               {categories.map((c) => (
@@ -176,13 +184,13 @@ export const ScholarshipsTab: React.FC = () => {
           </div>
 
           <div className="sm:w-56">
-            <label className="mb-1 block text-xs font-medium text-gray-600">
+            <div className="mb-1 block text-xs font-medium">
               Selection Method
-            </label>
+            </div>
             <select
               value={method}
               onChange={(e) => setMethod(e.target.value as any)}
-              className="w-full rounded-md border px-3 py-2"
+              className="w-full rounded-md border border-gray-200 px-3 py-2"
             >
               <option value="">All</option>
               {methods.map((m) => (
@@ -196,7 +204,7 @@ export const ScholarshipsTab: React.FC = () => {
 
         <div className="flex gap-2">
           <button
-            className="rounded-md border px-3 py-2 text-sm"
+            className="rounded-md border border-gray-200 px-3 py-2 text-sm"
             onClick={() => {
               setQ("");
               setStatus("");
@@ -210,66 +218,90 @@ export const ScholarshipsTab: React.FC = () => {
       </div>
 
       {/* Table */}
-      <div className="overflow-x-auto rounded-lg border bg-white shadow-sm">
+      <div className="overflow-x-auto rounded-lg border border-gray-200 bg-white shadow-sm">
         <table className="min-w-full whitespace-nowrap text-left text-sm">
-          <thead className="bg-gray-50 text-xs uppercase tracking-wide text-gray-600">
+          <thead className="bg-gray-100 text-xs uppercase tracking-wide text-gray-600 ">
             <tr>
               <th className="px-4 py-3">Title</th>
               <th className="px-4 py-3">Category</th>
               <th className="px-4 py-3">Selection Method</th>
               <th className="px-4 py-3">Status</th>
               <th className="px-4 py-3">Created</th>
-              <th className="px-4 py-3 text-right">Actions</th>
+              <th className="px-4 py-3">Actions</th>
             </tr>
           </thead>
-          <tbody className="divide-y">
-            {isLoading ? (
-              <tr>
-                <td colSpan={6} className="px-4 py-6 text-center text-gray-500">
-                  Loading…
-                </td>
-              </tr>
-            ) : isError ? (
+          <tbody className="divide-y divide-gray-200">
+            {/* SKELETON: show 6 placeholder rows while loading */}
+            {isLoading && (
+              <>
+                {Array.from({ length: 6 }).map((_, i) => (
+                  <TableSkeletonRow key={`sk-${i}`} />
+                ))}
+              </>
+            )}
+
+            {/* ERROR */}
+            {!isLoading && isError && (
               <tr>
                 <td colSpan={6} className="px-4 py-6 text-center text-red-600">
                   Failed to load scholarships.
                 </td>
               </tr>
-            ) : rows.length === 0 ? (
+            )}
+
+            {/* EMPTY */}
+            {!isLoading && !isError && rows.length === 0 && (
               <tr>
                 <td colSpan={6} className="px-4 py-6 text-center text-gray-500">
                   No scholarships found.
                 </td>
               </tr>
-            ) : (
-              rows.map((s) => (
-                <tr key={s._id} className="hover:bg-gray-50">
-                  <td className="px-4 py-3 font-medium text-gray-900">
-                    {s.title}
-                  </td>
-                  <td className="px-4 py-3 text-gray-700">{s.category}</td>
-                  <td className="px-4 py-3 text-gray-700">
-                    {s.selectionMethod ?? "—"}
-                  </td>
-                  <td className="px-4 py-3">
-                    <StatusBadge active={s.active} />
-                  </td>
-                  <td className="px-4 py-3 text-gray-700">
-                    {fmtDate(s.createdAt)}
-                  </td>
-                  <td className="px-4 py-3">
-                    <div className="flex justify-end">
-                      <a
-                        className="inline-flex items-center rounded-md border px-3 py-1.5 text-blue-700 hover:bg-blue-50"
-                        href={`/sponsor/scholarships/${s._id}/edit`} // resume where they stopped
-                      >
-                        Manage
-                      </a>
-                    </div>
-                  </td>
-                </tr>
-              ))
             )}
+
+            {/* DATA */}
+            {!isLoading &&
+              !isError &&
+              rows.length > 0 &&
+              rows.map((s) => {
+                const viewHref =
+                  s.selectionMethod === "MatchedScholar"
+                    ? `/sponsor/dashboard/matched-scholars/${s._id}`
+                    : `/sponsor/dashboard/applications/${s._id}`;
+
+                return (
+                  <tr key={s._id} className="hover:bg-gray-50">
+                    <td className="px-4 py-3 font-medium text-gray-900">
+                      {s.title}
+                    </td>
+                    <td className="px-4 py-3 text-gray-700">{s.category}</td>
+                    <td className="px-4 py-3 text-gray-700">
+                      {s.selectionMethod ?? "—"}
+                    </td>
+                    <td className="px-4 py-3">
+                      <StatusBadge active={s.active} />
+                    </td>
+                    <td className="px-4 py-3 text-gray-700">
+                      {fmtDate(s.createdAt)}
+                    </td>
+                    <td className="px-4 py-3">
+                      <div className="flex gap-4">
+                        <a
+                          className="inline-flex items-center text-blue-700 hover:bg-blue-50"
+                          href={`/sponsor/scholarships/${s._id}/edit`}
+                        >
+                          <PencilLine size={12} /> Edit
+                        </a>
+                        <Link
+                          to={viewHref}
+                          className="inline-flex items-center text-emerald-700 hover:bg-emerald-50"
+                        >
+                          <View size={12} /> View
+                        </Link>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
           </tbody>
         </table>
       </div>

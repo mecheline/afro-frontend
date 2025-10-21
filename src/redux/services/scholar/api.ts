@@ -6,6 +6,44 @@ import type { RootState } from "./store";
  * Types
  * ========================= */
 
+// near your other types
+export type UpdatePatch = {
+  title?: string;
+  category?: ScholarshipCategory;
+  funding?: { plan?: FundingPlanKey; amount?: number };
+  eligibility?: {
+    description?: string;
+    minimumQualifications?: string;
+    fieldOfStudy?: string;
+    fieldOfStudyKey?: string; // ← add this
+    recipients?: number;
+  };
+  selectionMethod?: SelectionMethod;
+  documents?: {
+    personal?: string[];
+    educational?: string[];
+    deadline?: string;
+    complete?: boolean;
+  };
+  currentStep?: number;
+  markStep?: PatchMarkStep;
+  removeLogo?: boolean;
+};
+
+// tiny runtime check
+const isFormData = (v: unknown): v is FormData =>
+  typeof FormData !== "undefined" && v instanceof FormData;
+
+// near your other types
+export type FieldCatalogItem = {
+  key: string; // canonical value to store
+  label: string; // user-facing label
+  parentKey: string; // e.g. it_broad, engineering_broad
+  variants?: string[];
+};
+
+export type FieldParentsRow = { parentKey: string; count: number };
+
 export type ScholarshipCategory =
   | "WASSCE"
   | "Undergraduate"
@@ -25,6 +63,7 @@ export type ScholarshipItem = {
     description?: string;
     minimumQualifications?: string;
     fieldOfStudy?: string;
+    fieldOfStudyKey?: string;
     recipients?: number;
   };
   active?: boolean;
@@ -38,6 +77,7 @@ export type ScholarshipItem = {
     deadline?: string;
     complete?: boolean;
   };
+  logo?: { url?: string; public_id?: string } | null;
 };
 
 export type GetActiveScholarshipsArgs = {
@@ -98,7 +138,7 @@ export type PatchMarkStep =
   | "selection"
   | "documents";
 
-export type UpdatePatch = {
+/* export type UpdatePatch = {
   title?: string;
   category?: ScholarshipCategory;
   funding?: { plan?: FundingPlanKey; amount?: number };
@@ -117,7 +157,7 @@ export type UpdatePatch = {
   };
   currentStep?: number;
   markStep?: PatchMarkStep;
-};
+}; */
 
 export interface MiniScholarship {
   _id: string;
@@ -137,9 +177,15 @@ export type ScholarshipsQuery = {
   method?: "SelfSelection" | "MatchedScholar";
 };
 
+export type LogoMeta = {
+  url: string;
+  public_id?: string;
+};
+
 export interface Scholarship {
   _id: string;
   title: string;
+  logo?: LogoMeta;
   category: ScholarshipCategory;
   funding?: {
     plan?: FundingPlanKey;
@@ -153,6 +199,7 @@ export interface Scholarship {
     description?: string;
     minimumQualifications?: string;
     fieldOfStudy?: string;
+    fieldOfStudyKey?: string; // ← add this
     recipients?: number;
   };
   selectionMethod?: SelectionMethod;
@@ -173,6 +220,18 @@ export interface Scholarship {
   currentStep: number;
   active: boolean;
 }
+
+type Api<T> = { message: string; data: T };
+
+export type MatchArgs = { id: string; page?: number; limit?: number };
+
+export type MatchResponse = {
+  scholarshipId: string;
+  totalMatches: number;
+  page: number;
+  limit: number;
+  data: any[]; // you can replace `any` with your Scholar shape if you have one
+};
 
 /* =========================
  * Base Query
@@ -195,7 +254,19 @@ const baseQuery = fetchBaseQuery({
 export const scholarApi = createApi({
   reducerPath: "scholar",
   baseQuery,
-  tagTypes: ["Transactions", "Scholarships", "MyApplications"],
+  tagTypes: [
+    "Transactions",
+    "Scholarships",
+    "MyApplications",
+    "DeactivationRequest",
+    "SponsorDeactivationRequest",
+    "ProfileStep",
+    "Verification",
+    "Countries",
+    "ScholarMatches",
+    "ScholarProfileStep",
+    "ScholarVerification",
+  ],
   endpoints: (builder) => ({
     /* ---------------------------
      * Scholar Auth & Account
@@ -257,6 +328,73 @@ export const scholarApi = createApi({
     }),
     getAccount: builder.query({
       query: () => "/scholars/api/account",
+    }),
+
+    /* ---------- SCHOLAR — profile wizard steps ---------- */
+    getScholarStep: builder.query<any, string>({
+      query: (stepKey) => `/scholars/api/profile/step/${stepKey}`,
+      transformResponse: (r: Api<any>) => r.data,
+      providesTags: (_r, _e, stepKey) => [
+        { type: "ScholarProfileStep", id: stepKey },
+      ],
+    }),
+    saveScholarStep: builder.mutation<any, { stepKey: string; payload: any }>({
+      query: (body) => ({
+        url: `/scholars/api/profile/step`,
+        method: "PUT",
+        body,
+      }),
+      invalidatesTags: (_r, _e, { stepKey }) => [
+        { type: "ScholarProfileStep", id: stepKey },
+      ],
+    }),
+
+    /* ---------- SCHOLAR — uploads (verification + avatar) ---------- */
+    uploadScholarVerification: builder.mutation<
+      any,
+      { idType: string; file: File }
+    >({
+      query: ({ idType, file }) => {
+        const fd = new FormData();
+        fd.append("idType", idType);
+        fd.append("file", file);
+        return {
+          url: `/scholars/api/profile/upload/verification`,
+          method: "POST",
+          body: fd,
+        };
+      },
+      invalidatesTags: [
+        { type: "ScholarVerification", id: "doc" },
+        { type: "ScholarProfileStep", id: "verification" },
+      ],
+    }),
+    uploadScholarProfilePicture: builder.mutation<
+      {
+        message: string;
+        data: {
+          url: string;
+          public_id: string;
+          width: number;
+          height: number;
+          bytes: number;
+          format: string;
+          uploadedAt: string;
+        };
+      },
+      { file: File }
+    >({
+      query: ({ file }) => {
+        const fd = new FormData();
+        fd.append("file", file);
+        return {
+          url: `/scholars/api/profile/upload-picture`,
+          method: "POST",
+          body: fd,
+        };
+      },
+      // if your profile step for avatar is "personal" or "photo", invalidate it:
+      invalidatesTags: [{ type: "ScholarProfileStep", id: "personal" }],
     }),
 
     /* ---------------------------
@@ -348,6 +486,66 @@ export const scholarApi = createApi({
       providesTags: (_r, _e, id) => [{ type: "Scholarships", id }],
     }),
 
+    getDeactivationRequest: builder.query<
+      { status: string; deactivationRequest?: any },
+      void
+    >({
+      query: () => `/scholars/api/account/deactivation-request`,
+      transformResponse: (raw: any) => raw?.data,
+      providesTags: ["DeactivationRequest"],
+    }),
+    requestDeactivation: builder.mutation<
+      { message: string; data?: { status: string } },
+      { reason: string }
+    >({
+      query: (body) => ({
+        url: `/scholars/api/account/deactivation-request`,
+        method: "POST",
+        body,
+      }),
+      invalidatesTags: ["DeactivationRequest"],
+    }),
+
+    /*    utility endpoints */
+
+    // inside endpoints: (builder) => ({
+    // ...keep existing endpoints...
+
+    getFieldParents: builder.query<FieldParentsRow[], void>({
+      query: () => `/api/catalog/parents`,
+      transformResponse: (r: {
+        data: Array<{ parentKey: string; count: number }>;
+      }) => r.data,
+    }),
+
+    getFields: builder.query<
+      FieldCatalogItem[],
+      { q?: string; parentKey?: string } | void
+    >({
+      query: (args) => {
+        const p = new URLSearchParams();
+        if (args?.q) p.set("q", args.q);
+        if (args?.parentKey) p.set("parentKey", args.parentKey);
+        return `/api/catalog/fields${p.toString() ? `?${p.toString()}` : ""}`;
+      },
+      transformResponse: (r: { data: FieldCatalogItem[] }) => r.data,
+    }),
+
+    // OPTIONAL (if you want users to suggest new fields from the UI)
+    createField: builder.mutation<
+      { message: string; data: FieldCatalogItem },
+      { key: string; label: string; parentKey: string; variants?: string[] }
+    >({
+      query: (body) => ({
+        url: `/api/catalog/fields`,
+        method: "POST",
+        body,
+      }),
+      // keep the list fresh
+      invalidatesTags: (_r, _e, _a) => [{ type: "Countries", id: "noop" }], // or attach a real tag if you like
+    }),
+    // ...
+
     /* ---------------------------
      * Sponsor-side endpoints (unchanged)
      * --------------------------- */
@@ -421,7 +619,7 @@ export const scholarApi = createApi({
       query: (id) => `/sponsors/api/scholarship/${id}`,
     }),
 
-    createScholarship: builder.mutation<
+    /*  createScholarship: builder.mutation<
       Scholarship,
       { title: string; category: ScholarshipCategory }
     >({
@@ -431,6 +629,18 @@ export const scholarApi = createApi({
         body,
       }),
       invalidatesTags: (r) => (r ? [{ type: "Scholarships", id: r._id }] : []),
+    }), */
+    createScholarship: builder.mutation<
+      Scholarship,
+      FormData | { title: string; category: ScholarshipCategory }
+    >({
+      query: (payload) => ({
+        url: "/sponsors/api/scholarship",
+        method: "POST",
+        // IMPORTANT: pass FormData directly; do not set Content-Type
+        body: payload as any,
+      }),
+      invalidatesTags: (r) => (r ? [{ type: "Scholarships", id: r._id }] : []),
     }),
 
     getScholarship: builder.query<Scholarship, string>({
@@ -438,7 +648,7 @@ export const scholarApi = createApi({
       providesTags: (_r, _e, id) => [{ type: "Scholarships", id }],
     }),
 
-    updateScholarship: builder.mutation<
+    /*  updateScholarship: builder.mutation<
       Scholarship,
       { id: string; patch: UpdatePatch }
     >({
@@ -448,6 +658,21 @@ export const scholarApi = createApi({
         body: patch,
       }),
       invalidatesTags: (_r, _e, { id }) => [{ type: "Scholarships", id }],
+    }), */
+
+    updateScholarship: builder.mutation<
+      Scholarship,
+      { id: string; patch: UpdatePatch | FormData }
+    >({
+      query: ({ id, patch }) => ({
+        url: `/sponsors/api/scholarship/${id}`,
+        method: "PATCH",
+        body: patch as any,
+      }),
+      invalidatesTags: (_r, _e, { id }) => [
+        { type: "Scholarships", id },
+        { type: "ScholarMatches", id }, // 👈 add this line
+      ],
     }),
 
     initFunding: builder.mutation<
@@ -471,7 +696,7 @@ export const scholarApi = createApi({
     }),
 
     submitScholarship: builder.mutation<
-      { active: boolean; scholarship: Scholarship },
+      { active: boolean; scholarship: Scholarship; matchSummary: boolean },
       { id: string }
     >({
       query: ({ id }) => ({
@@ -479,6 +704,29 @@ export const scholarApi = createApi({
         method: "POST",
       }),
       invalidatesTags: (_r, _e, { id }) => [{ type: "Scholarships", id }],
+    }),
+
+    matchScholars: builder.query<MatchResponse, MatchArgs>({
+      query: ({ id, page = 1, limit = 50 }) => ({
+        url: `/sponsors/api/scholarship/match/${id}`,
+        params: { page, limit },
+      }),
+
+      // Make cache key stable per (id,page,limit)
+      serializeQueryArgs: ({ endpointName, queryArgs }) => {
+        const { id, page = 1, limit = 50 } = queryArgs;
+        return `${endpointName}|${id}|p=${page}|l=${limit}`;
+      },
+
+      // Expose an invalidation hook by scholarship id
+      providesTags: (_res, _err, { id }) => [{ type: "ScholarMatches", id }],
+
+      // Don’t keep stale pages around
+      keepUnusedDataFor: 0,
+    }),
+
+    getScholarshipApplications: builder.query({
+      query: ({ id }) => `/sponsors/api/scholarship/${id}/applications`,
     }),
 
     getTransactions: builder.query<Paged<TxItem>, TxQuery | void>({
@@ -528,7 +776,7 @@ export const scholarApi = createApi({
       providesTags: ["Scholarships"],
     }),
     createApplication: builder.mutation<
-      { ok: true; applicationId: string; msg:string },
+      { ok: true; applicationId: string; msg: string },
       FormData
     >({
       query: (body) => ({
@@ -564,6 +812,90 @@ export const scholarApi = createApi({
       query: (id) => `/scholars/api/applications/${id}`,
       providesTags: (_r, _e, id) => [{ type: "MyApplications", id }],
     }),
+    getSponsorDeactivationRequest: builder.query<
+      { status: string; deactivationRequest?: any },
+      void
+    >({
+      query: () => `/sponsors/api/account/deactivation-request`,
+      transformResponse: (raw: any) => raw?.data,
+      providesTags: ["SponsorDeactivationRequest"],
+    }),
+    requestSponsorDeactivation: builder.mutation<
+      { message: string; data?: { status: string } },
+      { reason: string }
+    >({
+      query: (body) => ({
+        url: `/sponsors/api/account/deactivation-request`,
+        method: "POST",
+        body,
+      }),
+      invalidatesTags: ["SponsorDeactivationRequest"],
+    }),
+    getStep: builder.query<any, string>({
+      query: (stepKey) => `/sponsors/api/profile/step/${stepKey}`,
+      transformResponse: (r: Api<any>) => r.data,
+      providesTags: (r, e, k) => [{ type: "ProfileStep", id: k }],
+    }),
+    saveStep: builder.mutation<any, { stepKey: string; payload: any }>({
+      query: (body) => ({
+        url: `/sponsors/api/profile/step`,
+        method: "PUT",
+        body,
+      }),
+      invalidatesTags: (r, e, { stepKey }) => [
+        { type: "ProfileStep", id: stepKey },
+      ],
+    }),
+    uploadVerification: builder.mutation<any, { idType: string; file: File }>({
+      query: ({ idType, file }) => {
+        const fd = new FormData();
+        fd.append("idType", idType);
+        fd.append("file", file);
+        return {
+          url: `/sponsors/api/profile/upload/verification`,
+          method: "POST",
+          body: fd,
+        };
+      },
+      invalidatesTags: [
+        { type: "Verification", id: "doc" },
+        { type: "ProfileStep", id: "verification" },
+      ],
+    }),
+    uploadSponsorProfilePicture: builder.mutation<
+      {
+        message: string;
+        data: {
+          url: string;
+          public_id: string;
+          width: number;
+          height: number;
+          bytes: number;
+          format: string;
+          uploadedAt: string;
+        };
+      },
+      { file: File }
+    >({
+      query: ({ file }) => {
+        const fd = new FormData();
+        fd.append("file", file);
+        return {
+          url: "/sponsors/api/profile/upload-picture",
+          method: "POST",
+          body: fd,
+        };
+      },
+    }),
+    getCountries: builder.query<
+      Array<{ code: string; name: string }>,
+      string | void
+    >({
+      query: (q) => `/utils/countries${q ? `?q=${encodeURIComponent(q)}` : ""}`,
+      transformResponse: (r: Api<Array<{ code: string; name: string }>>) =>
+        r.data,
+      providesTags: ["Countries"],
+    }),
   }),
 });
 
@@ -581,6 +913,12 @@ export const {
   useResetPasswordMutation,
   useAccountSetupMutation,
   useGetAccountQuery,
+  useGetDeactivationRequestQuery,
+  useRequestDeactivationMutation,
+  useGetScholarStepQuery,
+  useSaveScholarStepMutation,
+  useUploadScholarVerificationMutation,
+  useUploadScholarProfilePictureMutation,
 
   // NEW scholar-facing scholarships
   useGetActiveScholarshipsQuery,
@@ -588,6 +926,13 @@ export const {
   useGetRecommendedScholarshipsQuery,
   useLazyGetRecommendedScholarshipsQuery,
   useGetActiveScholarshipDetailQuery,
+
+  //utilities
+
+  useGetFieldParentsQuery,
+  useGetFieldsQuery,
+  useLazyGetFieldsQuery,
+  useCreateFieldMutation, // optional
 
   // sponsor endpoints
   useSponsorSignupMutation,
@@ -604,6 +949,8 @@ export const {
   useUpdateScholarshipMutation,
   useInitFundingMutation,
   useSubmitScholarshipMutation,
+  useMatchScholarsQuery,
+  useGetScholarshipApplicationsQuery,
   useLazyVerifyFundingQuery,
   useGetMyScholarshipsQuery,
   useGetTransactionsQuery,
@@ -613,4 +960,11 @@ export const {
   useGetMyApplicationsQuery,
   useGetMyApplicationStatsQuery,
   useGetMyApplicationByIdQuery,
+  useGetSponsorDeactivationRequestQuery,
+  useRequestSponsorDeactivationMutation,
+  useGetStepQuery,
+  useSaveStepMutation,
+  useUploadVerificationMutation,
+  useUploadSponsorProfilePictureMutation,
+  useGetCountriesQuery,
 } = scholarApi;

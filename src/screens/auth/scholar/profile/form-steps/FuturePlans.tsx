@@ -346,10 +346,10 @@ const selectStyles = {
   control: (base: any, state: any) => ({
     ...base,
     minHeight: 56,
-    borderRadius: 16,
+    borderRadius: 8,
     borderColor: state.isFocused ? "#6366f1" : "#e2e8f0",
     boxShadow: state.isFocused ? "0 0 0 4px rgba(99,102,241,0.15)" : "none",
-    backgroundColor: "#f8fafc",
+    backgroundColor: "#fff",
     ":hover": { borderColor: state.isFocused ? "#6366f1" : "#e2e8f0" },
   }),
   option: (base: any, state: any) => ({
@@ -405,7 +405,7 @@ const FuturePlansRHF: React.FC<{
   });
 
   // Local option state so newly created items persist for this session
- /*  const [describeOpts, setDescribeOpts] = useState<Opt[]>(
+  /*  const [describeOpts, setDescribeOpts] = useState<Opt[]>(
     toOpts(DESCRIBE_OPTIONS)
   );
   const [degreeOpts, setDegreeOpts] = useState<Opt[]>(toOpts(DEGREE_INTENT));
@@ -487,9 +487,7 @@ const FuturePlansRHF: React.FC<{
           className="headerTitle"
         >
           <ArrowLeft className="h-6 w-6 " />
-          <span className="text-2xl font-extrabold ">
-            Future Plans
-          </span>
+          <span className="text-2xl font-extrabold ">Future Plans</span>
         </button>
       </div>
 

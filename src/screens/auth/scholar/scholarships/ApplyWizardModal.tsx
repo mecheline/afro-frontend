@@ -117,7 +117,7 @@ const UploadField: React.FC<{
           type="button"
           disabled={disabled}
           onClick={() => inputRef.current?.click()}
-          className="inline-flex items-center gap-2 rounded-md border px-3 py-2 text-sm hover:bg-gray-50 disabled:opacity-50"
+          className="inline-flex items-center gap-2 rounded-md border border-gray-200 px-3 py-2 text-sm hover:bg-gray-50 disabled:opacity-50"
         >
           <svg
             width="16"
@@ -208,6 +208,8 @@ const ApplyWizardModal: React.FC<{
     trigger,
     formState: { errors },
   } = methods;
+
+  console.log(acct);
 
   /** Prefill Step 1 (and some Step 2) robustly */
   React.useEffect(() => {
@@ -338,7 +340,7 @@ const ApplyWizardModal: React.FC<{
 
       const res = await createApplication(payload as any).unwrap();
       console.log(res);
-      toast.success(res?.msg)
+      toast.success(res?.msg);
       onClose();
     } catch (err) {
       console.error(err);
@@ -383,7 +385,7 @@ const ApplyWizardModal: React.FC<{
                         Full Name
                       </label>
                       <input
-                        className="mt-1 w-full rounded-md border px-3 py-2"
+                        className="mt-1 w-full rounded-md border border-gray-200 px-3 py-2"
                         {...register("fullName", {
                           required: "Full name is required",
                         })}
@@ -399,7 +401,7 @@ const ApplyWizardModal: React.FC<{
                       <label className="block text-sm font-medium">Email</label>
                       <input
                         type="email"
-                        className="mt-1 w-full rounded-md border px-3 py-2"
+                        className="mt-1 w-full rounded-md border border-gray-200 px-3 py-2"
                         {...register("email", {
                           required: "Email is required",
                           pattern: {
@@ -420,7 +422,7 @@ const ApplyWizardModal: React.FC<{
                         Phone Number
                       </label>
                       <input
-                        className="mt-1 w-full rounded-md border px-3 py-2"
+                        className="mt-1 w-full rounded-md border border-gray-200 px-3 py-2"
                         {...register("phone", {
                           required: "Phone is required",
                         })}
@@ -439,7 +441,7 @@ const ApplyWizardModal: React.FC<{
                         </label>
                         <input
                           type="date"
-                          className="mt-1 w-full rounded-md border px-3 py-2"
+                          className="mt-1 w-full rounded-md border border-gray-200 px-3 py-2"
                           {...register("dob", {
                             required: "Date of birth is required",
                           })}
@@ -455,7 +457,7 @@ const ApplyWizardModal: React.FC<{
                           Gender
                         </label>
                         <select
-                          className="mt-1 w-full rounded-md border px-3 py-2"
+                          className="mt-1 w-full rounded-md border border-gray-200 px-3 py-2"
                           {...register("gender", {
                             required: "Gender is required",
                           })}
@@ -483,7 +485,7 @@ const ApplyWizardModal: React.FC<{
                         Employment status
                       </label>
                       <select
-                        className="w-full rounded-md border px-3 py-2"
+                        className="w-full rounded-md border border-gray-200 px-3 py-2"
                         {...register("employmentStatus", {
                           required: "Employment status is required",
                         })}
@@ -540,7 +542,7 @@ const ApplyWizardModal: React.FC<{
                         CGPA
                       </label>
                       <input
-                        className="w-full rounded-md border px-3 py-2"
+                        className="w-full rounded-md border border-gray-200 px-3 py-2"
                         {...register("cgpa", { required: "CGPA is required" })}
                       />
                       {errors.cgpa && (
@@ -556,7 +558,7 @@ const ApplyWizardModal: React.FC<{
                 {idx === 2 && (
                   <>
                     {personalReqs.length > 0 && (
-                      <fieldset className="rounded-xl border p-3">
+                      <fieldset className="rounded-xl border border-gray-200 p-3">
                         <legend className="px-1 text-sm font-semibold">
                           Personal Documents
                         </legend>
@@ -587,7 +589,7 @@ const ApplyWizardModal: React.FC<{
                     )}
 
                     {educationalReqs.length > 0 && (
-                      <fieldset className="rounded-xl border p-3">
+                      <fieldset className="rounded-xl border border-gray-200 p-3">
                         <legend className="px-1 text-sm font-semibold">
                           Educational Documents
                         </legend>
@@ -644,7 +646,7 @@ const ApplyWizardModal: React.FC<{
                       </label>
                       <textarea
                         rows={5}
-                        className="w-full rounded-md border px-3 py-2"
+                        className="w-full rounded-md border border-gray-200 px-3 py-2"
                         placeholder="Write a short motivation letter…"
                         {...register("motivation", {
                           required: "Motivation letter is required",

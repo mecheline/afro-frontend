@@ -12,6 +12,7 @@ import type {
 import { Skeleton, Pagination } from "antd";
 import { Link } from "react-router";
 import ApplyWizardModal from "./ApplyWizardModal";
+import { Eye, Send } from "lucide-react";
 
 const cn = (...classes: Array<string | false | null | undefined>) =>
   classes.filter(Boolean).join(" ");
@@ -102,7 +103,7 @@ export default function ScholarshipsPage() {
         {/* Tabs */}
         <div
           className={cn(
-            "inline-flex rounded-lg border bg-white p-1 text-sm dark:border-gray-800 dark:bg-gray-900"
+            "inline-flex rounded-lg border border-gray-100 bg-white p-1 text-sm"
           )}
           role="tablist"
           aria-label="Scholarship tabs"
@@ -115,7 +116,7 @@ export default function ScholarshipsPage() {
               "rounded-md px-3 py-1.5",
               tab === "all"
                 ? "bg-indigo-600 text-white"
-                : "text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-800"
+                : "text-gray-700 hover:bg-gray-100"
             )}
           >
             All
@@ -128,7 +129,7 @@ export default function ScholarshipsPage() {
               "rounded-md px-3 py-1.5",
               tab === "recommended"
                 ? "bg-indigo-600 text-white"
-                : "text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-800"
+                : "text-gray-700 hover:bg-gray-100"
             )}
           >
             Recommended
@@ -141,7 +142,7 @@ export default function ScholarshipsPage() {
           {Array.from({ length: limit }).map((_, i) => (
             <div
               key={i}
-              className="rounded-lg border bg-white p-4 dark:border-gray-800 dark:bg-gray-900"
+              className="rounded-lg border border-gray-200 bg-white p-4"
             >
               <Skeleton active title paragraph={{ rows: 3 }} />
               <div className="mt-4">
@@ -153,7 +154,7 @@ export default function ScholarshipsPage() {
       )}
 
       {!isLoading && items.length === 0 && (
-        <div className="rounded-lg border border-gray-200 bg-white p-8 text-center text-sm text-gray-600 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-300">
+        <div className="rounded-lg border border-gray-200 bg-white p-8 text-center text-sm text-gray-600">
           {tab === "all" ? (
             <p>No active scholarships with self-selection yet.</p>
           ) : (
@@ -173,7 +174,7 @@ export default function ScholarshipsPage() {
               return (
                 <li
                   key={s._id}
-                  className="group rounded-lg border bg-white p-4 shadow-sm transition hover:shadow-md dark:border-gray-800 dark:bg-gray-900"
+                  className="group rounded-lg border border-gray-200 bg-white p-4 shadow-sm transition hover:shadow-md"
                 >
                   <div className="flex items-start justify-between gap-3">
                     <div>
@@ -186,15 +187,10 @@ export default function ScholarshipsPage() {
                     </div>
 
                     <div className="flex items-center gap-2">
-                      {alreadyApplied && (
-                        <span className="rounded-full bg-emerald-50 px-2 py-0.5 text-[11px] font-medium text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-200">
-                          Applied
-                        </span>
-                      )}
                       {s.createdAt && (
                         <time
                           dateTime={s.createdAt}
-                          className="rounded bg-gray-100 px-2 py-0.5 text-[11px] text-gray-700 dark:bg-gray-800 dark:text-gray-300"
+                          className="rounded bg-gray-100 px-2 py-0.5 text-[11px] text-gray-700"
                           title={new Date(s.createdAt).toLocaleString()}
                         >
                           {new Date(s.createdAt).toLocaleDateString()}
@@ -211,12 +207,12 @@ export default function ScholarshipsPage() {
 
                   <div className="mt-4 flex flex-wrap items-center gap-2 text-xs">
                     {s.eligibility?.minimumQualifications && (
-                      <span className="rounded-full bg-indigo-50 px-2 py-0.5 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-200">
+                      <span className="rounded-full bg-indigo-50 px-2 py-0.5 text-indigo-700">
                         Min: {s.eligibility.minimumQualifications}
                       </span>
                     )}
                     {s.eligibility?.fieldOfStudy && (
-                      <span className="rounded-full bg-emerald-50 px-2 py-0.5 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-200">
+                      <span className="rounded-full bg-emerald-50 px-2 py-0.5 text-emerald-700">
                         Field: {s.eligibility.fieldOfStudy}
                       </span>
                     )}
@@ -231,9 +227,9 @@ export default function ScholarshipsPage() {
                   <div className="mt-5 flex space-x-2">
                     <Link
                       to={`/scholar/dashboard/scholarships/${s._id}`}
-                      className="inline-flex items-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      className="inline-flex items-center gap-x-1 rounded-md bg-indigo-600 px-3 py-2 text-sm font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                     >
-                      View details
+                      <Eye size={14} /> View details
                     </Link>
 
                     <button
@@ -244,13 +240,19 @@ export default function ScholarshipsPage() {
                         alreadyApplied ? "You have already applied" : undefined
                       }
                       className={cn(
-                        "inline-flex items-center rounded-md px-3 py-2 text-sm font-medium",
+                        "inline-flex items-center rounded-md px-3 py-2 text-sm font-medium bg-indigo-600 hover:bg-indigo-700 text-white",
                         alreadyApplied || fetchingApps
-                          ? "cursor-not-allowed bg-gray-300 text-gray-600"
-                          : "bg-indigo-600 text-white hover:bg-indigo-700"
+                          ? "cursor-not-allowed"
+                          : ""
                       )}
                     >
-                      {alreadyApplied ? "Applied" : "Apply now"}
+                      {alreadyApplied ? (
+                        "Applied"
+                      ) : (
+                        <span className="flex items-center gap-x-1">
+                          <Send size={14} /> Apply now
+                        </span>
+                      )}
                     </button>
                   </div>
                 </li>

@@ -2,62 +2,43 @@
 
 @import "tailwindcss";
 
-
 body {
   margin: 0;
   padding: 0;
   width: 100%;
   overflow-x: hidden;
-  font-family: 'Satoshi', sans-serif;
+  font-family: "Satoshi", sans-serif;
 }
 
 /* Thin, subtle scrollbar */
 .scrollbar-thin {
-  scrollbar-width: thin;         
+  scrollbar-width: thin;
   scrollbar-color: #cbd5e1 transparent;
 }
 
-.scrollbar-thin::-webkit-scrollbar { 
+.scrollbar-thin::-webkit-scrollbar {
   width: 6px;
 }
 .scrollbar-thin::-webkit-scrollbar-thumb {
-  background-color: #cbd5e1;    
+  background-color: #cbd5e1;
   border-radius: 9999px;
 }
 .scrollbar-thin::-webkit-scrollbar-track {
   background: transparent;
 }
 
-
-label{
-  color:#cbd5e1
-}
-
-.dialog label{
-  color:black
-}
-
-.sponsorLabel label{
-  color: black;
-}
-input {
-  color: black;
-  background-color: white;
-}
-textarea{
-  color: black;
-  background-color: white;
-}
-select{
-  color: black;
-   background-color: white;
-}
+/* input,
+select {
+  border: 1px solid rgb(187, 183, 183);
+} */
 
 @layer utilities {
   .headerTitle {
-    @apply inline-flex items-center gap-3 rounded-full p-2 hover:bg-slate-100 text-white hover:text-black focus:outline-none focus:ring-2 focus:ring-indigo-500
+    @apply inline-flex items-center gap-3 rounded-full p-2 hover:text-black focus:outline-none hover:cursor-pointer;
   }
-  
 }
-
-
+@layer utilities {
+  .textInput {
+    @apply bg-white border outline-0 border-gray-200;
+  }
+}

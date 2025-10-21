@@ -8,6 +8,7 @@ import {
   type Paged,
   type ScholarshipItem,
 } from "../../../redux/services/scholar/api";
+import { Eye } from "lucide-react";
 
 /* ---------- tiny helpers ---------- */
 const cn = (...x: Array<string | false | null | undefined>) =>
@@ -27,7 +28,7 @@ const statusPillCls: Record<string, string> = {
 
 /* ---------- cards ---------- */
 const ScholarshipCard: React.FC<{ s: ScholarshipItem }> = ({ s }) => (
-  <li className="rounded-lg border bg-white p-4 shadow-sm transition hover:shadow-md dark:border-gray-800 dark:bg-gray-900">
+  <li className="rounded-lg border border-gray-200 bg-white p-4 shadow-sm transition hover:shadow-md">
     <div className="flex items-start justify-between gap-3">
       <div>
         <h3 className="text-base font-semibold leading-tight line-clamp-1">
@@ -38,7 +39,7 @@ const ScholarshipCard: React.FC<{ s: ScholarshipItem }> = ({ s }) => (
       {s.createdAt && (
         <time
           dateTime={s.createdAt}
-          className="rounded bg-gray-100 px-2 py-0.5 text-[11px] text-gray-700 dark:bg-gray-800 dark:text-gray-300"
+          className="rounded bg-gray-100 px-2 py-0.5 text-[11px] text-gray-700"
           title={new Date(s.createdAt).toLocaleString()}
         >
           {fmtDate(s.createdAt)}
@@ -47,7 +48,7 @@ const ScholarshipCard: React.FC<{ s: ScholarshipItem }> = ({ s }) => (
     </div>
 
     {s.eligibility?.description && (
-      <p className="mt-3 line-clamp-3 text-sm text-gray-600 dark:text-gray-300">
+      <p className="mt-3 line-clamp-3 text-sm text-gray-600">
         {s.eligibility.description}
       </p>
     )}
@@ -55,9 +56,9 @@ const ScholarshipCard: React.FC<{ s: ScholarshipItem }> = ({ s }) => (
     <div className="mt-4 flex gap-2">
       <Link
         to={`/scholar/dashboard/scholarships/${s._id}`}
-        className="inline-flex items-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-medium text-white hover:bg-indigo-700"
+        className="inline-flex items-center gap-x-1 rounded-md bg-indigo-600 px-3 py-2 text-sm font-medium text-white hover:bg-indigo-700"
       >
-        View details
+        <Eye size={12} /> View details
       </Link>
     </div>
   </li>
@@ -80,7 +81,7 @@ type AppItem = {
 };
 
 const ApplicationCard: React.FC<{ a: AppItem }> = ({ a }) => (
-  <li className="rounded-lg border bg-white p-4 shadow-sm transition hover:shadow-md dark:border-gray-800 dark:bg-gray-900">
+  <li className="rounded-lg border border-gray-200 bg-white p-4 shadow-sm transition hover:shadow-md">
     <div className="flex items-start justify-between gap-3">
       <div>
         <h3 className="text-base font-semibold leading-tight line-clamp-1">
@@ -91,7 +92,7 @@ const ApplicationCard: React.FC<{ a: AppItem }> = ({ a }) => (
       {a.createdAt && (
         <time
           dateTime={a.createdAt}
-          className="rounded bg-gray-100 px-2 py-0.5 text-[11px] text-gray-700 dark:bg-gray-800 dark:text-gray-300"
+          className="rounded bg-gray-100 px-2 py-0.5 text-[11px] text-gray-700"
           title={new Date(a.createdAt).toLocaleString()}
         >
           {fmtDate(a.createdAt)}
@@ -113,8 +114,9 @@ const ApplicationCard: React.FC<{ a: AppItem }> = ({ a }) => (
     <div className="mt-4 flex gap-2">
       <Link
         to={`/scholar/dashboard/applications/${a._id}`}
-        className="inline-flex items-center rounded-md border px-3 py-2 text-sm font-medium text-indigo-700 hover:bg-indigo-50"
+        className="inline-flex items-center gap-x-1 rounded-md border px-3 py-2 text-sm font-medium text-indigo-700 hover:bg-indigo-50"
       >
+        <Eye size={12} />
         View application
       </Link>
     </div>
@@ -177,7 +179,7 @@ export default function HomeDashboard() {
             {Array.from({ length: 6 }).map((_, i) => (
               <div
                 key={i}
-                className="rounded-lg border bg-white p-4 dark:border-gray-800 dark:bg-gray-900"
+                className="rounded-lg border border-gray-200 bg-white p-4 "
               >
                 <Skeleton active title paragraph={{ rows: 3 }} />
                 <div className="mt-4">
@@ -187,7 +189,7 @@ export default function HomeDashboard() {
             ))}
           </div>
         ) : schItems.length === 0 ? (
-          <div className="rounded-md border bg-white p-6 text-center text-sm text-gray-600 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-300">
+          <div className="rounded-md border bg-white p-6 text-center text-sm text-gray-600">
             No active scholarships yet.
           </div>
         ) : (
@@ -223,7 +225,7 @@ export default function HomeDashboard() {
             {Array.from({ length: 6 }).map((_, i) => (
               <div
                 key={i}
-                className="rounded-lg border bg-white p-4 dark:border-gray-800 dark:bg-gray-900"
+                className="rounded-lg border border-gray-200 bg-white p-4"
               >
                 <Skeleton active title paragraph={{ rows: 2 }} />
                 <div className="mt-4">
@@ -233,7 +235,7 @@ export default function HomeDashboard() {
             ))}
           </div>
         ) : appItems.length === 0 ? (
-          <div className="rounded-md border bg-white p-6 text-center text-sm text-gray-600 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-300">
+          <div className="rounded-md border bg-white p-6 text-center text-sm text-gray-600">
             You haven’t submitted any applications yet.
           </div>
         ) : (

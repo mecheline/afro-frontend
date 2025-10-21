@@ -19,6 +19,7 @@ import Step3Eligibility from "./steps/Step3Eligibility";
 import Step5Selection from "./steps/Step5Selection";
 import Step4Documents from "./steps/Step4Documents";
 
+/* ---------------- Helpers ---------------- */
 function computeInitialIndex(s: Scholarship): number {
   if (!s.steps.details) return 0;
   if (!s.funding?.isPaid) return 1;
@@ -29,14 +30,89 @@ function computeInitialIndex(s: Scholarship): number {
   return needsDocs ? 4 : 3;
 }
 
+/* ---------------- Skeletons ---------------- */
+const cn = (...xs: Array<string | false | null | undefined>) =>
+  xs.filter(Boolean).join(" ");
+
+function SkeletonBar({
+  w = "w-40",
+  h = "h-4",
+  className = "",
+}: {
+  w?: string;
+  h?: string;
+  className?: string;
+}) {
+  return (
+    <div className={cn("animate-pulse rounded bg-gray-200", w, h, className)} />
+  );
+}
+
+function SkeletonChip() {
+  return <div className="h-6 w-16 animate-pulse rounded-full bg-gray-200" />;
+}
+
+function SkeletonButton({ w = "w-28" }: { w?: string }) {
+  return <div className={cn("h-9 animate-pulse rounded bg-gray-200", w)} />;
+}
+
+function SkeletonStepper() {
+  return (
+    <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+      {Array.from({ length: 4 }).map((_, i) => (
+        <div key={i} className="flex items-center gap-3">
+          <div className="h-6 w-6 animate-pulse rounded-full bg-gray-200" />
+          <SkeletonBar w="w-24" />
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function SkeletonSection() {
+  return (
+    <div className="space-y-4 rounded-lg border border-gray-200 p-4">
+      <SkeletonBar w="w-48" />
+      <SkeletonBar w="w-80" />
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+        <SkeletonBar w="w-full" h="h-10" />
+        <SkeletonBar w="w-full" h="h-10" />
+      </div>
+      <div className="flex items-center justify-end gap-2">
+        <SkeletonButton w="w-24" />
+        <SkeletonButton w="w-28" />
+      </div>
+    </div>
+  );
+}
+
+function PageSkeleton() {
+  return (
+    <div className="mx-auto w-full max-w-2xl px-4 mt-12 pt-4">
+      <div className="mb-4 flex items-center justify-between">
+        <SkeletonBar w="w-48" />
+        <SkeletonButton w="w-40" />
+      </div>
+
+      <div className="mb-4">
+        <SkeletonStepper />
+      </div>
+
+      <SkeletonSection />
+    </div>
+  );
+}
+
+/* ---------------- Component ---------------- */
 const CreateScholarshipWizard: React.FC = () => {
   const { id } = useParams<{ id?: string }>();
   const [sp] = useSearchParams();
   const navigate = useNavigate();
-  const positionedRef = useRef(false);
-  //const isEdit = Boolean(id);
 
   const [idx, setIdx] = useState(0);
+  const positionedRef = useRef(false);
+  const pendingAdvanceRef = useRef<null | "to-docs">(null);
+
   const [createScholarship] = useCreateScholarshipMutation();
   const [updateScholarship] = useUpdateScholarshipMutation();
   const [initFunding] = useInitFundingMutation();
@@ -45,13 +121,9 @@ const CreateScholarshipWizard: React.FC = () => {
   const {
     data: sch,
     isFetching,
+    isLoading, // initial load
     refetch,
   } = useGetScholarshipQuery(id!, { skip: !id });
-
-  const pendingAdvanceRef = useRef<null | "to-docs">(null);
-
-  // whenever the step array changes (e.g., selection becomes SelfSelection -> documents appears),
-  // perform the pending jump once
 
   const isEditMode = !!sch?.steps?.submitted;
   const isDraft = !!sch && !sch.steps.submitted;
@@ -71,51 +143,6 @@ const CreateScholarshipWizard: React.FC = () => {
     [sch?.selectionMethod]
   );
 
-  const currentKey: StepKey | undefined = stepKeys[idx];
-  if (!currentKey) return null; // safety
-
-  useEffect(() => {
-    if (pendingAdvanceRef.current === "to-docs") {
-      const docIdx = stepKeys.indexOf("documents");
-      if (docIdx !== -1) {
-        setIdx(docIdx);
-        pendingAdvanceRef.current = null;
-      }
-    }
-  }, [stepKeys]); // <-- IMPORTANT: runs after the list grows to include "documents"
-
-  // KEYS & LABELS
-  /*   const stepKeys = useMemo(
-    () =>
-      sch?.selectionMethod === "SelfSelection"
-        ? ([
-            "details",
-            "funding",
-            "eligibility",
-            "selection",
-            "documents",
-          ] as const)
-        : (["details", "funding", "eligibility", "selection"] as const),
-    [sch?.selectionMethod]
-  ); */
-  /*  const stepLabels = useMemo(
-    () =>
-      stepKeys.map((k) => ({
-        key: k,
-        label:
-          k === "details"
-            ? "Details"
-            : k === "funding"
-            ? "Funding"
-            : k === "eligibility"
-            ? "Eligibility"
-            : k === "selection"
-            ? "Selection"
-            : "Documents",
-      })),
-    [stepKeys]
-  ); */
-
   const stepLabels = useMemo(
     () =>
       stepKeys.map((k) => ({
@@ -134,34 +161,9 @@ const CreateScholarshipWizard: React.FC = () => {
     [stepKeys]
   );
 
-  // Respect ?step=1|2|3|4|5 when present (1-based for humans)
-  /*  useEffect(() => {
-    const stepParam = sp.get("step");
-    if (stepParam) {
-      const n = Math.max(
-        1,
-        Math.min(parseInt(stepParam, 10) || 1, stepKeys.length)
-      );
-      setIdx(n - 1);
-    } else if (sch && !isEditMode) {
-      // In create mode, you could still auto-position; for edit we stay wherever user asked
-      setIdx(computeInitialIndex(sch));
-    }
-  }, [sp, stepKeys.length, sch, isEditMode]); */
+  const currentKey: StepKey | undefined = stepKeys[idx];
 
-  /*   useEffect(() => {
-    const stepParam = sp.get("step");
-    if (stepParam) {
-      const n = Math.max(
-        1,
-        Math.min(parseInt(stepParam, 10) || 1, stepKeys.length)
-      );
-      setIdx(n - 1);
-    } else if (sch) {
-      setIdx(computeInitialIndex(sch)); // ← draft resumes; submitted also lands on “last complete”
-    }
-  }, [sp, stepKeys.length, sch]); */
-
+  // Make one-time positioning decision when scholarship arrives
   useEffect(() => {
     if (!sch || positionedRef.current) return;
 
@@ -175,13 +177,24 @@ const CreateScholarshipWizard: React.FC = () => {
     } else {
       setIdx(computeInitialIndex(sch));
     }
-    positionedRef.current = true; // <- do not auto-reset again on future sch updates
+    positionedRef.current = true;
   }, [sch, sp, stepKeys.length]);
 
-  // If selection method changes and step count shrinks/expands, clamp idx
+  // If step count changes (SelfSelection toggles), keep index in range
   useEffect(() => {
     setIdx((i) => Math.min(i, stepKeys.length - 1));
   }, [stepKeys.length]);
+
+  // Deferred jump to documents after selection becomes SelfSelection
+  useEffect(() => {
+    if (pendingAdvanceRef.current === "to-docs") {
+      const docIdx = stepKeys.indexOf("documents");
+      if (docIdx !== -1) {
+        setIdx(docIdx);
+        pendingAdvanceRef.current = null;
+      }
+    }
+  }, [stepKeys]);
 
   // Payment callback failure handling (optional)
   useEffect(() => {
@@ -192,33 +205,33 @@ const CreateScholarshipWizard: React.FC = () => {
   const goNext = () => setIdx((i) => Math.min(i + 1, stepKeys.length - 1));
   const goPrev = () => setIdx((i) => Math.max(i - 1, 0));
 
-  if (id && (isFetching || !sch)) return <div className="p-6">Loading…</div>;
   const isSubmitted = !!sch?.steps?.submitted;
   const formId = `sch-form-${idx}`;
-  const isFundingStep = stepKeys[idx] === "funding";
-  //const hideInternalButtons = isEdit ? !isFundingStep : false;
+  const isFundingStep = currentKey === "funding";
   const hideInternalButtons = isEditMode ? !isFundingStep : false;
 
-  // Funding “Continue” (no API on Next; Continue uses refetch)
- /*  const handleFundingContinue = async () => {
-    const refreshed = await refetch().unwrap();
-    if (refreshed?.funding?.isPaid) goNext();
-  }; */
-
-  // UPDATE action = submit current form (no advance)
   const submitCurrentForm = () => {
     const form = document.getElementById(formId) as HTMLFormElement | null;
     form?.requestSubmit();
   };
 
+  // Global page-level skeleton while fetching an existing scholarship
+  const showPageSkeleton = !!id && (isLoading || isFetching || !sch);
+
+  if (!currentKey && !showPageSkeleton) return null;
+
+  if (showPageSkeleton) {
+    return <PageSkeleton />;
+  }
+
   return (
-    <div className="mx-auto w-full max-w-4xl px-4 pb-24 pt-4">
+    <div className="mx-auto w-full max-w-2xl px-4 mt-12 pt-4">
       {/* Top bar */}
       <div className="mb-4 flex items-center justify-between">
         <h1 className="text-lg font-semibold">
           {sch?.active ? "Edit Scholarship" : "Create Scholarship"}
         </h1>
-        {sch?.active && (
+        {sch?.active ? (
           <button
             type="button"
             onClick={() => navigate("/sponsor/dashboard#scholarships")}
@@ -226,10 +239,14 @@ const CreateScholarshipWizard: React.FC = () => {
           >
             Return to Scholarships
           </button>
+        ) : (
+          <span className="sr-only">Create Mode</span>
         )}
       </div>
 
+      {/* Stepper */}
       <div className="mb-4">
+        {/* StepperHorizontal is kept; if you prefer a skeleton for internal fetches, use SkeletonStepper */}
         <StepperHorizontal steps={stepLabels} currentIndex={idx} />
       </div>
 
@@ -242,18 +259,35 @@ const CreateScholarshipWizard: React.FC = () => {
           isSubmitted={isEditMode}
           onSubmit={async (vals) => {
             if (sch) {
-              await updateScholarship({
-                id: sch._id,
-                patch: {
-                  title: vals.title,
-                  category: vals.category,
-                  markStep: "details",
-                },
-              }).unwrap();
-
-              if (isDraft) goNext(); // ← advance in draft
+              // updating existing
+              const hasLogoChange = !!vals.logoFile || vals.removeLogo;
+              if (hasLogoChange) {
+                const fd = new FormData();
+                fd.append("title", vals.title);
+                fd.append("category", vals.category);
+                if (vals.logoFile) fd.append("logo", vals.logoFile);
+                if (vals.removeLogo) fd.append("removeLogo", "true");
+                fd.append("markStep", "details");
+                await updateScholarship({ id: sch._id, patch: fd }).unwrap();
+              } else {
+                await updateScholarship({
+                  id: sch._id,
+                  patch: {
+                    title: vals.title,
+                    category: vals.category,
+                    markStep: "details",
+                  },
+                }).unwrap();
+              }
+              if (isDraft) goNext();
             } else {
-              const created = await createScholarship(vals).unwrap();
+              // create new
+              const fd = new FormData();
+              fd.append("title", vals.title);
+              fd.append("category", vals.category);
+              if (vals.logoFile) fd.append("logo", vals.logoFile);
+
+              const created = await createScholarship(fd).unwrap();
               navigate(`/sponsor/scholarships/${created._id}/edit?step=2`, {
                 replace: true,
               });
@@ -301,8 +335,7 @@ const CreateScholarshipWizard: React.FC = () => {
                 currentStep: 4,
               },
             }).unwrap();
-
-            if (isDraft) goNext(); // ← advance in draft
+            if (isDraft) goNext();
           }}
         />
       )}
@@ -310,7 +343,7 @@ const CreateScholarshipWizard: React.FC = () => {
       {sch && currentKey === "selection" && (
         <Step5Selection
           formId={formId}
-          hideButtons={isEditMode ? true : false} // in draft show internal Proceed
+          hideButtons={isEditMode ? true : false}
           initial={sch.selectionMethod as SelectionMethod | undefined}
           isSubmitted={isEditMode}
           onBack={goPrev}
@@ -321,16 +354,20 @@ const CreateScholarshipWizard: React.FC = () => {
             }).unwrap();
 
             if (isDraft && method === "SelfSelection") {
-              // defer the advance until stepKeys includes "documents"
+              // Defer advance until "documents" appears in stepKeys
               pendingAdvanceRef.current = "to-docs";
             }
-            // MatchedScholar: finalization still happens on Submit
           }}
           onSubmitFinal={async () => {
             if (isEditMode) {
               await updateScholarship({ id: sch!._id, patch: {} }).unwrap();
             } else {
-              await submitScholarship({ id: sch!._id }).unwrap();
+              const res = await submitScholarship({ id: sch!._id }).unwrap();
+              if (res?.matchSummary) {
+                navigate(
+                  `/sponsor/dashboard/matched-scholars/${res.scholarship._id}`
+                );
+              }
             }
           }}
         />
@@ -348,8 +385,7 @@ const CreateScholarshipWizard: React.FC = () => {
               id: sch._id,
               patch: { documents: d, markStep: "documents" },
             }).unwrap();
-
-            // stay here
+            // stay on documents
           }}
           onSubmitFinal={async () => {
             if (isSubmitted) {
@@ -362,12 +398,12 @@ const CreateScholarshipWizard: React.FC = () => {
         />
       )}
 
-      {/* Bottom actions: hide on funding step; Next does NOT call API */}
+      {/* Bottom actions (edit mode; not on funding step) */}
       {isEditMode && currentKey !== "funding" && (
         <BottomBar
           onBack={goPrev}
-          onMiddle={submitCurrentForm} // Update = submit & stay
-          onRight={goNext} // Next = just move forward, no API
+          onMiddle={submitCurrentForm} // Update & stay
+          onRight={goNext} // move forward; no API
           middleLabel="Update"
           rightLabel="Next"
         />

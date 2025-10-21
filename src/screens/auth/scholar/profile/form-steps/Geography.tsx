@@ -32,9 +32,9 @@ const selectStyles = {
   control: (base: any, state: any) => ({
     ...base,
     minHeight: 56,
-    borderRadius: 16,
+    borderRadius: 8,
     borderColor: state.isFocused ? "#6366f1" : "#e2e8f0",
-    boxShadow: state.isFocused ? "0 0 0 4px rgba(99,102,241,0.15)" : "none",
+    boxShadow: state.isFocused ? "0 0 0 0px rgba(99,102,241,0.15)" : "none",
     backgroundColor: "#fff",
     ":hover": { borderColor: state.isFocused ? "#6366f1" : "#e2e8f0" },
   }),

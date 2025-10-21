@@ -98,7 +98,7 @@ const CommunityBasedOrgRHF: React.FC<{
 
       {/* Content */}
       <main className="mx-auto w-full max-w-2xl px-4 pb-40 sm:px-6">
-        <p className="mt-4 text-[#cbd5e1]">
+        <p className="mt-4">
           Summary of community based or voluntary organization(s) that have
           supported your educational pursuit either financially, mentoring,
           career guidance or in any other way
@@ -115,7 +115,7 @@ const CommunityBasedOrgRHF: React.FC<{
                 valueAsNumber: true,
                 min: { value: 1, message: "Minimum is 1" },
               })}
-              className="h-14 w-full appearance-none rounded-2xl border border-slate-200 bg-slate-50 px-4 pr-10 text-base shadow-sm focus:bg-white focus:border-indigo-500 focus:outline-none focus:ring-4 focus:ring-indigo-100"
+              className="textInput h-14 w-full appearance-none rounded-md border border-slate-200 bg-slate-50 px-4 pr-10 text-base focus:bg-white focus:outline-none"
             >
               {[1, 2, 3, 4, 5].map((n) => (
                 <option key={n} value={n}>
@@ -167,10 +167,10 @@ const CommunityBasedOrgRHF: React.FC<{
                           required: "Name is required",
                         })}
                         placeholder="Enter"
-                        className={`h-12 w-full rounded-2xl border bg-slate-50 px-4 text-base shadow-sm focus:bg-white focus:outline-none focus:ring-4 ${
+                        className={`textInput h-12 w-full rounded-md border px-4 text-base focus:bg-white focus:outline-none  ${
                           errors.organizations?.[i]?.name
                             ? "border-red-400 focus:ring-red-100"
-                            : "border-slate-200 focus:border-indigo-500 focus:ring-indigo-100"
+                            : "border-slate-200"
                         }`}
                       />
                       {errors.organizations?.[i]?.name && (
@@ -188,7 +188,7 @@ const CommunityBasedOrgRHF: React.FC<{
                       <input
                         {...register(`organizations.${i}.address` as const)}
                         placeholder="Enter"
-                        className="h-12 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 text-base shadow-sm focus:bg-white focus:border-indigo-500 focus:outline-none focus:ring-4 focus:ring-indigo-100"
+                        className="textInput h-12 w-full rounded-md border border-slate-200 bg-slate-50 px-4 text-base focus:bg-white focus:outline-none"
                       />
                     </div>
 
@@ -201,7 +201,7 @@ const CommunityBasedOrgRHF: React.FC<{
                         inputMode="tel"
                         {...register(`organizations.${i}.phone` as const)}
                         placeholder="Enter"
-                        className="h-12 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 text-base shadow-sm focus:bg-white focus:border-indigo-500 focus:outline-none focus:ring-4 focus:ring-indigo-100"
+                        className="textInput h-12 w-full rounded-md border border-slate-200 px-4 text-base focus:bg-white focus:outline-none"
                       />
                     </div>
 
@@ -219,10 +219,10 @@ const CommunityBasedOrgRHF: React.FC<{
                           },
                         })}
                         placeholder="Enter"
-                        className={`h-12 w-full rounded-2xl border bg-slate-50 px-4 text-base shadow-sm focus:bg-white focus:outline-none focus:ring-4 ${
+                        className={`textInput h-12 w-full rounded-md border px-4 text-base focus:bg-white focus:outline-none ${
                           errors.organizations?.[i]?.email
                             ? "border-red-400 focus:ring-red-100"
-                            : "border-slate-200 focus:border-indigo-500 focus:ring-indigo-100"
+                            : "border-slate-200"
                         }`}
                       />
                       {errors.organizations?.[i]?.email && (

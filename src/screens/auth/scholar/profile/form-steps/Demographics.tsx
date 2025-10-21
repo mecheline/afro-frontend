@@ -80,7 +80,7 @@ const DemographicsRHF: React.FC<{
                 {...register("gender", {
                   required: "Please select your gender",
                 })}
-                className={`h-12 w-full appearance-none rounded-xl border bg-white px-4 pr-10 text-base font-semibold shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-4 focus:ring-indigo-100
+                className={`h-12 w-full appearance-none rounded-md border bg-white px-4 pr-10 text-base font-semibold focus:outline-none 
                 ${
                   errors.gender
                     ? "border-red-400 focus:ring-red-100"

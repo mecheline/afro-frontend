@@ -123,7 +123,7 @@ const LanguageRHF: React.FC<{
           <div className="relative">
             <select
               {...register("languagesCount", { required: "Select a number" })}
-              className={`h-12 w-full appearance-none rounded-xl border bg-white px-4 pr-10 text-base font-semibold shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-4 focus:ring-indigo-100
+              className={`h-12 w-full appearance-none rounded-md border bg-white px-4 pr-10 text-base font-semibold focus:outline-none 
                 ${
                   errors.languagesCount
                     ? "border-red-400 focus:ring-red-100"
@@ -168,7 +168,7 @@ const LanguageRHF: React.FC<{
                   {...register(`items.${idx}.language` as const, {
                     required: "Choose a language",
                   })}
-                  className={`h-12 w-full appearance-none rounded-xl border bg-white px-4 pr-10 text-base font-semibold shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-4 focus:ring-indigo-100
+                  className={`h-12 w-full appearance-none rounded-md border bg-white px-4 pr-10 text-base font-semibold focus:outline-none
                     ${
                       errors.items?.[idx]?.language
                         ? "border-red-400 focus:ring-red-100"
@@ -206,7 +206,7 @@ const LanguageRHF: React.FC<{
                   {...register(`items.${idx}.proficiency` as const, {
                     required: "Choose proficiency",
                   })}
-                  className={`h-12 w-full appearance-none rounded-xl border bg-white px-4 pr-10 text-base font-semibold shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-4 focus:ring-indigo-100
+                  className={`h-12 w-full appearance-none rounded-md border bg-white px-4 pr-10 text-base font-semibold focus:outline-none
                     ${
                       errors.items?.[idx]?.proficiency
                         ? "border-red-400 focus:ring-red-100"

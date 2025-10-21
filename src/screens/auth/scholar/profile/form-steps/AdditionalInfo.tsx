@@ -62,10 +62,10 @@ const AdditionalInfoRHF: React.FC<{
             {...register("personalStatement", {
               maxLength: { value: 3000, message: "Max 3000 characters" },
             })}
-            className={`w-full rounded-2xl border bg-slate-50 px-4 py-4 text-base leading-relaxed shadow-sm focus:bg-white focus:outline-none focus:ring-4 ${
+            className={`textInput w-full rounded-md border px-4 py-4 text-base leading-relaxed focus:bg-white focus:outline-none ${
               errors.personalStatement
                 ? "border-red-400 focus:ring-red-100"
-                : "border-slate-200 focus:border-indigo-500 focus:ring-indigo-100"
+                : "border-slate-200"
             }`}
           />
           <div className="min-h-5 pt-1 text-sm text-red-600">
@@ -85,10 +85,10 @@ const AdditionalInfoRHF: React.FC<{
             {...register("educationOpinion", {
               maxLength: { value: 3000, message: "Max 3000 characters" },
             })}
-            className={`w-full rounded-2xl border bg-slate-50 px-4 py-4 text-base leading-relaxed shadow-sm focus:bg-white focus:outline-none focus:ring-4 ${
+            className={`textInput w-full rounded-md border px-4 py-4 text-base leading-relaxed focus:bg-white focus:outline-none ${
               errors.educationOpinion
                 ? "border-red-400 focus:ring-red-100"
-                : "border-slate-200 focus:border-indigo-500 focus:ring-indigo-100"
+                : "border-slate-200"
             }`}
           />
           <div className="min-h-5 pt-1 text-sm text-red-600">
@@ -108,10 +108,10 @@ const AdditionalInfoRHF: React.FC<{
             {...register("extraCircumstances", {
               maxLength: { value: 3000, message: "Max 3000 characters" },
             })}
-            className={`w-full rounded-2xl border bg-slate-50 px-4 py-4 text-base leading-relaxed shadow-sm focus:bg-white focus:outline-none focus:ring-4 ${
+            className={`textInput w-full rounded-md border px-4 py-4 text-base leading-relaxed focus:bg-white focus:outline-none ${
               errors.extraCircumstances
                 ? "border-red-400 focus:ring-red-100"
-                : "border-slate-200 focus:border-indigo-500 focus:ring-indigo-100"
+                : "border-slate-200"
             }`}
           />
           <div className="min-h-5 pt-1 text-sm text-red-600">

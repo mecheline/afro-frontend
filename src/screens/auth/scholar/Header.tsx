@@ -37,9 +37,9 @@ function useActiveHeaderTitle() {
 export default function Header({ onMenuClick }: Props) {
   const user = useSelector((state: RootState) => state.auth);
   const title = useActiveHeaderTitle();
-
+  const notifications = 12; // set your count here
   return (
-    <header className="sticky top-0 z-30 border-b border-gray-200 bg-white/80 backdrop-blur supports-[backdrop-filter]:bg-white/60 dark:border-gray-800 dark:bg-gray-900/70">
+    <header className="sticky top-0 z-50 border-b border-gray-200 bg-white text-black">
       <div className="mx-auto flex h-16 w-full max-w-7xl items-center gap-3 px-4 sm:px-6 lg:px-8">
         <button
           className="inline-flex items-center rounded-lg p-2 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 lg:hidden dark:hover:bg-gray-800"
@@ -51,21 +51,42 @@ export default function Header({ onMenuClick }: Props) {
 
         <div className="ml-1 text-lg font-semibold sm:text-xl">{title}</div>
 
-        <div className="ml-auto flex items-center gap-2">
-          <div className="hidden sm:block">
-            <input
-              type="search"
-              placeholder="Search…"
-              className="w-48 rounded-md border border-gray-300 bg-white px-3 py-2 text-sm outline-none placeholder:text-gray-400 focus:ring-2 focus:ring-indigo-500 dark:border-gray-700 dark:bg-gray-900"
-            />
-          </div>
-
+        <div className="ml-auto flex items-center gap-4">
           <button
-            className="rounded-full p-2 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:hover:bg-gray-800"
+            className="relative rounded-full p-2 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:hover:bg-gray-800"
             aria-label="Notifications"
           >
             <Bell className="size-5" />
+
+            {notifications > 0 && (
+              <span
+                className="absolute -top-1 -right-1 inline-flex min-w-4 h-4 items-center justify-center rounded-full bg-red-600 px-1 text-[10px] font-medium leading-none text-white ring-2 ring-white dark:ring-gray-950"
+                aria-hidden="true"
+              >
+                {notifications > 99 ? "99+" : notifications}
+              </span>
+            )}
+
+            {/* Optional: accessible live region for screen readers */}
+            <span className="sr-only" aria-live="polite">
+              {notifications} unread notifications
+            </span>
           </button>
+          <div className="flex flex-col">
+            <div>
+              Welcome{" "}
+              <span role="img" aria-label="clapping hands">
+                👏
+              </span>
+            </div>
+            {user?.lastName ? (
+              <div className="text-gray-400">
+                {user?.lastName} {user?.firstName}
+              </div>
+            ) : (
+              <div className="text-xs">{user?.email}</div>
+            )}
+          </div>
 
           {user?.avatar ? (
             <img

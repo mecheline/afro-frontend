@@ -229,10 +229,11 @@ const ScholarSignup: React.FC = () => {
     try {
       const response = await signup(values).unwrap();
       console.log(response);
-
+      toast.success(response?.msg);
       setPhase("verify");
     } catch (error) {
       console.log(error);
+      toast.error("Try again later");
     }
   };
 
@@ -243,6 +244,7 @@ const ScholarSignup: React.FC = () => {
     try {
       const response = await verifyEmail(payload).unwrap();
       console.log(response);
+      toast.success(response?.msg);
       navigate("/auth/scholar/login");
     } catch (error: any) {
       toast.error(error?.data?.msg);

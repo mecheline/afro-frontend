@@ -1,12 +1,7 @@
 // PersonalInfoRHF.tsx
 import React, { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
-import {
-  Calendar,
-  ChevronDown,
-  Pencil,
-  UploadCloud,
-} from "lucide-react";
+import { Calendar, ChevronDown, Pencil, UploadCloud } from "lucide-react";
 import { useGetAccountQuery } from "../../../../../redux/services/scholar/api";
 import moment from "moment";
 import { Req } from "../../../../../constants/Required";
@@ -299,12 +294,8 @@ const PersonalStepForm: React.FC<{
                 {...register("firstName", {
                   required: "First name is required",
                 })}
-                className={`h-12 w-full rounded-2xl border bg-slate-50 px-4 text-base font-semibold text-slate-900 shadow-sm focus:bg-white focus:outline-none focus:ring-4
-                ${
-                  errors.firstName
-                    ? "border-red-400 focus:ring-red-100"
-                    : "border-slate-200 focus:ring-indigo-100 focus:border-indigo-500"
-                }`}
+                className={`textInput h-12 w-full rounded-md px-4 text-base focus:border-gray-200 
+                ${errors.firstName ? "border-red-400 focus:ring-red-100" : ""}`}
                 placeholder="Marian"
               />
               <p
@@ -328,7 +319,7 @@ const PersonalStepForm: React.FC<{
               </div>
               <input
                 {...register("preferredName")}
-                className="h-12 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 text-base font-semibold text-slate-900 shadow-sm focus:bg-white focus:border-indigo-500 focus:outline-none focus:ring-4 focus:ring-indigo-100"
+                className="textInput h-12 w-full rounded-md border border-slate-200 bg-slate-50 px-4 text-base font-semibold text-slate-900  focus:bg-white focus:outline-none"
                 placeholder="Joeyet"
               />
               <p className="mt-1 h-5 text-sm invisible">placeholder</p>
@@ -342,7 +333,7 @@ const PersonalStepForm: React.FC<{
               <label className="mb-2 block text-base ">Middle Name</label>
               <input
                 {...register("middleName")}
-                className="h-12 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 text-base placeholder:text-slate-400 shadow-sm focus:bg-white focus:border-indigo-500 focus:outline-none focus:ring-4 focus:ring-indigo-100"
+                className="textInput h-12 w-full rounded-md border border-slate-200 bg-slate-50 px-4 text-base placeholder:text-slate-400  focus:bg-white"
                 placeholder="Middle Name"
               />
               <p className="mt-1 h-5 text-sm invisible">placeholder</p>
@@ -357,12 +348,8 @@ const PersonalStepForm: React.FC<{
                 {...register("lastName", {
                   required: "Family surname is required",
                 })}
-                className={`h-12 w-full rounded-2xl border bg-slate-50 px-4 text-base font-semibold text-slate-900 shadow-sm focus:bg-white focus:outline-none focus:ring-4
-                ${
-                  errors.lastName
-                    ? "border-red-400 focus:ring-red-100"
-                    : "border-slate-200 focus:ring-indigo-100 focus:border-indigo-500"
-                }`}
+                className={`textInput h-12 w-full rounded-md border border-gray-200 px-4 text-base font-semibold 
+                ${errors.lastName ? "border-red-400 focus:ring-red-100" : ""}`}
                 placeholder="Adeniran"
               />
               <p
@@ -386,9 +373,9 @@ const PersonalStepForm: React.FC<{
                 <select
                   id="suffix"
                   {...register("suffix", { required: "Select a suffix" })}
-                  className={`h-12 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 pr-10
-                    text-base font-semibold shadow-sm appearance-none [&::-ms-expand]:hidden
-                    focus:bg-white focus:border-indigo-500 focus:outline-none focus:ring-4 focus:ring-indigo-100
+                  className={`textInput h-12 w-full rounded-md border border-gray-200 px-4 pr-10
+                    text-base font-semibold  appearance-none [&::-ms-expand]:hidden
+                    focus:bg-white focus:outline-none
                     ${isPlaceholder ? "text-slate-400" : "text-slate-900"}`}
                 >
                   <option value="" disabled hidden>
@@ -419,8 +406,8 @@ const PersonalStepForm: React.FC<{
               <div className="relative">
                 <select
                   {...register("formerMaterial")}
-                  className="peer h-12 w-full appearance-none rounded-2xl border border-slate-200 bg-slate-50 px-4 pr-10 text-base font-semibold shadow-sm
-                    focus:bg-white focus:border-indigo-500 focus:outline-none focus:ring-4 focus:ring-indigo-100
+                  className="peer textInput h-12 w-full appearance-none rounded-md border border-slate-200 px-4 pr-10 text-base font-semibold 
+                    focus:bg-white 
                     [&::-ms-expand]:hidden"
                 >
                   <option>Yes</option>
@@ -446,7 +433,7 @@ const PersonalStepForm: React.FC<{
                   {...register("dateOfBirth", {
                     required: "Date of birth is required",
                   })}
-                  className={`h-12 w-full rounded-2xl border bg-slate-50 px-4 pr-10 text-base shadow-sm focus:bg-white focus:outline-none focus:ring-4
+                  className={`textInput h-12 w-full rounded-md border bg-slate-50 px-4 pr-10 text-base  focus:bg-white focus:outline-none focus:ring-4
                     ${
                       errors.dateOfBirth
                         ? "border-red-400 focus:ring-red-100"
