@@ -42,9 +42,7 @@ export default function SponsorSettingsPage() {
 
       {/* Danger Zone */}
       <section className="rounded-lg border border-gray-300 p-4">
-        <h2 className="mb-1 text-lg text-red-700 font-medium">
-          Danger Zone
-        </h2>
+        <h2 className="mb-1 text-lg text-red-700 font-medium">Danger Zone</h2>
         <p className="text-sm">
           Request to deactivate your account. An admin will review and disable
           your account if approved.
@@ -88,7 +86,7 @@ export default function SponsorSettingsPage() {
             className="absolute inset-0 bg-black/40"
             onClick={() => setOpen(false)}
           />
-          <div className="relative z-10 w-[95%] max-w-lg rounded-lg border border-gray-200 bg-white p-5 shadow-xl dark:border-gray-800 dark:bg-gray-900">
+          <div className="relative z-10 w-[95%] max-w-lg rounded-lg border border-gray-200 bg-white p-5">
             <h3 className="text-lg font-semibold">
               Request account deactivation
             </h3>
@@ -116,14 +114,14 @@ export default function SponsorSettingsPage() {
             <div className="mt-5 flex items-center justify-end gap-2">
               <button
                 onClick={() => setOpen(false)}
-                className="rounded-md border border-gray-300 bg-white px-4 py-2 text-sm hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-900 dark:hover:bg-gray-800"
+                className="rounded-md border border-gray-300 bg-white px-4 py-2 text-sm hover:bg-gray-50"
               >
                 Cancel
               </button>
               <button
                 disabled={!ack || !reason.trim() || isSubmitting}
                 onClick={submit}
-                className="rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-60"
+                className="rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white "
               >
                 {isSubmitting ? "Submitting…" : "Submit request"}
               </button>
