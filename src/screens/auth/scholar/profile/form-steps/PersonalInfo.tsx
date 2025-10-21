@@ -48,28 +48,21 @@ const PersonalStepForm: React.FC<{
   });
   console.log(mapAccountToPersonalInfo(accountInfo));
 
-  const {
-    register,
-    watch,
-    handleSubmit,
-    reset,
-    setValue,
-    getValues,
-    formState,
-  } = useForm<PersonalForm>({
-    defaultValues: {
-      firstName: "",
-      preferredName: "",
-      middleName: "",
-      lastName: "",
-      suffix: "",
-      formerMaterial: "Yes",
-      dateOfBirth: "",
-      avatarUrl: "", // important for placeholder + validation
-      ...initialData,
-    },
-    mode: "onTouched",
-  });
+  const { register, handleSubmit, reset, setValue, getValues, formState } =
+    useForm<PersonalForm>({
+      defaultValues: {
+        firstName: "",
+        preferredName: "",
+        middleName: "",
+        lastName: "",
+        suffix: "",
+        formerMaterial: "Yes",
+        dateOfBirth: "",
+        avatarUrl: "", // important for placeholder + validation
+        ...initialData,
+      },
+      mode: "onTouched",
+    });
   const { errors } = formState;
 
   useEffect(() => {
