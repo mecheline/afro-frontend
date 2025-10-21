@@ -78,12 +78,13 @@ const SponsorLogin: React.FC = () => {
     try {
       const response = await login(values).unwrap();
       console.log(response);
-      toast.success("Logged in success");
+      toast.success(response?.msg);
 
       dispatch(Login(response));
 
       const res = await checkScholarshipCount().unwrap();
       console.log(res);
+      
       if (res?.total > 0) {
         navigate("/sponsor/dashboard");
       } else {

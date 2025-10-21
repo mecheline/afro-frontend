@@ -13,8 +13,6 @@ export default function ProfileWizard() {
   const back = () => setStep((s) => Math.max(1, s - 1));
   const next = () => setStep((s) => Math.min(7, s + 1));
 
-  console.log(step);
-
   return (
     <div className="mx-auto w-full max-w-3xl">
       {step === 1 && <PersonalInformation onPrev={back} onNext={next} />}

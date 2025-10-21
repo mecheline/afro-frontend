@@ -99,10 +99,11 @@ export default function SponsorSignup() {
     console.log("SUBMIT:", values);
     try {
       const res = await signup(payload).unwrap();
-      console.log(res);
+      toast.success(res?.msg);
       setPhase("verify");
     } catch (error) {
       console.log(error);
+      toast.error("Something went wrong, Try again later");
     }
   };
 
@@ -285,7 +286,7 @@ export default function SponsorSignup() {
     // TODO: replace with your API call:
     try {
       const response = await verifyEmail(payload).unwrap();
-      console.log(response);
+      toast.success(response?.msg);
       navigate("/auth/sponsor/login");
     } catch (error: any) {
       toast.error(error?.data?.msg);

@@ -14,10 +14,9 @@ import {
 import useProfileStepNav from "./useProfileStepNav";
 import { toast } from "sonner";
 import { Camera, CircleX } from "lucide-react";
-import { useDispatch } from "react-redux";
-import {  Profile } from "../../../redux/slices/scholar/authSlice";
+import { useDispatch, useSelector } from "react-redux";
+import { Profile } from "../../../redux/slices/scholar/authSlice";
 
-/* ---------------- Schema ---------------- */
 const schema = z.object({
   fullName: z.string().min(1, "Full name is required"),
   email: z.string().email("Enter a valid email"),
@@ -27,11 +26,7 @@ const schema = z.object({
   occupation: z.string().optional(),
 });
 type FormT = z.infer<typeof schema>;
-
 type StepProps = { onPrev?: () => void; onNext?: () => void };
-
-/* ---------------- Utils ---------------- */
-
 
 const initials = (name?: string) => {
   if (!name) return "SP";
@@ -41,57 +36,113 @@ const initials = (name?: string) => {
   return (a + b || a).toUpperCase() || "SP";
 };
 
-/* ---------------- Component ---------------- */
+function toTitle(s: string) {
+  return s
+    .toLowerCase()
+    .split(/([-' ])/)
+    .map((seg) =>
+      /[a-z]/.test(seg[0] || "") ? seg[0].toUpperCase() + seg.slice(1) : seg
+    )
+    .join("");
+}
+
+function splitName(fullName: string) {
+  const clean = (fullName || "").trim().replace(/\s+/g, " ");
+  if (!clean) return { firstName: "", lastName: "" };
+  const parts = clean.split(" ");
+  const first = toTitle(parts[0] || "");
+  const last = toTitle(parts.slice(1).join(" "));
+  return { firstName: first, lastName: last };
+}
+
 export default function PersonalInformation({ onPrev, onNext }: StepProps) {
-  const {
-    data,
-    refetch, 
-  } = useGetStepQuery("personal", {
-    refetchOnMountOrArgChange: true, // helpful when navigating back to this step
+  const { data, refetch } = useGetStepQuery("personal", {
+    refetchOnMountOrArgChange: true,
   });
   const dispatch = useDispatch();
   const [saveStep, { isLoading }] = useSaveStepMutation();
   const [uploadPic, { isLoading: uploading }] =
     useUploadSponsorProfilePictureMutation();
-
   const nav = useProfileStepNav();
+
+  // --- pull from auth for first-time prefill ---
+  const auth = useSelector((s: any) => s.auth);
+  const authFirstName: string | undefined = auth?.firstName;
+  const authLastName: string | undefined = auth?.lastName;
+  const authEmail: string | undefined = auth?.email ?? auth?.user?.email;
+  const authPhone: string | undefined = auth?.phone ?? auth?.user?.phone;
+  const authAvatar: string | undefined =
+    auth?.avatar ?? auth?.user?.avatar ?? auth?.user?.avatarUrl;
 
   const form = useForm<FormT>({
     resolver: zodResolver(schema),
     defaultValues: {} as any,
   });
 
-  // local image state
   const [serverUrl, setServerUrl] = React.useState<string | null>(null);
   const [pickedFile, setPickedFile] = React.useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = React.useState<string | null>(null);
 
-  // hydrate fields + avatar from API response
+  // guard: avoid refilling from auth multiple times
+  const prefilledFromAuthRef = React.useRef(false);
+
+  // hydrate from profile step if present
   React.useEffect(() => {
-    if (!data) return;
+    // Never clobber if user already typed
+    if (form.formState.isDirty) return;
 
-    // data structure: your controller should return personal fields + profilePicture
-    form.reset({
-      fullName: data?.fullName ?? "",
-      email: data?.email ?? "",
-      phone: data?.phone ?? "",
-      dateOfBirth: data?.dateOfBirth?.slice(0, 10) ?? "",
-      gender: data?.gender ?? "",
-      occupation: data?.occupation ?? "",
-    });
+    // 1) If server step has data, use it
+    if (
+      data &&
+      (data.fullName || data.email || data.phone || data.profilePicture)
+    ) {
+      form.reset({
+        fullName: data?.fullName ?? "",
+        email: data?.email ?? "",
+        phone: data?.phone ?? "",
+        dateOfBirth: data?.dateOfBirth?.slice(0, 10) ?? "",
+        gender: data?.gender ?? "",
+        occupation: data?.occupation ?? "",
+      });
 
-    const url =
-      data?.profilePicture?.url ||
-      data?.profilePicture?.uploadURL ||
-      data?.avatar ||
-      null;
+      const url =
+        data?.profilePicture?.url ||
+        data?.profilePicture?.uploadURL ||
+        data?.avatar ||
+        null;
 
-    setServerUrl(url);
-    setPreviewUrl(url);
-    setPickedFile(null);
-  }, [data]);
+      setServerUrl(url);
+      setPreviewUrl(url);
+      setPickedFile(null);
+      return;
+    }
 
-  // pick/remove handlers (local)
+    // 2) Else (first visit / not yet set), prefill from auth ONCE
+    if (!prefilledFromAuthRef.current) {
+      const fn = [authFirstName, authLastName].filter(Boolean).join(" ");
+      form.reset({
+        fullName: fn || "",
+        email: authEmail || "",
+        phone: authPhone || "",
+        dateOfBirth: "",
+        gender: "",
+        occupation: "",
+      });
+      setServerUrl(authAvatar ?? null);
+      setPreviewUrl(authAvatar ?? null);
+      setPickedFile(null);
+      prefilledFromAuthRef.current = true;
+    }
+  }, [
+    data,
+    form,
+    authFirstName,
+    authLastName,
+    authEmail,
+    authPhone,
+    authAvatar,
+  ]);
+
   const onPick = (file: File | null) => {
     setPickedFile(file);
     if (file) {
@@ -104,35 +155,56 @@ export default function PersonalInformation({ onPrev, onNext }: StepProps) {
   };
 
   const onRemoveLocal = () => {
-    // local-only removal; if you also want server deletion, add a remove mutation and call it here
     setPickedFile(null);
     setPreviewUrl(null);
     setServerUrl(null);
   };
 
-  // submit & go next
-  // util: split and title-case
-  function splitName(fullName: string) {
-    const clean = (fullName || "").trim().replace(/\s+/g, " ");
-    if (!clean) return { firstName: "", lastName: "" };
-    const parts = clean.split(" ");
-    const first = toTitle(parts[0]);
-    const last = toTitle(parts.slice(1).join(" "));
-    return { firstName: first, lastName: last };
-  }
+  const pushAuthFromResponse = (payload: any) => {
+    const fullName =
+      payload?.personalInfo?.fullName ??
+      [payload?.firstName, payload?.lastName].filter(Boolean).join(" ");
+    const { firstName, lastName } = splitName(fullName || "");
+    const avatar =
+      payload?.profilePicture?.url ??
+      payload?.avatarUrl ??
+      payload?.avatar?.url ??
+      "";
 
-  function toTitle(s: string) {
-    return s
-      .toLowerCase()
-      .split(/([-' ])/)
-      .map((seg) =>
-        /[a-z]/.test(seg[0] || "") ? seg[0].toUpperCase() + seg.slice(1) : seg
-      )
-      .join("");
-  }
+    dispatch(
+      Profile({
+        firstName,
+        lastName,
+        avatar,
+      })
+    );
+  };
 
-  // submit & go next
   const submitAndNext = form.handleSubmit(async (values) => {
+    try {
+      if (pickedFile) {
+        await uploadPic({ file: pickedFile }).unwrap();
+        await refetch(); // avatar now on server
+      }
+
+      const res = await saveStep({
+        stepKey: "personal",
+        payload: values,
+      }).unwrap();
+
+      const profile =
+        res?.data?.profile ?? res?.data?.response?.profile ?? res?.data ?? null;
+      if (profile) pushAuthFromResponse(profile); // mirror auth
+      toast.success(res?.message ?? "Saved");
+
+      await refetch(); // refresh step cache again
+      (onNext ?? nav.goNext)();
+    } catch (e: any) {
+      toast.error(e?.data?.message ?? e?.message ?? "Failed to save");
+    }
+  });
+
+  const saveOnly = form.handleSubmit(async (values) => {
     try {
       if (pickedFile) {
         await uploadPic({ file: pickedFile }).unwrap();
@@ -144,45 +216,12 @@ export default function PersonalInformation({ onPrev, onNext }: StepProps) {
         payload: values,
       }).unwrap();
 
-      // Some backends return {data: {profile}} others {data: {response: {profile}}}
       const profile =
-        res?.data?.profile ?? res?.data?.response?.profile ?? null;
-
-      const fullName = profile?.personalInfo?.fullName ?? "";
-      const { firstName, lastName } = splitName(fullName);
-      const avatar = profile?.profilePicture?.url ?? "";
-
-      dispatch(
-        Profile({
-          firstName,
-          lastName,
-          avatar,
-        })
-      );
-
+        res?.data?.profile ?? res?.data?.response?.profile ?? res?.data ?? null;
+      if (profile) pushAuthFromResponse(profile);
       toast.success(res?.message ?? "Saved");
+
       await refetch();
-      (onNext ?? nav.goNext)();
-    } catch (e: any) {
-      toast.error(e?.data?.message ?? e?.message ?? "Failed to save");
-    }
-  });
-
-  // save only (stay on page)
-  const saveOnly = form.handleSubmit(async (values) => {
-    try {
-      if (pickedFile) {
-        await uploadPic({ file: pickedFile }).unwrap();
-        await refetch(); // 👈 refresh cache right after upload
-      }
-
-      const res = await saveStep({
-        stepKey: "personal",
-        payload: values,
-      }).unwrap();
-
-      toast.success(res?.message ?? "Saved");
-      await refetch(); // 👈 refresh cache after saving as well
     } catch (e: any) {
       toast.error(e?.data?.message ?? e?.message ?? "Failed to save");
     }
@@ -196,7 +235,6 @@ export default function PersonalInformation({ onPrev, onNext }: StepProps) {
 
       {/* Avatar row */}
       <div className="mb-6 flex flex-col items-center gap-4">
-        {/* Avatar */}
         <div className="relative">
           {previewUrl ? (
             <img
@@ -223,7 +261,6 @@ export default function PersonalInformation({ onPrev, onNext }: StepProps) {
           )}
         </div>
 
-        {/* Controls */}
         <div className="flex flex-col gap-2">
           <input
             ref={fileInputRef}
@@ -306,7 +343,7 @@ export default function PersonalInformation({ onPrev, onNext }: StepProps) {
       </div>
 
       <StepFooter
-        prevDisabled={false /* or nav.isFirst if you prefer */}
+        prevDisabled={false}
         nextDisabled={isLoading || uploading}
         onPrev={onPrev ?? nav.goPrev}
         onNext={submitAndNext}
