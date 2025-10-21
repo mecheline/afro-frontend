@@ -7,6 +7,7 @@ const Card: React.FC<{
   loading?: boolean;
   tone?: "blue" | "green" | "gray";
 }> = ({ label, value, loading, tone = "blue" }) => {
+  console.log(tone);
   return (
     <div className={`rounded-xl border border-gray-100 bg-white p-4 shadow-sm`}>
       <div className="text-xs font-medium text-gray-500">{label}</div>

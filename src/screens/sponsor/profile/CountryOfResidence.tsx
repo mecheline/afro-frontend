@@ -20,7 +20,7 @@ export default function CountryOfResidence({ onPrev, onNext }: StepProps) {
   const { data: countries = [], isFetching } = useGetCountriesQuery(q);
   const [saveStep, { isLoading }] = useSaveStepMutation();
 
-  const { register, watch, setValue, handleSubmit, reset } = useForm<{
+  const { watch, setValue, handleSubmit, reset } = useForm<{
     countryOfResidence: string;
   }>({ defaultValues: { countryOfResidence: "" } });
 

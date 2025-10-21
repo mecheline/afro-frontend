@@ -275,7 +275,7 @@ export const ScholarshipsTab: React.FC = () => {
                     </td>
                     <td className="px-4 py-3 text-gray-700">{s.category}</td>
                     <td className="px-4 py-3 text-gray-700">
-                      {s.selectionMethod ?? "—"}
+                      {s.selectionMethod ?? "N/A"}
                     </td>
                     <td className="px-4 py-3">
                       <StatusBadge active={s.active} />

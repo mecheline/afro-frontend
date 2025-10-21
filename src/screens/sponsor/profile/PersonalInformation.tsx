@@ -13,9 +13,9 @@ import {
 } from "../../../redux/services/scholar/api";
 import useProfileStepNav from "./useProfileStepNav";
 import { toast } from "sonner";
-import { Camera, CircleX, MinusCircle, Trash2 } from "lucide-react";
+import { Camera, CircleX } from "lucide-react";
 import { useDispatch } from "react-redux";
-import { Login, Profile } from "../../../redux/slices/scholar/authSlice";
+import {  Profile } from "../../../redux/slices/scholar/authSlice";
 
 /* ---------------- Schema ---------------- */
 const schema = z.object({
@@ -31,8 +31,7 @@ type FormT = z.infer<typeof schema>;
 type StepProps = { onPrev?: () => void; onNext?: () => void };
 
 /* ---------------- Utils ---------------- */
-const cx = (...xs: Array<string | false | null | undefined>) =>
-  xs.filter(Boolean).join(" ");
+
 
 const initials = (name?: string) => {
   if (!name) return "SP";
@@ -46,8 +45,7 @@ const initials = (name?: string) => {
 export default function PersonalInformation({ onPrev, onNext }: StepProps) {
   const {
     data,
-    isFetching,
-    refetch, // 👈 we'll call this after uploads/saves
+    refetch, 
   } = useGetStepQuery("personal", {
     refetchOnMountOrArgChange: true, // helpful when navigating back to this step
   });

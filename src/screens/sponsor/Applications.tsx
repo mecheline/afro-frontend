@@ -5,8 +5,6 @@ import { useGetScholarshipApplicationsQuery } from "../../redux/services/scholar
 import { fmtDate } from "../../constants/Format";
 import { ArrowLeft } from "lucide-react";
 
-type DocPair = { label: string; url: string };
-
 const Badge: React.FC<{
   tone?: "green" | "gray" | "blue";
   children: React.ReactNode;

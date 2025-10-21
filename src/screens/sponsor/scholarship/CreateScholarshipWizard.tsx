@@ -48,9 +48,6 @@ function SkeletonBar({
   );
 }
 
-function SkeletonChip() {
-  return <div className="h-6 w-16 animate-pulse rounded-full bg-gray-200" />;
-}
 
 function SkeletonButton({ w = "w-28" }: { w?: string }) {
   return <div className={cn("h-9 animate-pulse rounded bg-gray-200", w)} />;

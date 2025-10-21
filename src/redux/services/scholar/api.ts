@@ -264,8 +264,6 @@ export const scholarApi = createApi({
     "Verification",
     "Countries",
     "ScholarMatches",
-    "ScholarProfileStep",
-    "ScholarVerification",
   ],
   endpoints: (builder) => ({
     /* ---------------------------
@@ -331,71 +329,8 @@ export const scholarApi = createApi({
     }),
 
     /* ---------- SCHOLAR — profile wizard steps ---------- */
-    getScholarStep: builder.query<any, string>({
-      query: (stepKey) => `/scholars/api/profile/step/${stepKey}`,
-      transformResponse: (r: Api<any>) => r.data,
-      providesTags: (_r, _e, stepKey) => [
-        { type: "ScholarProfileStep", id: stepKey },
-      ],
-    }),
-    saveScholarStep: builder.mutation<any, { stepKey: string; payload: any }>({
-      query: (body) => ({
-        url: `/scholars/api/profile/step`,
-        method: "PUT",
-        body,
-      }),
-      invalidatesTags: (_r, _e, { stepKey }) => [
-        { type: "ScholarProfileStep", id: stepKey },
-      ],
-    }),
 
     /* ---------- SCHOLAR — uploads (verification + avatar) ---------- */
-    uploadScholarVerification: builder.mutation<
-      any,
-      { idType: string; file: File }
-    >({
-      query: ({ idType, file }) => {
-        const fd = new FormData();
-        fd.append("idType", idType);
-        fd.append("file", file);
-        return {
-          url: `/scholars/api/profile/upload/verification`,
-          method: "POST",
-          body: fd,
-        };
-      },
-      invalidatesTags: [
-        { type: "ScholarVerification", id: "doc" },
-        { type: "ScholarProfileStep", id: "verification" },
-      ],
-    }),
-    uploadScholarProfilePicture: builder.mutation<
-      {
-        message: string;
-        data: {
-          url: string;
-          public_id: string;
-          width: number;
-          height: number;
-          bytes: number;
-          format: string;
-          uploadedAt: string;
-        };
-      },
-      { file: File }
-    >({
-      query: ({ file }) => {
-        const fd = new FormData();
-        fd.append("file", file);
-        return {
-          url: `/scholars/api/profile/upload-picture`,
-          method: "POST",
-          body: fd,
-        };
-      },
-      // if your profile step for avatar is "personal" or "photo", invalidate it:
-      invalidatesTags: [{ type: "ScholarProfileStep", id: "personal" }],
-    }),
 
     /* ---------------------------
      * NEW — Scholar-facing Scholarships (secured)
@@ -508,9 +443,6 @@ export const scholarApi = createApi({
 
     /*    utility endpoints */
 
-    // inside endpoints: (builder) => ({
-    // ...keep existing endpoints...
-
     getFieldParents: builder.query<FieldParentsRow[], void>({
       query: () => `/api/catalog/parents`,
       transformResponse: (r: {
@@ -619,17 +551,6 @@ export const scholarApi = createApi({
       query: (id) => `/sponsors/api/scholarship/${id}`,
     }),
 
-    /*  createScholarship: builder.mutation<
-      Scholarship,
-      { title: string; category: ScholarshipCategory }
-    >({
-      query: (body) => ({
-        url: "/sponsors/api/scholarship",
-        method: "POST",
-        body,
-      }),
-      invalidatesTags: (r) => (r ? [{ type: "Scholarships", id: r._id }] : []),
-    }), */
     createScholarship: builder.mutation<
       Scholarship,
       FormData | { title: string; category: ScholarshipCategory }
@@ -648,17 +569,6 @@ export const scholarApi = createApi({
       providesTags: (_r, _e, id) => [{ type: "Scholarships", id }],
     }),
 
-    /*  updateScholarship: builder.mutation<
-      Scholarship,
-      { id: string; patch: UpdatePatch }
-    >({
-      query: ({ id, patch }) => ({
-        url: `/sponsors/api/scholarship/${id}`,
-        method: "PATCH",
-        body: patch,
-      }),
-      invalidatesTags: (_r, _e, { id }) => [{ type: "Scholarships", id }],
-    }), */
 
     updateScholarship: builder.mutation<
       Scholarship,
@@ -671,7 +581,7 @@ export const scholarApi = createApi({
       }),
       invalidatesTags: (_r, _e, { id }) => [
         { type: "Scholarships", id },
-        { type: "ScholarMatches", id }, // 👈 add this line
+        { type: "ScholarMatches", id }, 
       ],
     }),
 
@@ -834,7 +744,7 @@ export const scholarApi = createApi({
     getStep: builder.query<any, string>({
       query: (stepKey) => `/sponsors/api/profile/step/${stepKey}`,
       transformResponse: (r: Api<any>) => r.data,
-      providesTags: (r, e, k) => [{ type: "ProfileStep", id: k }],
+      providesTags: (k) => [{ type: "ProfileStep", id: k }],
     }),
     saveStep: builder.mutation<any, { stepKey: string; payload: any }>({
       query: (body) => ({
@@ -842,9 +752,7 @@ export const scholarApi = createApi({
         method: "PUT",
         body,
       }),
-      invalidatesTags: (r, e, { stepKey }) => [
-        { type: "ProfileStep", id: stepKey },
-      ],
+      invalidatesTags: ({ stepKey }) => [{ type: "ProfileStep", id: stepKey }],
     }),
     uploadVerification: builder.mutation<any, { idType: string; file: File }>({
       query: ({ idType, file }) => {
@@ -915,10 +823,6 @@ export const {
   useGetAccountQuery,
   useGetDeactivationRequestQuery,
   useRequestDeactivationMutation,
-  useGetScholarStepQuery,
-  useSaveScholarStepMutation,
-  useUploadScholarVerificationMutation,
-  useUploadScholarProfilePictureMutation,
 
   // NEW scholar-facing scholarships
   useGetActiveScholarshipsQuery,

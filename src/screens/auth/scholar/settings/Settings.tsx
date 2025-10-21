@@ -1,7 +1,7 @@
 // src/modules/scholar/dashboard/settings/Settings.tsx
 "use client";
 
-import * as React from "react";
+
 import { useState } from "react";
 
 const cn = (...classes: Array<string | false | null | undefined>) =>
@@ -14,7 +14,7 @@ import {
 import { toast } from "sonner";
 
 export default function SettingsPage() {
-  const { data, isLoading, isError } = useGetDeactivationRequestQuery();
+  const { data } = useGetDeactivationRequestQuery();
   const [open, setOpen] = useState(false);
   const [reason, setReason] = useState("");
   const [checked, setChecked] = useState(false);

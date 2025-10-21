@@ -1,7 +1,6 @@
 // src/modules/sponsor/dashboard/settings/Settings.tsx
 "use client";
 
-import * as React from "react";
 import { useState } from "react";
 import {
   useGetSponsorDeactivationRequestQuery,
@@ -10,7 +9,7 @@ import {
 import { toast } from "sonner";
 
 export default function SponsorSettingsPage() {
-  const { data, isLoading } = useGetSponsorDeactivationRequestQuery();
+  const { data } = useGetSponsorDeactivationRequestQuery();
   const [reason, setReason] = useState("");
   const [ack, setAck] = useState(false);
   const [open, setOpen] = useState(false);

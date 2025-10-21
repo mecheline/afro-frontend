@@ -1,5 +1,6 @@
 import { Fragment, useEffect, useState } from "react";
-import { NavLink, useLocation } from "react-router"; // fixed
+import { createPortal } from "react-dom";
+import { NavLink, useLocation } from "react-router";
 import {
   X,
   LayoutGrid,
@@ -53,6 +54,63 @@ const profileSteps = [
   { key: "ssce", name: "SSCE Examinations" },
   { key: "result", name: "Result" },
 ] as const;
+
+/* --- Portal Modal (always above everything) --- */
+function ConfirmLogoutModal({
+  open,
+  onCancel,
+  onConfirm,
+}: {
+  open: boolean;
+  onCancel: () => void;
+  onConfirm: () => void | Promise<void>;
+}) {
+  // Prevent body scroll while modal is open
+  useEffect(() => {
+    if (!open) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = prev;
+    };
+  }, [open]);
+
+  if (!open) return null;
+
+  return createPortal(
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center">
+      <div className="absolute inset-0 bg-black/40" onClick={onCancel} />
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="logout-title"
+        className="relative z-[10000] w-[95%] max-w-sm rounded-lg border border-gray-200 bg-white p-5 shadow-2xl"
+      >
+        <h3 id="logout-title" className="text-lg font-semibold">
+          Log out
+        </h3>
+        <p className="mt-1 text-sm text-gray-600">
+          Are you sure you want to log out?
+        </p>
+        <div className="mt-5 flex items-center justify-end gap-2">
+          <button
+            onClick={onCancel}
+            className="rounded-md border border-gray-300 bg-white px-4 py-2 text-sm hover:bg-gray-50"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={onConfirm}
+            className="rounded-md bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700"
+          >
+            Continue
+          </button>
+        </div>
+      </div>
+    </div>,
+    document.body
+  );
+}
 
 function ProfileGroup({ onItemClick }: { onItemClick?: () => void }) {
   const location = useLocation();
@@ -123,7 +181,6 @@ function NavItems({ onClick }: { onClick?: () => void }) {
   const [showConfirm, setShowConfirm] = useState(false);
 
   return (
-    // Make this a full-height flex column so mt-auto works
     <div className="flex h-full flex-col">
       <nav className="mt-4 space-y-1 px-3">
         {mainNav.map(({ to, label, icon: Icon, end }) => (
@@ -145,11 +202,9 @@ function NavItems({ onClick }: { onClick?: () => void }) {
             <span className="truncate">{label}</span>
           </NavLink>
         ))}
-
         <ProfileGroup onItemClick={onClick} />
       </nav>
 
-      {/* Bottom-fixed Logout */}
       <div className="mt-auto border-t p-3 dark:border-gray-800">
         <button
           type="button"
@@ -164,37 +219,15 @@ function NavItems({ onClick }: { onClick?: () => void }) {
         </button>
       </div>
 
-      {showConfirm && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center">
-          <div
-            className="absolute inset-0 bg-black/40"
-            onClick={() => setShowConfirm(false)}
-          />
-          <div className="relative z-50 w-[95%] max-w-sm rounded-lg border border-gray-200 bg-white p-5 shadow-xl">
-            <h3 className="text-lg font-semibold">Log out</h3>
-            <p className="mt-1 text-sm text-gray-600">
-              Are you sure you want to log out?
-            </p>
-            <div className="mt-5 flex items-center justify-end gap-2">
-              <button
-                onClick={() => setShowConfirm(false)}
-                className="rounded-md border border-gray-300 bg-white px-4 py-2 text-sm hover:bg-gray-50"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={async () => {
-                  setShowConfirm(false);
-                  await logout();
-                }}
-                className="rounded-md bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700"
-              >
-                Continue
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Portal modal (always topmost) */}
+      <ConfirmLogoutModal
+        open={showConfirm}
+        onCancel={() => setShowConfirm(false)}
+        onConfirm={async () => {
+          setShowConfirm(false);
+          await logout();
+        }}
+      />
     </div>
   );
 }
@@ -203,7 +236,6 @@ export default function Sidebar({ open, onClose, variant }: Props) {
   if (variant === "desktop") {
     return (
       <aside className="sticky top-0 hidden h-dvh border-r border-gray-200 bg-white lg:block dark:border-gray-800 dark:bg-gray-900">
-        {/* Make the column fill the viewport so NavItems can stretch */}
         <div className="flex h-dvh flex-col">
           <div className="flex h-16 items-center px-4">
             <img
@@ -212,7 +244,6 @@ export default function Sidebar({ open, onClose, variant }: Props) {
               className="rounded-full bg-white p-1 text-white"
             />
           </div>
-          {/* Let NavItems take remaining space */}
           <div className="min-h-0 flex-1">
             <NavItems />
           </div>
@@ -235,7 +266,6 @@ export default function Sidebar({ open, onClose, variant }: Props) {
         role="dialog"
         aria-modal="true"
         className={clsx(
-          // Make mobile panel a flex column too
           "fixed inset-y-0 left-0 z-50 w-80 transform bg-white shadow-xl transition-transform dark:bg-gray-900 lg:hidden flex flex-col",
           open ? "translate-x-0" : "-translate-x-full"
         )}
@@ -250,7 +280,6 @@ export default function Sidebar({ open, onClose, variant }: Props) {
             <X className="size-5" />
           </button>
         </div>
-        {/* Let NavItems fill and push logout to bottom */}
         <div className="min-h-0 flex-1">
           <NavItems onClick={onClose} />
         </div>

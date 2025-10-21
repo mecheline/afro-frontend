@@ -76,7 +76,7 @@ export default function MatchedScholars() {
   const [page, setPage] = React.useState<number>(
     Number.isFinite(pageFromUrl) && pageFromUrl > 0 ? pageFromUrl : 1
   );
-  const [limit, setLimit] = React.useState<number>(
+  const [limit] = React.useState<number>(
     Number.isFinite(limitFromUrl) && limitFromUrl > 0 ? limitFromUrl : 12
   );
 
@@ -113,7 +113,7 @@ export default function MatchedScholars() {
     if (canNext) setPage((p) => p + 1);
   };
 
-  const limitOptions = [6, 9, 12, 18, 24, 36, 48];
+  //const limitOptions = [6, 9, 12, 18, 24, 36, 48];
 
   return (
     <div className="mx-auto max-w-7xl p-4 md:p-6">
