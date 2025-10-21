@@ -31,8 +31,8 @@ export type UpdatePatch = {
 };
 
 // tiny runtime check
-const isFormData = (v: unknown): v is FormData =>
-  typeof FormData !== "undefined" && v instanceof FormData;
+/* const isFormData = (v: unknown): v is FormData =>
+  typeof FormData !== "undefined" && v instanceof FormData; */
 
 // near your other types
 export type FieldCatalogItem = {
@@ -569,7 +569,6 @@ export const scholarApi = createApi({
       providesTags: (_r, _e, id) => [{ type: "Scholarships", id }],
     }),
 
-
     updateScholarship: builder.mutation<
       Scholarship,
       { id: string; patch: UpdatePatch | FormData }
@@ -581,7 +580,7 @@ export const scholarApi = createApi({
       }),
       invalidatesTags: (_r, _e, { id }) => [
         { type: "Scholarships", id },
-        { type: "ScholarMatches", id }, 
+        { type: "ScholarMatches", id },
       ],
     }),
 
