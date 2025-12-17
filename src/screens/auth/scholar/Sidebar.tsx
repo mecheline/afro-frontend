@@ -46,6 +46,7 @@ const profileSteps = [
   { key: "siblings", name: "Siblings" },
   { key: "education", name: "Education" },
   { key: "financial", name: "Financial Analysis" },
+  { key: "bank", name: "Bank Details" },
   { key: "cbo", name: "Community Based Org." },
   { key: "leadership", name: "Leadership Track Record" },
   { key: "future", name: "Future Plans" },

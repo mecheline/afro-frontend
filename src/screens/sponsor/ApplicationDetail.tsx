@@ -1,9 +1,14 @@
 // src/features/applications/ApplicationDetail.tsx
 import React, { useMemo } from "react";
 import { Link, useLocation, useParams } from "react-router";
-import { useGetScholarshipApplicationsQuery } from "../../redux/services/scholar/api";
-import { fmtDate } from "../../constants/Format";
 import { ArrowLeft } from "lucide-react";
+import { toast } from "sonner";
+
+import {
+  useGetScholarshipApplicationsQuery,
+  useSelectScholarForScholarshipMutation,
+} from "../../redux/services/scholar/api";
+import { fmtDate } from "../../constants/Format";
 
 type DocPair = { label: string; url: string };
 
@@ -55,23 +60,26 @@ const DocList: React.FC<{ title: string; items: DocPair[] }> = ({
 );
 
 const ApplicationDetail: React.FC = () => {
-  const { id } = useParams();
-  const { appId } = useParams(); // in detail page
+  const { id, appId } = useParams<{ id: string; appId: string }>();
   const location = useLocation() as any;
   const fromState = location?.state?.application;
   const titleFromState = location?.state?.title;
 
   // If we navigated directly (no state), fetch and find the app by id
   const { data } = useGetScholarshipApplicationsQuery(
-    { id: id },
+    { id: id as string },
     { skip: !!fromState }
   );
+
   const fallback = useMemo(() => {
     if (!data?.data) return null;
     return data.data.find((a: any) => String(a._id) === String(appId)) || null;
   }, [data, appId]);
 
-  const app = fromState || fallback;
+  const app: any = fromState || fallback;
+
+  const [selectScholar, { isLoading: isFunding }] =
+    useSelectScholarForScholarshipMutation();
 
   if (!app) {
     return (
@@ -92,6 +100,38 @@ const ApplicationDetail: React.FC = () => {
   const cvUrl: string = app?.letters?.cvUrl || "";
   const motivation: string = app?.letters?.motivation || "";
 
+  // ✅ Correct: scholarId lives on the root of the app
+  const scholarId: string | undefined =
+    app?.scholarId ||
+    app?.applicant?.scholarId ||
+    app?.applicant?.id ||
+    app?.applicant?._id;
+
+  const handleFundScholar = async () => {
+    if (!id || !app?._id) {
+      toast.error("Missing scholarship or application identifier");
+      return;
+    }
+    if (!scholarId) {
+      toast.error("Missing scholar identifier on this application");
+      return;
+    }
+
+    try {
+      await selectScholar({
+        scholarshipId: id,
+        scholarId,
+        applicationId: app._id, // SelfSelection → send applicationId
+      }).unwrap();
+      toast.success("Scholar queued for verification and funding");
+    } catch (err: any) {
+      toast.error(
+        err?.data?.message ||
+          "Unable to fund scholar. Please try again in a moment."
+      );
+    }
+  };
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
@@ -104,9 +144,9 @@ const ApplicationDetail: React.FC = () => {
         </div>
         <Link
           to={`/sponsor/dashboard/applications/${id}`}
-          className="group inline-flex items-center gap-x-1 rounded-md px-1 py-0.5 mb-6
+          className="group mb-6 inline-flex items-center gap-x-1 rounded-md px-1 py-0.5
                      text-sm text-gray-700 transition-all duration-200 ease-out
-                     hover:text-indigo-600 hover:-translate-x-0.5"
+                     hover:-translate-x-0.5 hover:text-indigo-600"
         >
           <ArrowLeft className="size-4 transition-transform duration-200 ease-out group-hover:-translate-x-0.5" />{" "}
           Back
@@ -161,12 +201,22 @@ const ApplicationDetail: React.FC = () => {
           }
         />
         <div className="mt-2">
-          <div className="text-sm text-gray-500 mb-1">Motivation</div>
+          <div className="mb-1 text-sm text-gray-500">Motivation</div>
           <div className="whitespace-pre-wrap rounded-md border border-gray-200 p-3 text-sm text-gray-900">
             {motivation || "—"}
           </div>
         </div>
       </Section>
+
+      <div className="my-16 flex items-center justify-center">
+        <button
+          onClick={handleFundScholar}
+          disabled={isFunding}
+          className="rounded-lg bg-blue-700 px-6 py-2 text-base font-medium text-white hover:cursor-pointer disabled:opacity-60"
+        >
+          {isFunding ? "Processing…" : "Fund Scholar"}
+        </button>
+      </div>
     </div>
   );
 };

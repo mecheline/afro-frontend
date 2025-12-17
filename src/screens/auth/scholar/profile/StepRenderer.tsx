@@ -1,6 +1,7 @@
 import ActivityRHF from "./form-steps/Activity";
 import AdditionalInfoRHF from "./form-steps/AdditionalInfo";
 import AddressStepForm from "./form-steps/AddressInfo";
+import ScholarBankDetailsForm from "./form-steps/BankInfo";
 import CommunityBasedOrgRHF from "./form-steps/CommunityBasedOrg";
 import ContactDetailsRHF from "./form-steps/ContactDetails";
 import DemographicsRHF from "./form-steps/Demographics";
@@ -49,6 +50,8 @@ const StepRenderer: React.FC<{
       return <EducationRHF {...rest} />;
     case "financial":
       return <FinancialAnalysisRHF {...rest} />;
+    case "bank":
+      return <ScholarBankDetailsForm {...rest} />;
     case "cbo":
       return <CommunityBasedOrgRHF {...rest} />;
     case "leadership":

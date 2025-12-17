@@ -2,7 +2,16 @@
 import * as React from "react";
 import { Link, useParams } from "react-router";
 import { Skeleton, Alert, Tag } from "antd";
-import { useGetActiveScholarshipDetailQuery } from "../../../../redux/services/scholar/api";
+import {
+  useGetActiveScholarshipDetailQuery,
+  useGetMyApplicationsQuery,
+  type ScholarshipItem,
+} from "../../../../redux/services/scholar/api";
+import ApplyWizardModal from "./ApplyWizardModal";
+import { Send } from "lucide-react";
+
+const cn = (...classes: Array<string | false | null | undefined>) =>
+  classes.filter(Boolean).join(" ");
 
 const Row: React.FC<{ label: string; children?: React.ReactNode }> = ({
   label,
@@ -18,12 +27,25 @@ const Row: React.FC<{ label: string; children?: React.ReactNode }> = ({
 
 export default function ScholarshipDetail() {
   const { id } = useParams<{ id: string }>();
-
+  const [applyFor, setApplyFor] = React.useState<ScholarshipItem | null>(null);
   const { data, isLoading, isFetching, isError, error, refetch } =
     useGetActiveScholarshipDetailQuery(id ?? "", { skip: !id });
 
-  const s = data?.scholarship;
+  // ⬇️ Load my applications once to know which scholarships are already applied
+  //    (use a large page size; backend already caps to 50 in your controller. Adjust if needed.)
+  const {
+    data: myAppsPaged,
+    refetch: refetchMyApps,
+    isFetching: fetchingApps,
+  } = useGetMyApplicationsQuery({ page: 1, limit: 50 }); // status omitted => all
 
+  const appliedSet = React.useMemo(() => {
+    const rows = myAppsPaged?.data ?? [];
+    return new Set<string>(rows.map((a: any) => String(a.scholarshipId)));
+  }, [myAppsPaged]);
+
+  const s = data?.scholarship;
+  const alreadyApplied = appliedSet.has(String(s?._id ?? ""));
   return (
     <div className="space-y-4">
       {/* Top bar */}
@@ -68,6 +90,37 @@ export default function ScholarshipDetail() {
         <div className="rounded-lg border bg-white p-6 text-sm text-gray-600">
           Scholarship not found or not active.
         </div>
+      )}
+
+      <button
+        onClick={() => setApplyFor(s)}
+        disabled={alreadyApplied || fetchingApps}
+        aria-disabled={alreadyApplied || fetchingApps}
+        title={alreadyApplied ? "You have already applied" : undefined}
+        className={cn(
+          "inline-flex items-center rounded-md px-3 py-2 text-sm font-medium bg-indigo-600 hover:bg-indigo-700 text-white",
+          alreadyApplied || fetchingApps ? "cursor-not-allowed" : ""
+        )}
+      >
+        {alreadyApplied ? (
+          "Applied"
+        ) : (
+          <span className="flex items-center gap-x-1">
+            <Send size={14} /> Apply now
+          </span>
+        )}
+      </button>
+
+      {applyFor && (
+        <ApplyWizardModal
+          open
+          scholarship={applyFor}
+          onClose={() => {
+            setApplyFor(null);
+            // refresh my applications so the “Apply now” button disables instantly after submit
+            refetchMyApps();
+          }}
+        />
       )}
 
       {/* Content */}

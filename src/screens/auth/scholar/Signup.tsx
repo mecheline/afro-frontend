@@ -231,9 +231,9 @@ const ScholarSignup: React.FC = () => {
       console.log(response);
       toast.success(response?.msg);
       setPhase("verify");
-    } catch (error) {
+    } catch (error:any) {
       console.log(error);
-      toast.error("Try again later");
+      toast.error(error?.data?.msg);
     }
   };
 

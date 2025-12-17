@@ -233,6 +233,99 @@ export type MatchResponse = {
   data: any[]; // you can replace `any` with your Scholar shape if you have one
 };
 
+// Matched scholars list item (you already use something like this)
+export type MatchedScholarRow = {
+  _id: string;
+  firstName?: string;
+  lastName?: string;
+  email?: string;
+  phone?: string;
+  gender?: string;
+  currentDegree?: string;
+  profile?: {
+    education?: {
+      tertiary?: {
+        fieldOfStudyLabel?: string;
+        fieldOfStudy?: string;
+        minQualification?: string;
+      };
+    };
+  };
+  createdAt?: string;
+  // ...plus whatever your matcher returns
+};
+
+export type MatchScholarsResponse = {
+  scholarshipId: string;
+  totalMatches: number;
+  page: number;
+  limit: number;
+  data: MatchedScholarRow[];
+};
+
+export type MatchedScholarDetailResponse = {
+  scholarshipId: string;
+  scholarshipTitle: string;
+  selectionMethod: "MatchedScholar" | "SelfSelection" | string;
+  scholar: {
+    _id: string;
+    firstName?: string;
+    lastName?: string;
+    email: string;
+    phone?: string;
+    gender?: string;
+    dateOfBirth?: string;
+    countryOfResidence?: string;
+    employmentStatus?: string;
+    currentDegree?: string;
+    avatar?: { url?: string } | null;
+    profile?: any; // you can strongly type this if you like
+  };
+  application: null | {
+    _id: string;
+    applicationStatus: string;
+    applicant?: {
+      fullName?: string;
+      email?: string;
+      phone?: string;
+      dob?: string;
+      gender?: string;
+    };
+    snapshot?: {
+      minimumQualifications?: string;
+      fieldOfStudy?: string;
+    };
+    currentStatus?: {
+      employmentStatus?: string;
+      currentDegree?: string;
+      cgpa?: string;
+    };
+    documents?: {
+      personal?: Record<string, string> | any;
+      educational?: Record<string, string> | any;
+    };
+    letters?: {
+      cvUrl?: string;
+      motivation?: string;
+    };
+    createdAt?: string;
+    updatedAt?: string;
+  };
+};
+
+export interface SelectScholarForScholarshipPayload {
+  scholarshipId: string; // route param
+  scholarId: string;
+  applicationId?: string; // only for SelfSelection
+}
+
+export interface SelectScholarForScholarshipResponse {
+  message: string;
+  data: any; // you can tighten this later to match DocumentVerification shape
+}
+
+export type BankMeta = { name: string; code: string };
+
 /* =========================
  * Base Query
  * ========================= */
@@ -441,6 +534,10 @@ export const scholarApi = createApi({
       invalidatesTags: ["DeactivationRequest"],
     }),
 
+    getBanks: builder.query<{ banks: BankMeta[] }, void>({
+      query: () => "/scholars/api/profile/banks",
+    }),
+
     /*    utility endpoints */
 
     getFieldParents: builder.query<FieldParentsRow[], void>({
@@ -476,7 +573,6 @@ export const scholarApi = createApi({
       // keep the list fresh
       invalidatesTags: (_r, _e, _a) => [{ type: "Countries", id: "noop" }], // or attach a real tag if you like
     }),
-    // ...
 
     /* ---------------------------
      * Sponsor-side endpoints (unchanged)
@@ -803,6 +899,33 @@ export const scholarApi = createApi({
         r.data,
       providesTags: ["Countries"],
     }),
+    getMatchedScholarDetail: builder.query<
+      MatchedScholarDetailResponse,
+      { scholarshipId: string; scholarId: string }
+    >({
+      query: ({ scholarshipId, scholarId }) =>
+        `/sponsors/api/scholarship/scholarships/${scholarshipId}/matched-scholars/${scholarId}`,
+    }),
+    // ---------------- Select scholar for scholarship (Sponsor) ----------------
+    selectScholarForScholarship: builder.mutation<
+      SelectScholarForScholarshipResponse,
+      SelectScholarForScholarshipPayload
+    >({
+      query: ({ scholarshipId, scholarId, applicationId }) => ({
+        url: `/sponsors/api/scholarship/scholarships/${scholarshipId}/select-scholar`,
+        method: "POST",
+        body: {
+          scholarId,
+          // backend only cares about applicationId for SelfSelection,
+          // so it's safe to send undefined here for MatchedScholar
+          applicationId,
+        },
+      }),
+      // if selecting a scholar updates scholarship state, we can invalidate that
+      invalidatesTags: (_r, _e, { scholarshipId }) => [
+        { type: "Scholarships", id: scholarshipId },
+      ],
+    }),
   }),
 });
 
@@ -822,6 +945,7 @@ export const {
   useGetAccountQuery,
   useGetDeactivationRequestQuery,
   useRequestDeactivationMutation,
+  useGetBanksQuery,
 
   // NEW scholar-facing scholarships
   useGetActiveScholarshipsQuery,
@@ -870,4 +994,6 @@ export const {
   useUploadVerificationMutation,
   useUploadSponsorProfilePictureMutation,
   useGetCountriesQuery,
+  useGetMatchedScholarDetailQuery,
+  useSelectScholarForScholarshipMutation,
 } = scholarApi;

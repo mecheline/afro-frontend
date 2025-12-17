@@ -17,12 +17,10 @@ type AppItem = {
   category?: string;
   selectionMethod?: string;
   applicationStatus:
-    | "Submitted"
-    | "UnderReview"
-    | "Shortlisted"
-    | "Rejected"
-    | "Awarded"
-    | "Withdrawn";
+  | "Submitted"
+  | "UnderReview"
+  | "Rejected"
+  | "Awarded";
   createdAt?: string;
   updatedAt?: string;
 };
@@ -31,10 +29,8 @@ const TABS = [
   { key: "All", label: "All" },
   { key: "Submitted", label: "Submitted" },
   { key: "UnderReview", label: "Under Review" },
-  { key: "Shortlisted", label: "Shortlisted" },
   { key: "Rejected", label: "Rejected" },
   { key: "Awarded", label: "Awarded" },
-  { key: "Withdrawn", label: "Withdrawn" },
 ] as const;
 
 const pillCls: Record<string, string> = {

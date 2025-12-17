@@ -101,9 +101,9 @@ export default function SponsorSignup() {
       const res = await signup(payload).unwrap();
       toast.success(res?.msg);
       setPhase("verify");
-    } catch (error) {
+    } catch (error:any) {
       console.log(error);
-      toast.error("Something went wrong, Try again later");
+      toast.error(error?.data?.msg);
     }
   };
 

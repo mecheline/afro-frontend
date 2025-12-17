@@ -36,6 +36,7 @@ import VerificationDocument from "./screens/sponsor/profile/VerificationDocument
 import MatchedScholars from "./screens/sponsor/MatchedScholars";
 import Applications from "./screens/sponsor/Applications";
 import ApplicationDetail from "./screens/sponsor/ApplicationDetail";
+import MatchedScholarDetails from "./screens/sponsor/MatchedScholarDetails";
 
 function App() {
   const ProtectedScholarDashboardLayout = withAuth(ScholarDashboardLayout);
@@ -109,6 +110,10 @@ function App() {
         <Route path="/sponsor/dashboard" element={<SponsorDashboardLayout />}>
           <Route index element={<ScholarshipsTab />} />
           <Route path="matched-scholars/:id" element={<MatchedScholars />} />
+          <Route
+            path="matched-scholars/:id/scholar/:scholarId"
+            element={<MatchedScholarDetails />}
+          />
           <Route path="applications/:id" element={<Applications />} />
           <Route
             path="applications/:id/application/:appId"

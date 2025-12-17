@@ -263,7 +263,7 @@ export default function AfroScholarsLanding() {
 
       {/* About / Features */}
       <section className="max-w-screen-xl mx-auto">
-        <Container className="flex flex-col-reverse mt-16 md:mt-0 md:flex-row gap-16 py-20">
+        <Container className="flex flex-col-reverse mt-16 md:mt-0 md:flex-row gap-16 py-12 md:py-2 md:mb-12">
           <div className="flex flex-col md:flex-row items-center md:space-x-8">
             <div className="flex flex-col space-y-8">
               <div className="bg-white flex flex-col items-center justify-center shadow px-4 py-8 rounded-lg">
@@ -312,7 +312,10 @@ export default function AfroScholarsLanding() {
               pretium ligula rutrum luctus risus.
             </div>
             <div className="mt-8 text-center md:text-left">
-              <button className="font-medium text-lg leading-[140%] text-[#000B33] bg-[#EBC31E] p-4 shadow rounded-md">
+              <button
+                onClick={() => navigate("/auth/sponsor/login")}
+                className="font-medium text-lg leading-[140%] text-[#000B33] bg-[#EBC31E] p-4 shadow rounded-md"
+              >
                 Fund a Scholarship
               </button>
             </div>
@@ -321,7 +324,7 @@ export default function AfroScholarsLanding() {
       </section>
 
       {/* App / Services */}
-      <section className="relative overflow-hidden bg-[#101457]">
+      <section className="relative overflow-hidden bg-[#101457] mt-24">
         <Container className="max-w-screen-lg mx-auto grid grid-cols-1 items-center py-14 md:grid-cols-2 lg:py-20">
           <div className="order-1 md:order-2">
             <div className="font-bold w-[90%] text-[34px] md:text-[44px] leading-[42px] md:leading-[52px] tracking-normal text-white">
@@ -344,7 +347,7 @@ export default function AfroScholarsLanding() {
 
       {/* How it works */}
       <section className="max-w-screen-lg mx-auto">
-        <Container className="flex flex-col md:flex-row items-center justify-center md:justify-start py-36">
+        <Container className="flex flex-col md:flex-row items-center justify-center md:justify-start py-24">
           <div className="w-full md:w-1/2 mb-8 md:mb-0">
             <div>
               <div className="w-full md:w-[90%] font-bold text-[34px] md:text-[44px] leading-[42px] md:leading-[52px] tracking-normal text-[#101457]">
@@ -381,7 +384,7 @@ export default function AfroScholarsLanding() {
 
       {/* Team */}
       <section className="bg-white">
-        <Container className="py-12">
+        <Container className="py-6">
           <div className="flex flex-col items-center justify-center">
             <div className="font-bold text-[34px] md:text-[44px] leading-[42px] md:leading-[52px] tracking-normal text-[#101457]">
               Our qualified team

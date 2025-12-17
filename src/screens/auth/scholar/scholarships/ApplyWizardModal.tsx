@@ -16,7 +16,13 @@ const UPLOAD_BASE = import.meta.env.VITE_API_BASE_URL as string;
 const cn = (...x: Array<string | false | null | undefined>) =>
   x.filter(Boolean).join(" ");
 
-const DEGREES = ["WASSCE", "Undergraduate", "Masters", "PHD"].map((v) => ({
+const DEGREES = [
+  "Certificate",
+  "Diploma",
+  "Bachelors",
+  "Masters",
+  "Doctorate",
+].map((v) => ({
   value: v,
   label: v,
 }));

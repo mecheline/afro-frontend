@@ -38,6 +38,7 @@ export type StepKey =
   | "siblings"
   | "education"
   | "financial"
+  | "bank"
   | "cbo"
   | "leadership"
   | "future"
@@ -60,6 +61,7 @@ const steps: SidebarItem[] = [
   { key: "siblings", name: "Siblings", icon: <PersonStanding /> },
   { key: "education", name: "Education", icon: <GraduationCap /> },
   { key: "financial", name: "Financial Analysis", icon: <Wallet /> },
+  { key: "bank", name: "Bank Details", icon: <Wallet /> },
   { key: "cbo", name: "Community Based Org.", icon: <Building /> },
   { key: "leadership", name: "Leadership Track Record", icon: <Cog /> },
   { key: "future", name: "Future Plans", icon: <BookMarked /> },
