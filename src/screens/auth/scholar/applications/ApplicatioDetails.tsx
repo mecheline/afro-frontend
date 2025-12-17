@@ -1,9 +1,6 @@
 import * as React from "react";
 import { Link, useParams, useNavigate } from "react-router";
-import {
-  useGetMyApplicationByIdQuery,
-} from "../../../../redux/services/scholar/api";
-
+import { useGetMyApplicationByIdQuery } from "../../../../redux/services/scholar/api";
 
 const pillCls: Record<string, string> = {
   Submitted: "bg-indigo-100 text-indigo-700",
@@ -35,8 +32,8 @@ const Section: React.FC<{ title: string; children: React.ReactNode }> = ({
   </section>
 );
 
-const cn = (...classes: Array<string | false | null | undefined>) =>
-  classes.filter(Boolean).join(" ");
+/* const cn = (...classes: Array<string | false | null | undefined>) =>
+  classes.filter(Boolean).join(" "); */
 
 export default function ApplicationDetailsPage() {
   const { appId } = useParams<{ appId: string }>();
