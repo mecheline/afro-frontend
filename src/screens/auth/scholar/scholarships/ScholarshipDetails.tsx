@@ -31,7 +31,7 @@ export default function ScholarshipDetail() {
   const { data, isLoading, isFetching, isError, error, refetch } =
     useGetActiveScholarshipDetailQuery(id ?? "", { skip: !id });
 
-  // ⬇️ Load my applications once to know which scholarships are already applied
+  //  Load my applications once to know which scholarships are already applied
   //    (use a large page size; backend already caps to 50 in your controller. Adjust if needed.)
   const {
     data: myAppsPaged,
@@ -93,7 +93,7 @@ export default function ScholarshipDetail() {
       )}
 
       <button
-        onClick={() => setApplyFor(s)}
+        onClick={() => s && setApplyFor(s)}
         disabled={alreadyApplied || fetchingApps}
         aria-disabled={alreadyApplied || fetchingApps}
         title={alreadyApplied ? "You have already applied" : undefined}

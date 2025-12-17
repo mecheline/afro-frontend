@@ -1,5 +1,3 @@
-// src/features/applications/MatchedScholarDetails.tsx
-import React from "react";
 import { useNavigate, useParams } from "react-router";
 import { ArrowLeft, RefreshCw, FileText, ExternalLink } from "lucide-react";
 import { toast } from "sonner";

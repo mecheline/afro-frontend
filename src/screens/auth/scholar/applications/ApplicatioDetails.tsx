@@ -2,11 +2,8 @@ import * as React from "react";
 import { Link, useParams, useNavigate } from "react-router";
 import {
   useGetMyApplicationByIdQuery,
-  useGetMyApplicationsQuery,
-  type ScholarshipItem,
 } from "../../../../redux/services/scholar/api";
-import ApplyWizardModal from "../scholarships/ApplyWizardModal";
-import { Send } from "lucide-react";
+
 
 const pillCls: Record<string, string> = {
   Submitted: "bg-indigo-100 text-indigo-700",
